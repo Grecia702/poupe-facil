@@ -203,6 +203,7 @@ const styles = StyleSheet.create({
   saldoContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    maxWidth: 400,
     padding: 20,
     backgroundColor: "rgb(195, 212, 205)",
     borderRadius: 10,
@@ -248,6 +249,7 @@ const styles = StyleSheet.create({
   widget: {
     flexDirection: 'row',
     height: "auto",
+    maxWidth: 400,
     backgroundColor: "rgb(195, 212, 205)",
     borderRadius: 10,
     padding: 20,
