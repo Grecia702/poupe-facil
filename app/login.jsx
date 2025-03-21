@@ -1,19 +1,33 @@
-import { StyleSheet, Text, View, SafeAreaView, TextInput, Pressable, Linking } from 'react-native'
+import { StyleSheet, Text, View, SafeAreaView, TextInput, Pressable } from 'react-native';
 import { Link } from 'expo-router';
 import Fontisto from '@expo/vector-icons/Fontisto';
-import { Inter_300Light, useFonts } from '@expo-google-fonts/inter'
+import { Inter_300Light } from '@expo-google-fonts/inter';
 
-import React from 'react'
-
+import React, { useState } from 'react';
+import axios from 'axios';
 
 const LoginScreen = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [message, setMessage] = useState('');
 
-    const [fontsLoaded] = useFonts({
-        Inter_300Light,
-    });
-    if (!fontsLoaded) {
-        return null;
-    }
+    const handleLogin = () => {
+        axios
+            .post('http://127.0.0.1:3000/api/users/login', { email: email, senha: password })
+            .then((response) => {
+                if (response.status === 200) {
+                    setMessage(response.data.message);
+                }
+            })
+            .catch((error) => {
+
+                if (error.response) {
+                    setMessage(error.response.data.message);
+                } else {
+                    setMessage('Erro na requisição, tente novamente.');
+                }
+            });
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -24,32 +38,44 @@ const LoginScreen = () => {
                     <Text style={styles.text}>E-mail</Text>
                 </View>
 
-                <TextInput style={styles.input} placeholder='Insira Seu Email' />
+                <TextInput
+                    style={styles.input}
+                    placeholder='Insira Seu Email'
+                    value={email}
+                    onChangeText={setEmail}
+                />
 
                 <View style={styles.viewContainer}>
                     <Fontisto name="locked" size={24} color="black" />
                     <Text style={styles.text}>Senha</Text>
                 </View>
 
-                <TextInput style={styles.input} placeholder='Insira Sua Senha' />
-
+                <TextInput
+                    style={styles.input}
+                    placeholder='Insira Sua Senha'
+                    value={password}
+                    secureTextEntry={true}
+                    onChangeText={setPassword}
+                />
                 <Link href="/" style={{ textDecorationLine: 'underline' }}>
                     Esqueci a minha senha
                 </Link>
 
-                <Pressable style={styles.button} onPress={''}>
+                <Pressable style={styles.button} onPress={handleLogin}>
                     <Text style={styles.buttonText}>Login</Text>
                 </Pressable>
+
+                {message && <Text style={styles.message}>{message}</Text>}
 
                 <Link href="/signup" style={{ alignSelf: "center", textDecorationLine: 'underline' }}>
                     Não tem uma conta? Cadastre-se
                 </Link>
             </View>
-        </SafeAreaView >
-    )
-}
+        </SafeAreaView>
+    );
+};
 
-export default LoginScreen
+export default LoginScreen;
 
 const styles = StyleSheet.create({
     safeArea: {
@@ -57,7 +83,7 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: "row",
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
     },
     view: {
         gap: 10,
@@ -68,7 +94,7 @@ const styles = StyleSheet.create({
         alignSelf: "center",
         fontWeight: "600",
         fontSize: 36,
-        margin: 20
+        margin: 20,
     },
     text: {
         fontFamily: 'Inter_300Light',
@@ -77,7 +103,7 @@ const styles = StyleSheet.create({
     viewContainer: {
         gap: 10,
         flexDirection: "row",
-        alignItems: "flex-end"
+        alignItems: "flex-end",
     },
     input: {
         borderWidth: 1,
@@ -102,6 +128,11 @@ const styles = StyleSheet.create({
     buttonText: {
         color: 'white',
         fontSize: 24,
-
     },
-})
+    message: {
+        marginTop: 20,
+        fontSize: 16,
+        color: 'green',
+        textAlign: 'center',
+    },
+});

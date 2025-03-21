@@ -6,10 +6,10 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import login from './login';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-
 const Drawer = createDrawerNavigator();
 
 function HomeScreen() {
+
   const data = [
     {
       name: 'Alimentação',
@@ -44,6 +44,7 @@ function HomeScreen() {
     <ScrollView contentContainerStyle={styles.safeArea}>
 
       <View style={styles.container}>
+
         <Text style={styles.textTitle}>Visão Geral</Text>
         <View style={styles.separator} />
 
@@ -121,13 +122,13 @@ function HomeScreen() {
         <Text style={styles.textTitle}>Metas financeiras</Text>
         <View style={styles.separator} />
         <View style={[styles.widget, { flexDirection: 'column' }]}>
-          <Text style={styles.metasTitle}>Comprar um PC</Text>
+          <Text style={styles.metasTitle}>Comprar um carro</Text>
           <View style={styles.bar}>
             <Bar
               progress={0.5}
               color="rgb(38, 167, 38)"
               unfilledColor="rgb(168, 197, 168)"
-              width={300}
+              width={340}
               height={15}
               borderRadius={10}
               borderWidth={2}
@@ -205,6 +206,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     maxWidth: 400,
     padding: 20,
+    gap: 20,
     backgroundColor: "rgb(195, 212, 205)",
     borderRadius: 10,
     shadowColor: 'rgb(0, 0, 0)',
@@ -244,7 +246,8 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   container: {
-    width: "90%"
+    width: "90%",
+    alignItems: 'center'
   },
   widget: {
     flexDirection: 'row',
@@ -266,6 +269,7 @@ const styles = StyleSheet.create({
   },
   bar: {
     alignSelf: 'center',
+    maxWidth: 400,
     gap: 5,
   },
   metasTitle: {
