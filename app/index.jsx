@@ -1,15 +1,16 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Bar } from 'react-native-progress'
 import { PieChart } from 'react-native-chart-kit'
-import React from 'react';
+import React, { useContext } from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import login from './login';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import LoginScreen from './login';
+import SignupScreen from './signup';
+import { AuthContext } from '../context/authContext';
 
 const Drawer = createDrawerNavigator();
 
 function HomeScreen() {
-
   const data = [
     {
       name: 'Alimentação',
@@ -144,23 +145,26 @@ function HomeScreen() {
 }
 
 export default function App() {
+  const { isLoggedIn } = useContext(AuthContext);
   return (
-    <Drawer.Navigator initialRouteName="Home"
-      screenOptions={{
+
+    <Drawer.Navigator
+      initialRouteName={isLoggedIn ? "index" : "login"}
+      screenOptions={({ route }) => ({
         headerStyle: {
-          backgroundColor: "rgb(17, 165, 17)",
+          backgroundColor: route.name === "index" && isLoggedIn ? "rgb(17, 165, 17)" : "transparent",
         },
-        headerTintColor: "white"
-      }}
+        headerTintColor: route.name === "index" && isLoggedIn ? "white" : "black",
+      })}
     >
-      <Drawer.Screen name="Home" component={HomeScreen} />
-      <Drawer.Screen name="Transações" component={login} />
-      <Drawer.Screen name="Contas Bancárias" component={login} />
-      <Drawer.Screen name="Cartões de Crédito" component={login} />
-      <Drawer.Screen name="Orçamento" component={login} />
-      <Drawer.Screen name="Metas" component={login} />
-      <Drawer.Screen name="Gráficos" component={login} />
-      <Drawer.Screen name="Resumo Financeiro" component={login} />
+      <Drawer.Screen name="index" component={HomeScreen} options={{ headerShown: true }} />
+      <Drawer.Screen name="login" component={LoginScreen} options={{ headerShown: false }} />
+      <Drawer.Screen name="Contas Bancárias" component={SignupScreen} />
+      <Drawer.Screen name="Cartões de Crédito" component={SignupScreen} />
+      <Drawer.Screen name="Orçamento" component={SignupScreen} />
+      <Drawer.Screen name="Metas" component={SignupScreen} />
+      <Drawer.Screen name="Gráficos" component={SignupScreen} />
+      <Drawer.Screen name="Resumo Financeiro" component={SignupScreen} />
     </Drawer.Navigator>
   );
 }

@@ -89,7 +89,7 @@ const SignupScreen = () => {
                 <Pressable style={styles.button} onPress={handleSignup}>
                     <Text style={styles.buttonText}>Cadastrar</Text>
                 </Pressable>
-                {message && <Text style={styles.message}>{message}</Text>}
+                <Text style={styles.message}>{message}</Text>
                 <Link href="/login" style={{ alignSelf: "center" }}>
                     <Text style={{ textDecorationLine: 'underline' }}>
                         Fazer Login
