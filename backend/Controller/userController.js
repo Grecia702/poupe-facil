@@ -8,14 +8,13 @@ const Login = async (req, res) => {
     try {
         const usuario = await userModel.FindUser(email);
         const senhaValida = await bcrypt.compare(senha, usuario.senha)
-
         if (usuario.email != email) {
             console.log("email não encontrado")
             return res.status(401).json({ message: 'E-mail e/ou senha incorretos!' });
         }
 
         if (senhaValida) {
-            console.log("login feito com sucesso :", usuario.id)
+            console.log("login feito com sucesso: ", usuario.id)
             const token = jwt.sign({ id: usuario.id }, process.env.JWT_SECRET, { expiresIn: '2h' });
 
             res.cookie('jwtToken', token, {
@@ -40,10 +39,10 @@ const Login = async (req, res) => {
 const SignUp = async (req, res) => {
 
     const { nome, email, senha, senhaRepeat } = req.body;
-    const findUser = await userModel.FindUser(email);
-    console.log(typeof nome)
+    const signUser = await userModel.FindUser(email);
+
     if (nome != '' && email != '' && senha != '' && senhaRepeat != '') {
-        if (typeof findUser != 'undefined') {
+        if (signUser.length > 0) {
             console.log("email ja existe")
             return res.status(401).json({ message: 'Esse e-mail já está em uso!' });
         }
@@ -52,9 +51,8 @@ const SignUp = async (req, res) => {
         }
 
         try {
-            const hash = await bcrypt.hash(senha, saltRounds);
-            console.log("hash gerado: ", hash)
-            userModel.CreateUser(nome, email, hash)
+            const passwordHash = await bcrypt.hash(senha, saltRounds);
+            userModel.CreateUser(nome, email, passwordHash)
             return res.json({ message: 'Usuário criado com sucesso!' });
         }
         catch (err) {
@@ -67,5 +65,31 @@ const SignUp = async (req, res) => {
     }
 }
 
+const deleteAccount = async (req, res) => {
+    const { senha } = req.body;
+    const userId = parseInt(req.params.id, 10);
 
-module.exports = { Login, SignUp };
+    try {
+        const usuario = await userModel.ListUser(userId);
+        const senhaValida = await bcrypt.compare(senha, usuario[0].senha)
+
+        if (usuario.length === 0) {
+            return res.status(404).json({ message: "Usuário não encontrado" })
+        }
+        if (senhaValida) {
+            await userModel.DeleteUser(userId);
+            return res.status(200).json({ message: "Conta excluida com sucesso!" })
+        }
+        else {
+            return res.status(401).json({ message: "Senha Invalida!" })
+        }
+
+    }
+    catch (err) {
+        console.log("Erro ao excluir a conta", err)
+        return res.status(500).json({ message: "Erro ao excluir a conta, tente novamente mais tarde" })
+    }
+}
+
+
+module.exports = { Login, SignUp, deleteAccount };

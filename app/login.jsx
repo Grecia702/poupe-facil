@@ -22,6 +22,8 @@ const LoginScreen = () => {
         setVisible(!visible);
     };
 
+    // Requisição POST
+
     const handleLogin = async () => {
         try {
             const response = await axios.post('http://localhost:3000/api/users/login', {
@@ -167,7 +169,7 @@ const styles = StyleSheet.create({
     },
     input: {
         borderWidth: 1,
-        borderRadius: 5,
+        borderRadius: 35,
         padding: 20,
         backgroundColor: 'white',
         fontFamily: 'Inter_300Light',
@@ -179,6 +181,7 @@ const styles = StyleSheet.create({
         marginTop: 32,
         backgroundColor: '#3a9e58',
         borderWidth: 1,
+        borderRadius: 30,
         borderColor: 'black',
         color: 'white',
         fontSize: 24,
