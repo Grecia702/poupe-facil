@@ -6,15 +6,17 @@ const jwt = require('jsonwebtoken')
 const Login = async (req, res) => {
     const { email, senha } = req.body;
     try {
-        const usuario = await userModel.FindUser(email);
-        const senhaValida = await bcrypt.compare(senha, usuario.senha)
-        if (usuario.email != email) {
-            console.log("email não encontrado")
+        const usuarios = await userModel.ListUser(email);
+        const usuario = usuarios.total > 0 ? usuarios.firstResult : null
+
+        if (!usuario) {
             return res.status(401).json({ message: 'E-mail e/ou senha incorretos!' });
         }
 
-        if (senhaValida) {
-            console.log("login feito com sucesso: ", usuario.id)
+        const senhaValida = await bcrypt.compare(senha, usuario.senha)
+
+        if (senhaValida && usuario.email == email) {
+            console.log("login feito com sucesso ", usuario.id)
             const token = jwt.sign({ id: usuario.id }, process.env.JWT_SECRET, { expiresIn: '2h' });
 
             res.cookie('jwtToken', token, {
@@ -27,7 +29,8 @@ const Login = async (req, res) => {
                 token,
                 message: 'Login bem-sucedido!'
             });
-        } else {
+        }
+        else {
             return res.status(401).json({ message: 'E-mail e/ou senha incorretos!' });
         }
     }

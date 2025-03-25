@@ -2,12 +2,13 @@ import { Platform, StyleSheet, Text, View, SafeAreaView, TextInput, Pressable } 
 import { useNavigation } from '@react-navigation/native';
 import { Link } from 'expo-router';
 import Fontisto from '@expo/vector-icons/Fontisto';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/authContext';
 import * as SecureStore from 'expo-secure-store';
 import Cookies from 'js-cookie';
+import Feather from '@expo/vector-icons/Feather';
+
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
@@ -15,7 +16,6 @@ const LoginScreen = () => {
     const [message, setMessage] = useState('');
     const [visible, setVisible] = useState(false);
     const navigation = useNavigation();
-
     const { isLoggedIn, login, logout } = useContext(AuthContext);
 
     const toggleShowPassword = () => {
@@ -23,7 +23,6 @@ const LoginScreen = () => {
     };
 
     // Requisição POST
-
     const handleLogin = async () => {
         try {
             const response = await axios.post('http://localhost:3000/api/users/login', {
@@ -57,6 +56,7 @@ const LoginScreen = () => {
         }
     };
 
+    // Autenticação de Login por Cookies
     useEffect(() => {
         const checkLogin = async () => {
             let token;
@@ -108,7 +108,8 @@ const LoginScreen = () => {
                         secureTextEntry={visible}
                         onChangeText={setPassword}
                     />
-                    <Ionicons
+
+                    <Feather
                         onPress={toggleShowPassword}
                         style={{
                             position: 'absolute',
@@ -116,7 +117,7 @@ const LoginScreen = () => {
                             top: '50%',
                             transform: [{ translateY: -10 }]
                         }}
-                        name="eye-outline"
+                        name={visible ? "eye" : "eye-off"}
                         size={24}
                         color="black"
                     />
@@ -157,9 +158,9 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         fontSize: 36,
         margin: 20,
+
     },
     text: {
-        fontFamily: 'Inter_300Light',
         fontSize: 18,
     },
     viewContainer: {
@@ -172,7 +173,6 @@ const styles = StyleSheet.create({
         borderRadius: 35,
         padding: 20,
         backgroundColor: 'white',
-        fontFamily: 'Inter_300Light',
     },
     button: {
         alignItems: 'center',
@@ -186,7 +186,6 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 24,
         fontWeight: 700,
-        fontFamily: 'Inter_300Light',
     },
     buttonText: {
         color: 'white',
