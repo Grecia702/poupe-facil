@@ -14,7 +14,7 @@ const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
-    const [visible, setVisible] = useState(false);
+    const [visible, setVisible] = useState(true);
     const navigation = useNavigation();
     const { isLoggedIn, login, logout } = useContext(AuthContext);
 
