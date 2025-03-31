@@ -17,7 +17,7 @@ const SignupScreen = () => {
 
     const handleSignup = () => {
         axios
-            .post('http://127.0.0.1:3000/api/users/signup', { nome: nome, email: email, senha: password, senhaRepeat: passwordRepeat })
+            .post('http://localhost:3000/api/users/signup', { nome: nome, email: email, senha: password, senhaRepeat: passwordRepeat })
             .then((response) => {
                 if (response.status === 200) {
                     setMessage(response.data.message);

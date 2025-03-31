@@ -1,28 +1,27 @@
 import { Platform, StyleSheet, Text, View, SafeAreaView, TextInput, Pressable } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { Link } from 'expo-router';
 import Fontisto from '@expo/vector-icons/Fontisto';
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../context/authContext';
-import * as SecureStore from 'expo-secure-store';
 import Cookies from 'js-cookie';
 import Feather from '@expo/vector-icons/Feather';
-
+import { AuthContext } from '../../context/authContext';
+import { useNavigation } from '@react-navigation/native'
+import * as SecureStore from 'expo-secure-store';
 
 const LoginScreen = () => {
+    const navigation = useNavigation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const [visible, setVisible] = useState(true);
-    const navigation = useNavigation();
     const { isLoggedIn, login, logout } = useContext(AuthContext);
 
     const toggleShowPassword = () => {
         setVisible(!visible);
     };
 
-    // Requisição POST
+    // Requisição POST para login
     const handleLogin = async () => {
         try {
             const response = await axios.post('http://localhost:3000/api/users/login', {
@@ -31,21 +30,18 @@ const LoginScreen = () => {
             });
 
             if (response.status === 200 && response.data.token) {
-                if (Platform.OS === 'web') {
-                    Cookies.set('jwtToken', response.data.token, { expires: 7, path: '' });
-                    console.log('Token armazenado no cookie (Web)');
-                    setMessage('Login bem-sucedido')
-                } else {
-                    await SecureStore.setItemAsync('jwtToken', response.data.token);
-                    console.log('Token armazenado de forma segura (Expo)');
-                }
-                setMessage('Login bem-sucedido!');
 
-                login();
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'index' }],
-                });
+                const token = response.data.token;
+
+                if (Platform.OS === 'web') {
+                    Cookies.set('jwtToken', token, { expires: 7, path: '' });
+                    console.log('Token armazenado no cookie (Web)');
+                    setMessage('Login bem-sucedido');
+                    login();
+                } else {
+                    await SecureStore.setItemAsync('jwtToken', token);
+                    setMessage('Login bem-sucedido!');
+                }
             }
         } catch (error) {
             if (error.response) {
@@ -54,28 +50,8 @@ const LoginScreen = () => {
                 setMessage('Erro na requisição, tente novamente.');
             }
         }
+        console.log("teste")
     };
-
-    // Autenticação de Login por Cookies
-    useEffect(() => {
-        const checkLogin = async () => {
-            let token;
-            if (Platform.OS === 'web') {
-                token = Cookies.get('jwtToken');
-            } else {
-                token = await SecureStore.getItemAsync('jwtToken');
-            }
-            if (token) {
-                login();
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'index' }],
-                });
-                console.log("cookie registrado")
-            };
-            checkLogin();
-        }
-    }, []);
 
 
 
@@ -122,6 +98,7 @@ const LoginScreen = () => {
                         color="black"
                     />
                 </View>
+
                 <Link href="/" style={{ textDecorationLine: 'underline' }}>
                     Esqueci a minha senha
                 </Link>
@@ -158,7 +135,6 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         fontSize: 36,
         margin: 20,
-
     },
     text: {
         fontSize: 18,
@@ -170,7 +146,7 @@ const styles = StyleSheet.create({
     },
     input: {
         borderWidth: 1,
-        borderRadius: 35,
+        borderRadius: 10,
         padding: 20,
         backgroundColor: 'white',
     },
@@ -181,11 +157,8 @@ const styles = StyleSheet.create({
         marginTop: 32,
         backgroundColor: '#3a9e58',
         borderWidth: 1,
-        borderRadius: 30,
+        borderRadius: 10,
         borderColor: 'black',
-        color: 'white',
-        fontSize: 24,
-        fontWeight: 700,
     },
     buttonText: {
         color: 'white',

@@ -16,6 +16,6 @@
     "expo-env.d.ts",
     "app/(tabs)/index.jsx",
     "app/(tabs)/_layout.jsx",
-    "app/(tabs)/explore.jsx"
+    "context/authContext.js",
   ]
 }

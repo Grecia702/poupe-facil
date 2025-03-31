@@ -16,14 +16,17 @@ const Login = async (req, res) => {
         const senhaValida = await bcrypt.compare(senha, usuario.senha)
 
         if (senhaValida && usuario.email == email) {
+
             console.log("login feito com sucesso ", usuario.id)
+
             const token = jwt.sign({ id: usuario.id }, process.env.JWT_SECRET, { expiresIn: '2h' });
 
             res.cookie('jwtToken', token, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'Strict',
-                maxAge: 2 * 60 * 60 * 1000
+                secure: false,
+                sameSite: 'None',
+                maxAge: 2 * 60 * 60 * 1000,
+                path: '/'
             });
             return res.status(200).json({
                 token,

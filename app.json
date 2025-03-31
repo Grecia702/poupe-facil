@@ -2,6 +2,9 @@
   "expo": {
     "name": "projeto",
     "slug": "projeto",
+    "extra": {
+      "JWT_SECRET": "ada71d2419dad93227711b1563a9ba1f48e7c2b54359b7782f3983bd0da61082171f07203213bba68055654947dad7554168b47d306a28953aeceb9378113511"
+    },
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -37,7 +40,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
