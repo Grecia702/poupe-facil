@@ -1,4 +1,4 @@
-const transactionModel = require("../Model/transactionModel");
+const transactionModel = require("../models/transactionModel");
 const moment = require('moment');
 const jwt = require('jsonwebtoken');
 

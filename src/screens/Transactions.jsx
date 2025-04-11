@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList } from 'react-native'
+import { StyleSheet, Text, View, FlatList, Platform } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -9,12 +9,23 @@ const Transactions = ({ limit }) => {
     const [dados, setDados] = useState([])
 
     const checkDados = async () => {
-        const token = Cookies.get('jwtToken');
 
-        if (!token) {
-            console.log("Token não encontrado.");
-            return;
+        if (Platform.OS === 'web') {
+            const token = Cookies.get('jwtToken');
+
+            if (!token) {
+                console.log("Token não encontrado.");
+                return;
+            }
+        } else if (Platform.OS === 'android') {
+
+            const token = await SecureStore.getItemAsync('jwtToken');
+            if (!token) {
+                console.log("Token mobile não encontrado.");
+                return;
+            }
         }
+
         try {
             const response = await axios.get("http://localhost:3000/api/users/profile/transaction/list", {
                 withCredentials: true
@@ -28,6 +39,7 @@ const Transactions = ({ limit }) => {
             console.log("Erro ao fazer requisição:", error);
         }
     }
+
     useEffect(() => {
         checkDados();
     }, []);

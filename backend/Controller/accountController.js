@@ -1,4 +1,4 @@
-const accountModel = require("../Model/accountModel");
+const accountModel = require("../models/accountModel");
 const moment = require('moment');
 const jwt = require('jsonwebtoken');
 

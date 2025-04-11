@@ -1,45 +1,63 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import Cookies from 'js-cookie';
-import { View, Text } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
+import { View, Text, Platform } from 'react-native';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isReady, setIsReady] = useState(false);
 
-    // Função de Login
     const login = () => {
         setIsLoggedIn(true);
+        setIsLoading(false)
+        setIsReady(true)
     };
 
-    // Função de Logout
     const logout = () => {
         Cookies.remove('jwtToken');
         setIsLoggedIn(false);
     };
 
-    // Verifica o token salvo ao carregar o app
     useEffect(() => {
-        const token = Cookies.get('jwtToken');
-        setIsLoggedIn(!!token); // Se token existir, usuário está logado
-        setIsLoading(false);
+        const checkCookies = async () => {
+            try {
+                if (Platform.OS === 'web') {
+                    const token = Cookies.get('jwtToken');
+                    setIsLoggedIn(!!token);
+                    setIsLoading(false);
+                }
+                else {
+                    const token = await SecureStore.getItemAsync('jwtToken');
+                    console.log(token)
+                    setIsLoggedIn(!!token)
+                    setIsLoading(false);
+                }
+            }
+            catch (error) {
+                console.error("Erro ao obter o token:", error);
+            }
+        };
+        checkCookies();
     }, []);
+
+
 
     if (isLoading) {
         return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue' }}>
                 <Text>Carregando...</Text>
             </View>
         );
     }
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, login, logout, isLoading }}>
+        <AuthContext.Provider value={{ isLoggedIn, isLoading, login, logout, setIsLoading, isReady }}>
             {children}
         </AuthContext.Provider>
     );
 };
 
-// Hook personalizado para usar o contexto de autenticação
 export const useAuth = () => useContext(AuthContext);

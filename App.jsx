@@ -1,8 +1,13 @@
-import Routes from './routes'
+import { AuthProvider } from './context/authContext';
 import { ColorProvider } from './context/colorScheme';
+import Routes from './src/routes'
 export default function App() {
-    return (
-        <Routes />
 
+    return (
+        <AuthProvider>
+            <ColorProvider>
+                <Routes />
+            </ColorProvider>
+        </AuthProvider>
     );
 }

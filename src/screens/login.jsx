@@ -1,13 +1,13 @@
 import { Platform, StyleSheet, Text, View, SafeAreaView, TextInput, Pressable } from 'react-native';
-import { Link } from 'expo-router';
 import Fontisto from '@expo/vector-icons/Fontisto';
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import Feather from '@expo/vector-icons/Feather';
-import { AuthContext } from '../../context/authContext';
+import { AuthContext, useAuth } from '../../context/authContext';
 import { useNavigation } from '@react-navigation/native'
 import * as SecureStore from 'expo-secure-store';
+import { API_URL } from '@env'
 
 const LoginScreen = () => {
     const navigation = useNavigation();
@@ -15,16 +15,26 @@ const LoginScreen = () => {
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const [visible, setVisible] = useState(true);
-    const { isLoggedIn, login, logout } = useContext(AuthContext);
+    const { isLoggedIn, isLoading, login, isReady } = useContext(AuthContext);
 
     const toggleShowPassword = () => {
         setVisible(!visible);
     };
 
+
+    useEffect(() => {
+        if (isLoggedIn) {
+            navigation.replace('home')
+            login()
+        }
+
+    }, [isLoggedIn, isReady])
+
+
     // Requisição POST para login
     const handleLogin = async () => {
         try {
-            const response = await axios.post('http://localhost:3000/api/users/login', {
+            const response = await axios.post(`${API_URL}/login`, {
                 email: email,
                 senha: password
             });
@@ -36,21 +46,24 @@ const LoginScreen = () => {
                 if (Platform.OS === 'web') {
                     Cookies.set('jwtToken', token, { expires: 7, path: '' });
                     console.log('Token armazenado no cookie (Web)');
-                    setMessage('Login bem-sucedido');
-                    login();
-                } else {
+
+                } else if (Platform.OS === 'android') {
                     await SecureStore.setItemAsync('jwtToken', token);
-                    setMessage('Login bem-sucedido!');
+                    console.log('Token armazenado no cookie (Android)');
+
                 }
+                setMessage('Login bem-sucedido!');
+                login();
+                navigation.replace('home')
             }
         } catch (error) {
             if (error.response) {
-                setMessage(error.response.data.message);
+                console.log(error.response)
+                setMessage(error.response.data.message || 'erro desconhecido do servidor');
             } else {
                 setMessage('Erro na requisição, tente novamente.');
             }
         }
-        console.log("teste")
     };
 
 
@@ -68,6 +81,8 @@ const LoginScreen = () => {
                     style={styles.input}
                     placeholder="Insira Seu Email"
                     value={email}
+                    keyboardType='email-address'
+                    autoFocus={true}
                     onChangeText={setEmail}
                 />
 
@@ -81,6 +96,7 @@ const LoginScreen = () => {
                         style={[styles.input, { flex: 1 }]}
                         placeholder="Insira Sua Senha"
                         value={password}
+                        autoCapitalize="none"
                         secureTextEntry={visible}
                         onChangeText={setPassword}
                     />
@@ -99,19 +115,25 @@ const LoginScreen = () => {
                     />
                 </View>
 
-                <Link href="/" style={{ textDecorationLine: 'underline' }}>
+                {/* <Link href="/" style={{ textDecorationLine: 'underline' }}>
                     Esqueci a minha senha
-                </Link>
+                </Link> */}
+
+                {/* <Pressable
+                    onPress={handleLogin}
+                    title='Login'
+                    color='white'
+                    bgColor='#3a9e58' ></Pressable> */}
 
                 <Pressable style={styles.button} onPress={handleLogin}>
                     <Text style={styles.buttonText}>Login</Text>
                 </Pressable>
 
                 <Text style={styles.message}>{message}</Text>
-
+                {/* 
                 <Link href="/signup" style={{ alignSelf: 'center', textDecorationLine: 'underline' }}>
                     Não tem uma conta? Cadastre-se
-                </Link>
+                </Link> */}
             </View>
         </SafeAreaView>
     );

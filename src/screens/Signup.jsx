@@ -1,3 +1,4 @@
+import { API_URL } from '@env'
 import { StyleSheet, Text, View, SafeAreaView, TextInput, Pressable } from 'react-native'
 import { Link } from 'expo-router';
 import Fontisto from '@expo/vector-icons/Fontisto';
@@ -17,7 +18,7 @@ const SignupScreen = () => {
 
     const handleSignup = () => {
         axios
-            .post('http://localhost:3000/api/users/signup', { nome: nome, email: email, senha: password, senhaRepeat: passwordRepeat })
+            .post(`${API_URL}/signup`, { nome: nome, email: email, senha: password, senhaRepeat: passwordRepeat })
             .then((response) => {
                 if (response.status === 200) {
                     setMessage(response.data.message);

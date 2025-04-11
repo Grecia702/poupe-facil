@@ -1,22 +1,32 @@
-import { StyleSheet, Text, View, FlatList } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Platform } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { API_URL } from '@env'
 import Cookies from 'js-cookie'; // Mantenha js-cookie para armazenar o JWT no cookie
 
 const BankAccount = ({ limit }) => {
     const [dados, setDados] = useState([])
 
     const checkDados = async () => {
-        const token = Cookies.get('jwtToken');
+        if (Platform.OS === 'web') {
+            const token = Cookies.get('jwtToken');
 
-        if (!token) {
-            console.log("Token não encontrado.");
-            return;
+            if (!token) {
+                console.log("Token não encontrado.");
+                return;
+            }
+        } else if (Platform.OS === 'android') {
+
+            const token = await SecureStore.getItemAsync('jwtToken');
+            if (!token) {
+                console.log("Token mobile não encontrado.");
+                return;
+            }
         }
         try {
-            const response = await axios.get("http://localhost:3000/api/users/profile/account/list", {
+            const response = await axios.get(`${API_URL}/profile/account/list`, {
                 withCredentials: true
             });
 
@@ -29,6 +39,7 @@ const BankAccount = ({ limit }) => {
             console.log("Erro ao fazer requisição:", error);
         }
     }
+
     useEffect(() => {
         checkDados();
     }, []);

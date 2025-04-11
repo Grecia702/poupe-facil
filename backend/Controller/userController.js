@@ -1,7 +1,9 @@
-const userModel = require("../Model/userModel");
+const userModel = require("../models/userModel");
 const bcrypt = require('bcrypt')
 const saltRounds = 10;
 const jwt = require('jsonwebtoken')
+const moment = require('moment');
+
 
 const Login = async (req, res) => {
     const { email, senha } = req.body;
@@ -17,7 +19,10 @@ const Login = async (req, res) => {
 
         if (senhaValida && usuario.email == email) {
 
-            console.log("login feito com sucesso ", usuario.id)
+            const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
+
+            console.log("login feito pelo usuario ", usuario.email, "durante as", timestamp, "horas")
+
 
             const token = jwt.sign({ id: usuario.id }, process.env.JWT_SECRET, { expiresIn: '2h' });
 

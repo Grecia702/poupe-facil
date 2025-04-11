@@ -1,47 +1,67 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# dependencies
-node_modules/
+# 🔁 Dependências
+**/node_modules/
 
-# Expo
+# ⚙️ Expo
 .expo/
+.expo-shared/
 dist/
 web-build/
 expo-env.d.ts
 
-# Native
-*.orig.*
+# 📱 EAS Build Artifacts
+*.apk
+*.aab
+*.ipa
+*.tar.gz
+
+# 🔐 Arquivos sensíveis e certificados
 *.jks
 *.p8
 *.p12
 *.key
+*.pem
 *.mobileprovision
 
-# Metro
+# 🌐 Ambiente e variáveis
+.env
+.env*.local
+backend/.env
+expo-env.d.ts
+
+
+# 💥 Metro bundler cache
 .metro-health-check*
 
-# debug
+# 🐞 Debug logs
+*.log
 npm-debug.*
 yarn-debug.*
 yarn-error.*
 
-# macOS
+# 🧠 macOS lixo
 .DS_Store
-*.pem
 
-# local env files
-.env*.local
-.env
-backend/.env
+# ⚙️ Gradle e builds nativos
+/android
+/ios
+android/.gradle/
+android/build/
+ios/build/
 
-# typescript
+# 👨‍💻 IDEs
+.vscode/
+*.iml
+
+# 🧠 TypeScript
 *.tsbuildinfo
 
+# 🧪 Testes ou exemplos (opcional)
 app-example
 
-# Database 
+# 🛢️ Banco de dados (dump)
 *.sql
 
-# Config file
-
+# 🔧 Configs sensíveis
 /config.js
