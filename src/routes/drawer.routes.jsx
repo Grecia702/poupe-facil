@@ -4,7 +4,7 @@ import React, { useContext } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { colorContext } from '../../context/colorScheme';
 import TabRoutes from './tab.router';
-import StackRoutes from './stack';
+// import StackRoutes from './stack';
 import Transactions from '../screens/Transactions'
 import Accounts from '../screens/Accounts'
 import CreditCards from '../screens/CreditCards'
@@ -14,6 +14,7 @@ import Goals from '../screens/Goals'
 import Charts from '../screens/Charts'
 import Logout from '../screens/Logout'
 import Settings from '../screens/Settings'
+import Profile from '../screens/Profile';
 
 const Drawer = createDrawerNavigator();
 export default function DrawerRoutes() {
@@ -31,8 +32,8 @@ export default function DrawerRoutes() {
                 },
                 headerStyle: {
                     backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E',
-                    borderBottomWidth: 1,
-                    borderColor: isDarkMode ? "rgba(240, 240, 240, 0.05)" : 'rgba(0, 0, 0, 0.05)',
+                    // borderBottomWidth: 1,
+                    // borderColor: isDarkMode ? "rgba(240, 240, 240, 0.05)" : 'rgba(0, 0, 0, 0.05)',
                 },
                 headerTintColor: isDarkMode ? 'white' : 'black',
                 drawerActiveTintColor: isDarkMode ? "#fff" : 'green',
@@ -47,7 +48,7 @@ export default function DrawerRoutes() {
                     </TouchableOpacity>,
             }} >
             <Drawer.Screen
-                name="home"
+                name="Início"
                 component={TabRoutes}
                 options={{
                     drawerIcon: ({ color, size }) => <MaterialIcons name="grid-view" size={size} color={color} />,
@@ -112,7 +113,7 @@ export default function DrawerRoutes() {
             />
             <Drawer.Screen
                 name="Perfil"
-                component={StackRoutes}
+                component={Profile}
                 options={{
                     drawerIcon: ({ color, size }) => <Feather name="user" color={color} size={size} />,
                     drawerLabel: 'Perfil',

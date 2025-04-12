@@ -1,9 +1,11 @@
 import { AuthProvider } from './context/authContext';
-import { ColorProvider } from './context/colorScheme';
 import Routes from './src/routes'
+import { ColorProvider } from './context/colorScheme';
+
 export default function App() {
 
     return (
+
         <AuthProvider>
             <ColorProvider>
                 <Routes />

@@ -23,14 +23,14 @@ export default function HomeScreen() {
   const [meses, setMeses] = useState(MESES[0].label);
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshing, setRefreshing] = useState(true);
-  const [count, setCount] = useState(0.05);
+  const [progress, setProgress] = useState(0.00);
   const navigation = useNavigation();
   const mensalExpense = EXPENSES[meses];
   const { isDarkMode } = useContext(colorContext)
 
   const upCount = () => {
-    if (count < 1) {
-      setCount(count => Math.round((count + 0.05) * 100) / 100);
+    if (progress < 1) {
+      setProgress(progress => Math.round((progress + 0.05) * 100) / 100);
     }
   }
 
@@ -62,12 +62,12 @@ export default function HomeScreen() {
   function findColor(props) {
     return CATEGORIAS.find(({ label }) => label === props).color
   }
-  const progress = 0.6
+
   return (
     <Container color={isDarkMode ? "rgb(26, 26, 26)" : "#c6ebe9"}>
       <Geral />
       <Wrapper>
-        <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Contas"} TextColor={isDarkMode ? "#e9e9e9" : "#202020"} >
+        <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Contas"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
 
           <Account name={'Conta Corrente'} color={isDarkMode ? "#e9e9e9" : "#f0eeee"} textColor={isDarkMode ? "#e9e9e9" : "#2c2c2c"} />
           <Account name={'Carteira'} color={isDarkMode ? "#e9e9e9" : "#f0eeee"} textColor={isDarkMode ? "#e9e9e9" : "#2c2c2c"} />
@@ -78,12 +78,12 @@ export default function HomeScreen() {
         </WidgetTeste>
 
 
-        <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Orçamento"} TextColor={isDarkMode ? "#e9e9e9" : "#202020"} >
+        <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Orçamento"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
           <Pressable onPress={() => upCount()} style={{ backgroundColor: 'red', width: 60, height: 30, justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: 600 }} >{count}</Text>
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: 600 }} >{progress}</Text>
           </Pressable>
-          <Pressable onPress={() => setCount(0)} style={{ backgroundColor: 'green', width: 60, height: 30, justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: 600 }} >{count}</Text>
+          <Pressable onPress={() => setProgress(0)} style={{ backgroundColor: 'green', width: 60, height: 30, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: 600 }} >{progress}</Text>
           </Pressable>
           <Progress.Circle
             borderWidth={4}
@@ -92,15 +92,15 @@ export default function HomeScreen() {
             size={150}
             thickness={15}
             direction={'counter-clockwise'}
-            color={'green'}
-            progress={count}
+            color={(progress < 0.8) ? '#03c21d' : "#f3a006"}
+            progress={progress}
             animated={true}
             showsText={true} />
         </WidgetTeste>
 
 
         <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Transações"}
-          TextColor={isDarkMode ? "#e9e9e9" : "#202020"}
+          TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"}
         >
           <Text onPress={() => navigation.navigate('Transações')}
             style={{
@@ -191,8 +191,8 @@ export default function HomeScreen() {
           }
         </View>
 
-        <WidgetTeste direction={'column'} gap={5} Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Metas"} TextColor={isDarkMode ? "#c4c4c4" : "#202020"} >
-          <Text style={{ alignSelf: 'center', color: 'white', fontSize: 18, fontWeight: '600', marginTop: 10 }}>Comprar um PC</Text>
+        <WidgetTeste direction={'column'} gap={5} Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Metas"} TextColor={isDarkMode ? "#c4c4c4" : "#3a3a3a"} >
+          <Text style={{ alignSelf: 'center', color: isDarkMode ? "#FFF" : "#132217", fontSize: 18, fontWeight: '600', marginTop: 10 }}>Comprar um PC</Text>
           <Progress.Bar
             height={20}
             width={320}
@@ -207,7 +207,7 @@ export default function HomeScreen() {
               {Math.round(progress * 100)}%
             </Text>
           </Progress.Bar>
-          <Text style={{ color: '#7bf185' }}>1660,00 de  40000,00</Text>
+          <Text style={{ color: isDarkMode ? '#7bf185' : '#215a26' }}>1660,00 de  40000,00</Text>
         </WidgetTeste>
       </Wrapper>
     </Container >

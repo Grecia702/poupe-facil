@@ -16,9 +16,15 @@ export const AuthProvider = ({ children }) => {
         setIsReady(true)
     };
 
-    const logout = () => {
-        Cookies.remove('jwtToken');
-        setIsLoggedIn(false);
+    const logout = async () => {
+        if (Platform.OS === 'web') {
+            Cookies.remove('jwtToken');
+            setIsLoggedIn(false);
+        }
+        else {
+            await SecureStore.deleteItemAsync('jwtToken');
+            setIsLoggedIn(false);
+        }
     };
 
     useEffect(() => {
@@ -27,34 +33,33 @@ export const AuthProvider = ({ children }) => {
                 if (Platform.OS === 'web') {
                     const token = Cookies.get('jwtToken');
                     setIsLoggedIn(!!token);
-                    setIsLoading(false);
                 }
                 else {
                     const token = await SecureStore.getItemAsync('jwtToken');
-                    console.log(token)
                     setIsLoggedIn(!!token)
-                    setIsLoading(false);
                 }
             }
             catch (error) {
                 console.error("Erro ao obter o token:", error);
             }
+            finally {
+                setIsLoading(false);
+                setIsReady(true)
+            }
         };
         checkCookies();
     }, []);
 
-
-
-    if (isLoading) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue' }}>
-                <Text>Carregando...</Text>
-            </View>
-        );
-    }
+    // if (isLoading) {
+    //     return (
+    //         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue' }}>
+    //             <Text>Carregando dados...</Text>
+    //         </View>
+    //     );
+    // }
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, isLoading, login, logout, setIsLoading, isReady }}>
+        <AuthContext.Provider value={{ isLoggedIn, isLoading, login, logout, isReady }}>
             {children}
         </AuthContext.Provider>
     );

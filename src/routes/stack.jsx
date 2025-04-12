@@ -2,22 +2,12 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/login';
 import React from 'react';
 import DrawerRoutes from './drawer.routes';
-import { useAuth } from '../../context/authContext';
 
 
 const Stack = createNativeStackNavigator();
 
 export default function StackRoutes() {
 
-    const { isLoggedIn, isLoading } = useAuth()
-
-    if (isLoading) {
-        return (
-            <View>
-                <Text>Carregando...</Text>
-            </View>
-        )
-    }
     return (
         <Stack.Navigator  >
             <Stack.Screen

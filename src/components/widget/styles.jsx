@@ -10,6 +10,7 @@ export const WidgetViewTeste = styled.View`
     padding: 20px;
     margin-top: 20px;
     justify-content: space-between;
+    align-items: center;
     flex-wrap: wrap;
     gap: ${({ gap = '15px' }) => gap};
 `;
@@ -21,3 +22,10 @@ export const SectionTitle = styled.Text`
     color:  ${({ color }) => color};
 
 `;
+
+export const StyledScroll = styled.ScrollView.attrs(() => ({
+    contentContainerStyle: {
+        padding: 10,
+        // marginTop: 20,
+    },
+}))``;

@@ -38,9 +38,6 @@ const Login = async (req, res) => {
                 message: 'Login bem-sucedido!'
             });
         }
-        else {
-            return res.status(401).json({ message: 'E-mail e/ou senha incorretos!' });
-        }
     }
     catch (err) {
         return res.status(500).json({ message: 'Erro ao processar a requisição', error: err.message });

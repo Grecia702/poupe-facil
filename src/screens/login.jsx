@@ -1,4 +1,4 @@
-import { Platform, StyleSheet, Text, View, SafeAreaView, TextInput, Pressable } from 'react-native';
+import { Platform, StyleSheet, Text, View, SafeAreaView, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import React, { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
@@ -23,14 +23,21 @@ const LoginScreen = () => {
 
 
     useEffect(() => {
-        if (isLoggedIn) {
+
+        if (isLoggedIn && !isLoading) {
             navigation.replace('home')
-            login()
         }
 
-    }, [isLoggedIn, isReady])
+    }, [isLoading, isLoggedIn])
 
 
+    if (isLoading || isLoggedIn) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#46bb50' }}>
+                <Text>Loading...</Text>
+            </View>
+        );
+    }
     // Requisição POST para login
     const handleLogin = async () => {
         try {
@@ -58,7 +65,7 @@ const LoginScreen = () => {
             }
         } catch (error) {
             if (error.response) {
-                console.log(error.response)
+                console.log(error.response.data.message)
                 setMessage(error.response.data.message || 'erro desconhecido do servidor');
             } else {
                 setMessage('Erro na requisição, tente novamente.');

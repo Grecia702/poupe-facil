@@ -18,7 +18,7 @@ export const SectionTitle = styled.Text`
     margin-bottom: 20px; 
 `;
 
-export const CardTransaction = styled.View`
+export const CardTransaction = styled.TouchableOpacity`
     flex-direction: row;
     width: 100%;
     justify-content: space-between;
