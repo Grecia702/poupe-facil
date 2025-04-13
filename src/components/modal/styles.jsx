@@ -7,9 +7,11 @@ export const Modal = styled.View`
     background-color: rgba(121, 115, 115, 0.5);
 `;
 
-export const ViewModal = styled.View`
- width: 350px; 
- height: 500px; 
+export const ViewModal = styled.ScrollView`
+ width: 350px;  
+ max-height: 500px;
+ flex-wrap: wrap;
+ flex-direction: column;
  background-color: white; 
  border-radius: 10px; 
  padding: 20px; 
@@ -21,7 +23,6 @@ export const TouchableOpacity = styled.TouchableOpacity`
     padding: 10px;
     background-color: ${({ color = 'red' }) => color};
     align-self: flex-end;
-
 `;
 
 export const TextModal = styled.Text`
@@ -59,12 +60,37 @@ export const Categorias = styled.View`
 `;
 
 export const Filtro = styled.TouchableOpacity`
-    padding: 10px;
-    border-left-width: 10px;
+    flex-direction: row;
+    align-items: center;
     background-color: #e2e2e2;
+    height: 40px;
+    padding-right: 10px;
+    background-color: ${({ selected, color }) => (selected ? color : "rgb(218, 218, 218)")};
     border-left-color: ${({ color }) => color};
-    /* background-color:${({ color }) => color}; */
+`;
+
+export const Tag = styled.View`
+  width: 8px;
+  height: 100%;
+  margin-right: 10px;
+  background: ${({ color }) => color};
+`;
+
+export const Categoria = styled.Text`
+    color: ${({ selected }) => (selected ? "white" : "black")};
+    font-size: ${({ selected }) => (selected ? "18px" : "16px")};
+    font-weight: ${({ selected }) => (selected ? "bold" : "500")};
 `;
 
 export const List = styled.FlatList`
+`;
+
+export const SearchButton = styled.TouchableOpacity`
+    width: auto;
+    height: auto;
+    padding: 10px;
+    background-color: ${({ color = 'red' }) => color};
+    margin-top: 20px;
+    margin-bottom: 50px;
+    align-self: flex-end;
 `;

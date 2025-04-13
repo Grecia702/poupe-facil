@@ -3,7 +3,6 @@ import styled from 'styled-components/native';
 export const Container = styled.ScrollView`
   flex: 1;
   width: 100%;
-  height: 200px;
   flex-direction: column;
   gap: 10px;
   background-color:${({ color }) => color};

@@ -176,7 +176,9 @@ export default function HomeScreen() {
               scrollEnabled={false}
               renderItem={({ item }) => (
 
+
                 <Card
+
                   // Função para buscar a cor do ITEM LABEL que está sendo renderizado na flatlist
                   color={findColor(item.label)}
                   title={item.label}

@@ -11,6 +11,7 @@ import { StyledScroll } from '../components/widget/styles';
 import { MaterialIcons } from '@expo/vector-icons'
 import { ScrollView } from 'react-native-web';
 import ModalView from '../components/modal';
+import { Teste } from '../components/modal/styles';
 
 const Transactions = ({ limit }) => {
     const [dados, setDados] = useState([])
@@ -53,8 +54,6 @@ const Transactions = ({ limit }) => {
         checkDados();
     }, []);
 
-    // const response = await axios.get(`${API_URL}/profile/transaction/list`)
-    // console.log(response.data)
     const renderItem = ({ item }) => {
 
         const formattedDate = moment(item.data_compra).format('DD/MM/YYYY')
@@ -97,21 +96,6 @@ const Transactions = ({ limit }) => {
             ListHeaderComponent={
                 <TouchableOpacity onPress={() => setModalVisible(true)} style={{ alignSelf: 'flex-end' }}>
                     <ModalTransactions />
-                    {/* <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={modalVisible}
-                        onRequestClose={() => setModalVisible(false)}
-                    >
-                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(121, 115, 115, 0.5)' }}>
-                            <View style={{ width: 300, height: 200, backgroundColor: 'white', borderRadius: 10, padding: 20 }}>
-                                <Text style={{ fontSize: 20, marginBottom: 20 }}>Este é um Modal!</Text>
-                                <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                    <Text style={{ color: 'blue', fontSize: 18 }}>Fechar Modal</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </Modal> */}
                     <MaterialIcons name="filter-alt" size={24} color="black" />
                 </TouchableOpacity>
             }
@@ -134,8 +118,5 @@ const styles = StyleSheet.create({
         paddingRight: 20,
         paddingTop: 40,
         flexDirection: 'column',
-        // gap: 10,
     }
-
-
 })

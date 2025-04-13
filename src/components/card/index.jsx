@@ -14,7 +14,7 @@ export default function Card({ color, title, text, subtext, onPress, selected })
             <Tag color={color} />
             <Title color={isDarkMode ? "white" : "rgb(43, 43, 43)"}>{title}</Title>
             <Text color={isDarkMode ? "white" : "rgb(43, 43, 43)"}>R${text}</Text>
-            <SubText color={isDarkMode ? "white" : "rgb(43, 43, 43)"}>{subtext}</SubText>
+            {/* <SubText color={isDarkMode ? "white" : "rgb(43, 43, 43)"}>{subtext}</SubText> */}
         </Container>
     );
 }
