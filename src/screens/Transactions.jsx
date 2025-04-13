@@ -9,6 +9,8 @@ import TransactionCard from '../components/transactions';
 import { API_URL } from '@env'
 import { StyledScroll } from '../components/widget/styles';
 import { MaterialIcons } from '@expo/vector-icons'
+import { ScrollView } from 'react-native-web';
+import ModalView from '../components/modal';
 
 const Transactions = ({ limit }) => {
     const [dados, setDados] = useState([])
@@ -83,14 +85,8 @@ const Transactions = ({ limit }) => {
                 visible={modalVisible}
                 onRequestClose={() => setModalVisible(false)}
             >
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(121, 115, 115, 0.5)' }}>
-                    <View style={{ width: 300, height: 200, backgroundColor: 'white', borderRadius: 10, padding: 20 }}>
-                        <Text style={{ fontSize: 20, marginBottom: 20 }}>Este é um Modal!</Text>
-                        <TouchableOpacity onPress={() => setModalVisible(false)}>
-                            <Text style={{ color: 'blue', fontSize: 18 }}>Fechar Modal</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
+                <ModalView onPress={() => setModalVisible(false)}>
+                </ModalView>
             </Modal>
 
         );
