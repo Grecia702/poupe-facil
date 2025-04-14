@@ -116,23 +116,21 @@ export default function ModalView({ onPress, color }) {
         }
     };
 
-    function makeFilter(valor, date, categoria) {
-        const filtros = [];
 
-        if (date !== '') filtros.push("Data");
-        if (valor !== '') filtros.push("Valor");
-        if (categoria !== '') filtros.push(`${categoria}`);
 
-        console.log("Filtros ativos:", filtros);
+    function makeFilter(valor, date, categorias) {
+        const valorNumber = valor !== '' ? parseFloat(valor) : null;
+
+        const filtragem = ficticionalArr.filter(item => {
+            const matchDate = date === '' || item.data_compra.startsWith(date);
+            const matchValor = valor === '' || item.valor === valorNumber;
+            const matchCategoria = categorias.length === 0 || categorias.includes(item.categoria);
+
+            return matchDate && matchValor && matchCategoria;
+        });
+
+        console.log("Resultado da filtragem:", filtragem);
     }
-
-    // function filtraDados(valor, date) {
-    //     const filtered = ficticionalArr.filter(item => (item.valor > valor && (item.data_compra).split('T')[0] < date)
-    //     )
-    //     filtered.map((item) => {
-    //         console.log("Transação: ", item.transaction_id, " Valor: ", item.valor, " data: ", item.data_compra.split('T')[0])
-    //     })
-    // }
 
     return (
         <Modal>
