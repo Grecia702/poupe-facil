@@ -6,17 +6,17 @@ import { Picker } from '@react-native-picker/picker';
 import { CATEGORIAS } from '../utils/categorias'
 import { EXPENSES } from '../utils/expenses'
 import { Container, Title, TextParagraph, DropDown, Wrapper, Temp } from '../components/main/styles';
-import Card from '../components/card';
+import Card from '@components/card';
 import { MESES } from '../utils/months';
 import ContentLoader, { Rect } from 'react-content-loader/native'
-import Geral from '../components/header';
-import PieChart from '../components/pieChart';
-import { WidgetView } from '../components/transactions/styles';
+import Geral from '@components/header';
+import PieChart from '@components/pieChart';
+import { WidgetView } from '@components/transactions/styles';
 import { useNavigation } from '@react-navigation/native';
-import TransactionCard from '../components/transactions';
-import WidgetTeste from '../components/widget';
-import Account from '../components/accounts';
-import { Separator } from '../components/accounts/styles';
+import TransactionCard from '@components/transactions';
+import WidgetTeste from '@components/widget';
+import Account from '@components/accounts';
+import { Separator } from '@components/accounts/styles';
 import * as Progress from 'react-native-progress';
 
 export default function HomeScreen() {

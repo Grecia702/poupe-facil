@@ -50,14 +50,6 @@ export const AuthProvider = ({ children }) => {
         checkCookies();
     }, []);
 
-    // if (isLoading) {
-    //     return (
-    //         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue' }}>
-    //             <Text>Carregando dados...</Text>
-    //         </View>
-    //     );
-    // }
-
     return (
         <AuthContext.Provider value={{ isLoggedIn, isLoading, login, logout, isReady }}>
             {children}

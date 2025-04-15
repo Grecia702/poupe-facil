@@ -1,61 +1,19 @@
-import { StyleSheet, Text, View, FlatList, Platform, TouchableOpacity, Modal } from 'react-native'
-import React, { useState, useEffect, useContext } from 'react'
-import axios from 'axios';
-import { colorContext } from '../../context/colorScheme'
-import Cookies from 'js-cookie';
-import * as SecureStore from 'expo-secure-store';
-import moment from 'moment'
-import TransactionCard from '../components/transactions';
-import { API_URL } from '@env'
-import { StyledScroll } from '../components/widget/styles';
+import { StyleSheet, FlatList, TouchableOpacity, Modal, Text } from 'react-native'
+import React, { useState, useContext } from 'react'
 import { MaterialIcons } from '@expo/vector-icons'
-import { ScrollView } from 'react-native-web';
-import ModalView from '../components/modal';
-import { Teste } from '../components/modal/styles';
+import { TransactionContext } from '@context/transactionsContext';
+import { colorContext } from '@context/colorScheme'
+import TransactionCard from '@components/transactions';
+import { StyledScroll } from '@components/widget/styles';
+import ModalView from '@components/modal';
+import moment from 'moment';
 
 const Transactions = ({ limit }) => {
-    const [dados, setDados] = useState([])
     const [modalVisible, setModalVisible] = useState(false);
     const { isDarkMode } = useContext(colorContext);
-
-    const checkDados = async () => {
-
-        if (Platform.OS === 'web') {
-            const token = Cookies.get('jwtToken');
-
-            if (!token) {
-                console.log("Token não encontrado.");
-                return;
-            }
-        } else if (Platform.OS === 'android') {
-
-            const token = await SecureStore.getItemAsync('jwtToken');
-            if (!token) {
-                console.log("Token mobile não encontrado.");
-                return;
-            }
-        }
-
-        try {
-            const response = await axios.get(`${API_URL}/profile/transaction/list`, {
-                withCredentials: true
-            });
-
-            if (response.status === 200) {
-                setDados(response.data);
-            }
-        }
-        catch (error) {
-            console.log("Erro ao fazer requisição:", error);
-        }
-    }
-
-    useEffect(() => {
-        checkDados();
-    }, []);
+    const { dados, checkDados } = useContext(TransactionContext);
 
     const renderItem = ({ item }) => {
-
         const formattedDate = moment(item.data_compra).format('DD/MM/YYYY')
         if (item.tipo === "Despesa") {
             return (
@@ -67,7 +25,6 @@ const Transactions = ({ limit }) => {
         } else {
 
             return (
-
                 <StyledScroll>
                     <TransactionCard iconName="directions-car" color={'#2563EB'} state={isDarkMode} category={item.categoria} date={formattedDate} value={item.valor} />
                 </StyledScroll>
@@ -94,10 +51,15 @@ const Transactions = ({ limit }) => {
         <FlatList
             contentContainerStyle={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}
             ListHeaderComponent={
-                <TouchableOpacity onPress={() => setModalVisible(true)} style={{ alignSelf: 'flex-end' }}>
-                    <ModalTransactions />
-                    <MaterialIcons name="filter-alt" size={24} color="black" />
-                </TouchableOpacity>
+                <>
+                    <TouchableOpacity onPress={() => setModalVisible(true)} style={{ alignSelf: 'flex-end', flexDirection: 'row', gap: 20 }}>
+                        <ModalTransactions />
+                        <MaterialIcons name="filter-alt" size={24} color="black" />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => checkDados()} style={{ backgroundColor: 'blue', alignSelf: 'flex-end' }} >
+                        <Text>Resetar Filtros!</Text>
+                    </TouchableOpacity>
+                </>
             }
             data={dados.slice(0, limit)}
             keyExtractor={(item) => item.transaction_id}

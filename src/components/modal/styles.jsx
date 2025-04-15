@@ -21,8 +21,22 @@ export const TouchableOpacity = styled.TouchableOpacity`
     width: auto;
     height: auto;
     padding: 10px;
-    background-color: ${({ color = 'red' }) => color};
+    background-color: ${({ selected, color }) => (selected ? color : "rgb(218, 218, 218)")};
     align-self: flex-end;
+`;
+
+export const ActiveFilters = styled(TouchableOpacity)`
+    width: auto;
+    height: auto;
+    padding: 10px;
+    background-color: ${({ color }) => color};
+    
+`;
+
+export const ActiveText = styled.Text`
+    font-size: 18px;
+    font-weight: 500;
+    color: ${({ color }) => color};
 `;
 
 export const TextModal = styled.Text`
@@ -32,11 +46,12 @@ export const TextModal = styled.Text`
 `;
 
 export const Text = styled.Text`
-    font-size: 16px;
+    font-size: 16;
+    color: ${({ selected, color }) => (selected ? color : "rgb(27, 27, 27)")};
 `;
 
 export const Title = styled.Text`
-    font-size: 24px;
+    font-size: 20px;
     font-weight: bold;
     margin-top: 20px;
     margin-bottom: 10px;
