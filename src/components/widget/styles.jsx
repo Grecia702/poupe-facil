@@ -25,7 +25,6 @@ export const SectionTitle = styled.Text`
 
 export const StyledScroll = styled.ScrollView.attrs(() => ({
     contentContainerStyle: {
-        padding: 10,
-        // marginTop: 20,
+        paddingVertical: 10,
     },
 }))``;

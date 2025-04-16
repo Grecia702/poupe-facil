@@ -64,7 +64,6 @@ export default function ModalView({ onPress }) {
 
     const removeItem = (id) => {
         const novaLista = filtros.filter((_, index) => index !== id);
-        console.log("nova lista: ", novaLista)
         setFiltros(novaLista);
 
     }
@@ -92,8 +91,6 @@ export default function ModalView({ onPress }) {
         onPress()
         return filtragem;
     }
-
-    console.log(filtros)
 
     return (
         <Modal>
