@@ -46,7 +46,7 @@ export const TextModal = styled.Text`
 `;
 
 export const Text = styled.Text`
-    font-size: 16;
+    font-size: 16px;
     color: ${({ selected, color }) => (selected ? color : "rgb(27, 27, 27)")};
 `;
 

@@ -16,14 +16,10 @@ import { useWindowDimensions } from 'react-native';
 const Transactions = ({ limit }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-
+    // const [isLoading, setIsLoading] = useState(true);
     const { dadosAPI, checkDadosAPI } = useContext(TransactionContext);
     const [dadosFiltrados, setDadosFiltrados] = useState([]);
-
     const { isDarkMode } = useContext(colorContext);
-    const { height, width } = useWindowDimensions();
-
     const [filtrosChips, setFiltrosChips] = useState([]);
     const [filtrosCategorias, setFiltrosCategorias] = useState({
         categorias: [],
@@ -31,14 +27,14 @@ const Transactions = ({ limit }) => {
         operador: null,
         data: null
     })
-
+    const { height, width } = useWindowDimensions();
     const rectHeight = 30;
     const rectWidth = 100;
     const radius = 18;
     const priceWidth = 70;
 
     const loadData = async () => {
-        setIsLoading(true);
+        setRefreshing(true);
         await checkDadosAPI();
         setFiltrosCategorias({
             categorias: [],
@@ -51,7 +47,7 @@ const Transactions = ({ limit }) => {
         setFiltrosChips([])
 
         setTimeout(() => {
-            setIsLoading(false);
+            setRefreshing(false);
         }, 500);
 
     };
@@ -124,10 +120,13 @@ const Transactions = ({ limit }) => {
             ...filtrosCategorias,
             categorias: filtrosCategorias.categorias.filter(item => item !== categoria),
         };
+
         setFiltrosChips(novosChips);
         setFiltrosCategorias(novoFiltroCategoria);
         filterDadosApi(novoFiltroCategoria);
     };
+
+    console.log(filtrosCategorias)
 
     const ModalTransactions = () => {
         return (
@@ -137,19 +136,16 @@ const Transactions = ({ limit }) => {
                 visible={modalVisible}
                 onRequestClose={() => setModalVisible(false)}
             >
-                <ModalView onPress={() => setModalVisible(false)}
+                <ModalView setModalVisible={setModalVisible}
                     setFiltrosAtivos={setFiltrosChips}
                     setTesteFiltros={setFiltrosCategorias}
-                >
-                </ModalView>
+                />
             </Modal>
-
         );
     }
-
     return (
         <>
-            {refreshing || isLoading ? (
+            {refreshing ? (
                 <View style={{ flex: 1, backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E' }}>
                     <View style={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}>
                         <View style={{ position: 'relative', width: '100%', height: height }}>
@@ -211,43 +207,46 @@ const Transactions = ({ limit }) => {
                     onRefresh={loadData}
                     style={{ backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E' }}
                     ListHeaderComponent={
-                        <View style={[styles.ListHeader]}>
+                        <>
+                            <View style={[styles.ListHeader]}>
 
-                            <View style={{ flexDirection: 'row', alignSelf: 'flex-end', gap: 5 }}>
-                                <TouchableOpacity onPress={() => setModalVisible(true)} style={{ flexDirection: 'row', padding: 5, borderColor: isDarkMode ? "#DDD" : "#111", borderWidth: 2, borderRadius: 5 }}>
-                                    <ModalTransactions />
-                                    <MaterialIcons name="filter-alt" size={24} color={isDarkMode ? "#DDD" : "#111"} />
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={() => console.log("sort")} style={{ flexDirection: 'row', padding: 5, borderColor: isDarkMode ? "#DDD" : "#111", borderWidth: 2, borderRadius: 5 }}>
-                                    <ModalTransactions />
-                                    <MaterialIcons name="sort" size={24} color={isDarkMode ? "#DDD" : "#111"} />
-                                </TouchableOpacity>
+                                <View style={{ flexDirection: 'row', alignSelf: 'flex-end', gap: 5 }}>
+                                    <TouchableOpacity onPress={() => setModalVisible(true)} style={{ flexDirection: 'row', padding: 5, borderColor: isDarkMode ? "#DDD" : "#111", borderWidth: 2, borderRadius: 5 }}>
+                                        <MaterialIcons name="filter-alt" size={24} color={isDarkMode ? "#DDD" : "#111"} />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => console.log("sort")} style={{ flexDirection: 'row', padding: 5, borderColor: isDarkMode ? "#DDD" : "#111", borderWidth: 2, borderRadius: 5 }}>
+                                        <MaterialIcons name="sort" size={24} color={isDarkMode ? "#DDD" : "#111"} />
+                                    </TouchableOpacity>
+                                </View>
+
+                                {
+                                    filtrosChips.length > 0 ?
+                                        <>
+                                            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+                                                <Text style={{ fontSize: 16, alignSelf: 'flex-end', fontWeight: 'bold', color: isDarkMode ? "#EEE" : '#08380e' }}>Filtros Ativos: </Text>
+                                                {filtrosChips.map((item, index) =>
+                                                    <TouchableOpacity key={index} style={{ backgroundColor: "#508bc5", padding: 5, }} onPress={() => removeFiltro(item)}>
+                                                        <Text style={{ color: "white", fontSize: 14 }}>{item}</Text>
+                                                    </TouchableOpacity>
+                                                )}
+                                            </View>
+
+                                            <TouchableOpacity onPress={() => { setFiltrosChips([]); loadData() }} style={{ backgroundColor: '#c44343', alignSelf: 'flex-start', padding: 10, borderRadius: 5 }} >
+                                                <Text style={{ color: "white", fontSize: 14, fontWeight: 500 }}>Resetar Filtros!</Text>
+                                            </TouchableOpacity>
+                                        </>
+                                        : null
+                                }
                             </View>
-
-                            {
-                                filtrosChips.length > 0 ?
-                                    <>
-                                        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-                                            <Text style={{ fontSize: 16, alignSelf: 'flex-end', fontWeight: 'bold', color: isDarkMode ? "#EEE" : '#08380e' }}>Filtros Ativos: </Text>
-                                            {filtrosChips.map((item, index) =>
-                                                <TouchableOpacity key={index} style={{ backgroundColor: "#508bc5", padding: 5, }} onPress={() => removeFiltro(item)}>
-                                                    <Text style={{ color: "white", fontSize: 14 }}>{item}</Text>
-                                                </TouchableOpacity>
-                                            )}
-                                        </View>
-
-                                        <TouchableOpacity onPress={() => { setFiltrosChips([]); loadData() }} style={{ backgroundColor: '#c44343', alignSelf: 'flex-start', padding: 10, borderRadius: 5 }} >
-                                            <Text style={{ color: "white", fontSize: 14, fontWeight: 500 }}>Resetar Filtros!</Text>
-                                        </TouchableOpacity>
-                                    </>
-                                    : null
-                            }
-
-                        </View>
+                            <ModalTransactions />
+                        </>
                     }
 
-                />)}
+                />
+
+            )}
         </>
+
     );
 }
 

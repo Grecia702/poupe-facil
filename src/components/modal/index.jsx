@@ -1,6 +1,7 @@
 import React, { useState, useContext, useMemo, useCallback, useEffect } from "react";
 import { View } from "react-native";
 import { Calendar } from 'react-native-calendars';
+import { ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import {
     Modal, ViewModal, TouchableOpacity, TextModal,
     Categoria, Text, Filtro, List, Title, TextInput,
@@ -9,7 +10,7 @@ import {
 
 // TODO: Adicionar mais opções de filtragem, refatorar e otimizar
 
-export default function ModalView({ onPress, setTesteFiltros }) {
+export default function ModalView({ setModalVisible, setTesteFiltros }) {
     const data = [
         { id: '1', categoria: 'Contas', color: 'rgb(46, 124, 57)' },
         { id: '2', categoria: 'Lazer', color: 'rgb(202, 206, 5)' },
@@ -73,9 +74,12 @@ export default function ModalView({ onPress, setTesteFiltros }) {
                 return acc;
             }, {})
         ));
-        onPress();
+        setModalVisible(false)
     };
 
+    console.log(data.map(item => {
+        return item.categoria
+    }))
     const FiltrosAtivos = React.memo(({ filtros, removeItem }) => {
         return (
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
@@ -87,34 +91,35 @@ export default function ModalView({ onPress, setTesteFiltros }) {
             </View>
         );
     });
-    const ListaCategorias = React.memo(({ data, categoriasSelecionadas, toggleCategoria, toggleFilters }) => {
-        return (
-            <List
-                data={data}
-                keyExtractor={(item) => item.id}
-                scrollEnabled={false}
-                renderItem={({ item }) => (
-                    <Filtro
-                        color={item.color}
-                        onPress={() => {
-                            toggleCategoria(item.categoria);
-                            toggleFilters(item.categoria);
-                        }}
-                        selected={categoriasSelecionadas.includes(item.categoria)}
-                    >
-                        <Tag color={item.color} />
-                        <Categoria selected={categoriasSelecionadas.includes(item.categoria)}>{item.categoria}</Categoria>
-                    </Filtro>
-                )}
-                contentContainerStyle={{
-                    marginTop: 10,
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    gap: 15,
-                }}
-            />
-        );
-    });
+    // const ListaCategorias = React.memo(({ data, categoriasSelecionadas, toggleCategoria, toggleFilters }) => {
+
+    //     return (
+    //         <List
+    //             data={data}
+    //             keyExtractor={(item) => item.id}
+    //             scrollEnabled={false}
+    //             renderItem={({ item }) => (
+    //                 <Filtro
+    //                     color={item.color}
+    //                     onPress={() => {
+    //                         toggleCategoria(item.categoria);
+    //                         toggleFilters(item.categoria);
+    //                     }}
+    //                     selected={categoriasSelecionadas.includes(item.categoria)}
+    //                 >
+    //                     <Tag color={item.color} />
+    //                     <Categoria selected={categoriasSelecionadas.includes(item.categoria)}>{item.categoria}</Categoria>
+    //                 </Filtro>
+    //             )}
+    //             contentContainerStyle={{
+    //                 marginTop: 10,
+    //                 flexDirection: 'row',
+    //                 flexWrap: 'wrap',
+    //                 gap: 15,
+    //             }}
+    //         />
+    //     );
+    // });
 
     const CalendarioFiltro = React.memo(({ date, onSelectDate }) => {
         return (
@@ -153,52 +158,69 @@ export default function ModalView({ onPress, setTesteFiltros }) {
     }, [filtros]);
 
 
+    const MapeiaCategorias = React.memo(() => {
+        return (
+            <>
+                <Title>Categorias</Title>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 15 }}>
+                    {data.map((item, key) => (
+                        <Filtro
+                            key={key}
+                            color={item.color}
+                            onPress={() => {
+                                toggleCategoria(item.categoria);
+                                toggleFilters(item.categoria);
+                            }}
+                            selected={categoriasSelecionadas.includes(item.categoria)}
+                        >
+                            <Tag color={item.color} />
+                            <Categoria selected={categoriasSelecionadas.includes(item.categoria)}>
+                                {item.categoria}
+                            </Categoria>
+                        </Filtro>
+                    ))}
+                </View>
+            </>
+        )
+    })
     return (
         <Modal>
-            <ViewModal>
-                <TouchableOpacity onPress={onPress}>
-                    <TextModal>X</TextModal>
-                </TouchableOpacity>
-                <Title>Filtros Ativos: </Title>
-                <FiltrosAtivos filtros={filtros} removeItem={handleRemoveItem} />
-                <Title>Valor</Title>
-                <TextInput placeholder="Valor" keyboardType="numeric" value={valor}
-                    onChangeText={(texto) => {
-                        setValor(texto)
-                    }}
-                />
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+                <ViewModal>
+                    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+                        <TouchableOpacity onPress={() => setModalVisible(false)}>
+                            <TextModal>X</TextModal>
+                        </TouchableOpacity>
+                        <Title>Filtros Ativos: </Title>
+                        <FiltrosAtivos filtros={filtros} removeItem={handleRemoveItem} />
+                        <Title>Valor</Title>
+                        <TextInput placeholder="Valor" keyboardType="numeric" value={valor}
+                            onChangeText={(texto) => setValor(texto)} />
+                        <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+                            <TouchableOpacity color={'#1976D2'} onPress={() => toggleOperator("Lesser")} selected={operator === "Lesser"}>
+                                <Text color={"white"} selected={operator === "Lesser"}>{'<'} Menor que {'>'}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity color={'#1976D2'} onPress={() => toggleOperator("Greater")} selected={operator === "Greater"}>
+                                <Text color={"white"} selected={operator === "Greater"}>{'>'} Maior que {'<'}</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <MapeiaCategorias />
 
-                <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
-                    <TouchableOpacity color={'#1976D2'} onPress={() => toggleOperator("Lesser")} selected={operator === "Lesser"}>
-                        <Text color={"white"} selected={operator === "Lesser"}>{'<'} Menor que {'>'}</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity color={'#1976D2'} onPress={() => toggleOperator("Greater")} selected={operator === "Greater"}>
-                        <Text color={"white"} selected={operator === "Greater"}>{'>'} Maior que {'<'}</Text>
-                    </TouchableOpacity>
-                </View>
-                <Title>Data</Title>
-
-                <CalendarioFiltro date={date} onSelectDate={onSelectDate} />
-
-                <Title>Categorias</Title>
-                <ListaCategorias
-                    data={data}
-                    categoriasSelecionadas={categoriasSelecionadas}
-                    toggleCategoria={toggleCategoria}
-                    toggleFilters={toggleFilters}
-                />
-                <SearchButton color={'green'} onPress={() => {
-                    adicionarVariosFiltros({
-                        categorias: categoriasSelecionadas,
-                        valor: valor,
-                        operador: operator,
-                        data: date
-                    })
-                }}>
-                    <TextModal>Buscar</TextModal>
-                </SearchButton>
-            </ViewModal>
+                        <Title>Data</Title>
+                        <CalendarioFiltro date={date} onSelectDate={onSelectDate} />
+                        <SearchButton color={'green'} onPress={() => {
+                            adicionarVariosFiltros({
+                                categorias: categoriasSelecionadas,
+                                valor: valor,
+                                operador: operator,
+                                data: date
+                            })
+                        }}>
+                            <TextModal>Buscar</TextModal>
+                        </SearchButton>
+                    </ScrollView>
+                </ViewModal>
+            </KeyboardAvoidingView>
         </Modal>
-    )
+    );
 }
