@@ -10,40 +10,54 @@ import moment from 'moment';
 import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
 import { useWindowDimensions } from 'react-native';
 
+
+// TODO: rotas de criação/edição/exclusão de transações, implementar função de SORT, refatorar e otimizar
+
 const Transactions = ({ limit }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
-
-    const [filtrosAtivos, setFiltrosAtivos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const { dados, checkDados } = useContext(TransactionContext);
+
+    const { dadosAPI, checkDadosAPI } = useContext(TransactionContext);
+    const [dadosFiltrados, setDadosFiltrados] = useState([]);
+
     const { isDarkMode } = useContext(colorContext);
     const { height, width } = useWindowDimensions();
 
-    // console.log("dados filtrados:", dados)
+    const [filtrosChips, setFiltrosChips] = useState([]);
+    const [filtrosCategorias, setFiltrosCategorias] = useState({
+        categorias: [],
+        valor: null,
+        operador: null,
+        data: null
+    })
 
     const rectHeight = 30;
     const rectWidth = 100;
     const radius = 18;
     const priceWidth = 70;
 
-    // const limitedData = useMemo(() => {
-    //     return dados.slice(0, limit);
-    // }, [dados, limit]);
-
     const loadData = async () => {
         setIsLoading(true);
-        await checkDados();
+        await checkDadosAPI();
+        setFiltrosCategorias({
+            categorias: [],
+            valor: null,
+            operador: null,
+            data: null
+        });
+
+        setDadosFiltrados(dadosAPI);
+        setFiltrosChips([])
+
         setTimeout(() => {
             setIsLoading(false);
         }, 500);
+
     };
     useEffect(() => {
         loadData();
     }, []);
-
-
-
 
 
     const renderItem = ({ item }) => {
@@ -65,30 +79,56 @@ const Transactions = ({ limit }) => {
         }
     };
 
-    console.log(filtrosAtivos)
-    const removeItem = (id) => {
-        const novaLista = filtrosAtivos.filter((_, index) => index !== id);
-        setFiltrosAtivos(novaLista);
+    useEffect(() => {
+        const aplicarFiltrosAtivos = () => {
+            const retorno = Object.entries(filtrosCategorias)
+                .map(([key, value]) => {
+                    if (Array.isArray(value) && value.length > 0) {
+                        return value.map(item => item);
+                    } else if (value !== null) {
+                        return value;
+                    }
+                    return [];
+                })
+                .flat();
+            setFiltrosChips(retorno);
+            filterDadosApi(filtrosCategorias)
+            console.log("Rodou!")
+        };
+        aplicarFiltrosAtivos();
+    }, [filtrosCategorias])
+
+    const filterDadosApi = (filtrosCategorias) => {
+        const { valor, data, categorias, operador } = filtrosCategorias;
+        const valorNumber = valor !== '' ? parseFloat(valor) : null;
+        const filtragem = dadosAPI.filter(item => {
+            const itemValor = parseFloat(item.valor);
+            let matchValor = true;
+            if (valorNumber !== null) {
+                if (operador === 'Lesser') {
+                    matchValor = itemValor < valorNumber;
+                } else if (operador === 'Greater') {
+                    matchValor = itemValor > valorNumber;
+                }
+            }
+            const matchDate = !data || item.data_compra.startsWith(data);
+            const matchCategoria = categorias.length === 0 || categorias.includes(item.categoria);
+            return matchValor && matchDate && matchCategoria;
+        });
+        setDadosFiltrados(filtragem);
     }
 
-    // function makeFilter(filtros) {
-    //     const valorNumber = valor !== '' ? parseFloat(valor) : null;
-    //     const filtragem = dados.filter(item => {
-    //         const itemValor = parseFloat(item.valor);
-    //         let matchValor;
-    //         if (valorNumber === null) {
-    //             matchValor = true;
-    //         } else if (operator === 'Lesser') {
-    //             matchValor = itemValor < valorNumber;
-    //         } else {
-    //             matchValor = itemValor > valorNumber;
-    //         }
-    //         const matchDate = date === '' || item.data_compra.startsWith(date);
-    //         const matchCategoria = categorias.length === 0 || categorias.includes(item.categoria);
-    //         return matchValor && matchDate && matchCategoria;
-    //     });
-    //     setDados(filtragem)
-    // }
+    const removeFiltro = (categoria) => {
+        const novosChips = filtrosChips.filter(item => item !== categoria);
+        const novoFiltroCategoria = {
+            ...filtrosCategorias,
+            categorias: filtrosCategorias.categorias.filter(item => item !== categoria),
+        };
+        setFiltrosChips(novosChips);
+        setFiltrosCategorias(novoFiltroCategoria);
+        filterDadosApi(novoFiltroCategoria);
+    };
+
     const ModalTransactions = () => {
         return (
             <Modal
@@ -98,8 +138,8 @@ const Transactions = ({ limit }) => {
                 onRequestClose={() => setModalVisible(false)}
             >
                 <ModalView onPress={() => setModalVisible(false)}
-                    setFiltrosAtivos={setFiltrosAtivos}
-                // applyFilters={makeFilter}
+                    setFiltrosAtivos={setFiltrosChips}
+                    setTesteFiltros={setFiltrosCategorias}
                 >
                 </ModalView>
             </Modal>
@@ -164,7 +204,7 @@ const Transactions = ({ limit }) => {
 
                 <FlatList
                     contentContainerStyle={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}
-                    data={dados}
+                    data={dadosFiltrados}
                     keyExtractor={(item) => item.transaction_id}
                     renderItem={renderItem}
                     refreshing={refreshing}
@@ -173,39 +213,30 @@ const Transactions = ({ limit }) => {
                     ListHeaderComponent={
                         <View style={[styles.ListHeader]}>
 
-                            <View style={{ flexDirection: 'row', alignSelf: 'flex-end', backgroundColor: "#00ff88aa", gap: 5 }}>
-                                <TouchableOpacity onPress={() => setModalVisible(true)} style={{ flexDirection: 'row', backgroundColor: "#ff00ffaa" }}>
+                            <View style={{ flexDirection: 'row', alignSelf: 'flex-end', gap: 5 }}>
+                                <TouchableOpacity onPress={() => setModalVisible(true)} style={{ flexDirection: 'row', padding: 5, borderColor: isDarkMode ? "#DDD" : "#111", borderWidth: 2, borderRadius: 5 }}>
                                     <ModalTransactions />
-                                    <MaterialIcons name="filter-alt" size={24} color="black" />
+                                    <MaterialIcons name="filter-alt" size={24} color={isDarkMode ? "#DDD" : "#111"} />
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => setModalVisible(true)} style={{ flexDirection: 'row', backgroundColor: "#ff00ffaa" }}>
+                                <TouchableOpacity onPress={() => console.log("sort")} style={{ flexDirection: 'row', padding: 5, borderColor: isDarkMode ? "#DDD" : "#111", borderWidth: 2, borderRadius: 5 }}>
                                     <ModalTransactions />
-                                    <MaterialIcons name="sort" size={24} color="black" />
-                                </TouchableOpacity>
-
-                                <TouchableOpacity onPress={() => upCount()} style={{ flexDirection: 'row', backgroundColor: "#ff00ffaa" }}>
-                                    <ModalTransactions />
-                                    <MaterialIcons name="add" size={24} color="red" />
-                                </TouchableOpacity>
-
-                                <TouchableOpacity style={{ flexDirection: 'row', backgroundColor: "#ff00ffaa", padding: 10 }}>
-                                    <Text style={{ fontSize: 20 }}>{count}</Text>
+                                    <MaterialIcons name="sort" size={24} color={isDarkMode ? "#DDD" : "#111"} />
                                 </TouchableOpacity>
                             </View>
 
                             {
-                                filtrosAtivos.length > 0 ?
+                                filtrosChips.length > 0 ?
                                     <>
                                         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
                                             <Text style={{ fontSize: 16, alignSelf: 'flex-end', fontWeight: 'bold', color: isDarkMode ? "#EEE" : '#08380e' }}>Filtros Ativos: </Text>
-                                            {filtrosAtivos.map((item, index) =>
-                                                <TouchableOpacity key={index} style={{ backgroundColor: "#508bc5", padding: 5, }} onPress={() => removeItem(index)}>
+                                            {filtrosChips.map((item, index) =>
+                                                <TouchableOpacity key={index} style={{ backgroundColor: "#508bc5", padding: 5, }} onPress={() => removeFiltro(item)}>
                                                     <Text style={{ color: "white", fontSize: 14 }}>{item}</Text>
                                                 </TouchableOpacity>
                                             )}
                                         </View>
 
-                                        <TouchableOpacity onPress={() => { setFiltrosAtivos([]); loadData() }} style={{ backgroundColor: '#c44343', alignSelf: 'flex-start', padding: 10, borderRadius: 5 }} >
+                                        <TouchableOpacity onPress={() => { setFiltrosChips([]); loadData() }} style={{ backgroundColor: '#c44343', alignSelf: 'flex-start', padding: 10, borderRadius: 5 }} >
                                             <Text style={{ color: "white", fontSize: 14, fontWeight: 500 }}>Resetar Filtros!</Text>
                                         </TouchableOpacity>
                                     </>

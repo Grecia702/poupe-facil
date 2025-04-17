@@ -6,9 +6,9 @@ import axios from 'axios';
 export const TransactionContext = createContext();
 
 export const TransactionProvider = ({ children }) => {
-    const [dados, setDados] = useState([])
+    const [dadosAPI, setDadosAPI] = useState([])
 
-    const checkDados = async () => {
+    const checkDadosAPI = async () => {
         const token = await SecureStore.getItemAsync('jwtToken');
         if (!token) {
             console.log("Token mobile não encontrado.");
@@ -19,7 +19,7 @@ export const TransactionProvider = ({ children }) => {
                 withCredentials: true
             });
             if (response.status === 200) {
-                setDados(response.data);
+                setDadosAPI(response.data);
             }
         }
         catch (error) {
@@ -28,11 +28,11 @@ export const TransactionProvider = ({ children }) => {
     }
 
     useEffect(() => {
-        checkDados();
+        checkDadosAPI();
     }, []);
 
     return (
-        <TransactionContext.Provider value={{ dados, setDados, checkDados }} >
+        <TransactionContext.Provider value={{ dadosAPI, setDadosAPI, checkDadosAPI }} >
             {children}
         </TransactionContext.Provider >
     )
