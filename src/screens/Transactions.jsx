@@ -13,26 +13,38 @@ import { useWindowDimensions } from 'react-native';
 const Transactions = ({ limit }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+
+    const [filtrosAtivos, setFiltrosAtivos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const { dados, checkDados } = useContext(TransactionContext);
     const { isDarkMode } = useContext(colorContext);
-
-    const limitedData = useMemo(() => {
-        return dados.slice(0, limit);
-    }, [dados, limit]);
-
     const { height, width } = useWindowDimensions();
+
+    // console.log("dados filtrados:", dados)
+
+    const rectHeight = 30;
+    const rectWidth = 100;
+    const radius = 18;
+    const priceWidth = 70;
+
+    // const limitedData = useMemo(() => {
+    //     return dados.slice(0, limit);
+    // }, [dados, limit]);
 
     const loadData = async () => {
         setIsLoading(true);
         await checkDados();
         setTimeout(() => {
             setIsLoading(false);
-        }, 1500);
+        }, 500);
     };
     useEffect(() => {
         loadData();
     }, []);
+
+
+
+
 
     const renderItem = ({ item }) => {
         const formattedDate = moment(item.data_compra).format('DD/MM/YYYY')
@@ -53,6 +65,30 @@ const Transactions = ({ limit }) => {
         }
     };
 
+    console.log(filtrosAtivos)
+    const removeItem = (id) => {
+        const novaLista = filtrosAtivos.filter((_, index) => index !== id);
+        setFiltrosAtivos(novaLista);
+    }
+
+    // function makeFilter(filtros) {
+    //     const valorNumber = valor !== '' ? parseFloat(valor) : null;
+    //     const filtragem = dados.filter(item => {
+    //         const itemValor = parseFloat(item.valor);
+    //         let matchValor;
+    //         if (valorNumber === null) {
+    //             matchValor = true;
+    //         } else if (operator === 'Lesser') {
+    //             matchValor = itemValor < valorNumber;
+    //         } else {
+    //             matchValor = itemValor > valorNumber;
+    //         }
+    //         const matchDate = date === '' || item.data_compra.startsWith(date);
+    //         const matchCategoria = categorias.length === 0 || categorias.includes(item.categoria);
+    //         return matchValor && matchDate && matchCategoria;
+    //     });
+    //     setDados(filtragem)
+    // }
     const ModalTransactions = () => {
         return (
             <Modal
@@ -61,41 +97,22 @@ const Transactions = ({ limit }) => {
                 visible={modalVisible}
                 onRequestClose={() => setModalVisible(false)}
             >
-                <ModalView onPress={() => setModalVisible(false)}>
+                <ModalView onPress={() => setModalVisible(false)}
+                    setFiltrosAtivos={setFiltrosAtivos}
+                // applyFilters={makeFilter}
+                >
                 </ModalView>
             </Modal>
 
         );
     }
 
-    const rectHeight = 30;
-    const rectWidth = 100;
-    const radius = 18;
-
-    const priceWidth = 70;
     return (
         <>
             {refreshing || isLoading ? (
                 <View style={{ flex: 1, backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E' }}>
                     <View style={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}>
                         <View style={{ position: 'relative', width: '100%', height: height }}>
-
-                            <TouchableOpacity onPress={() => loadData()} style={{ backgroundColor: '#3B82F6', alignSelf: 'flex-start', position: 'absolute', padding: 10, borderRadius: 5, marginTop: 5 }} >
-                                <Text style={{ color: "white", fontSize: 14, fontWeight: 500 }}>Resetar Filtros!</Text>
-                            </TouchableOpacity>
-
-                            <View style={{ flexDirection: 'row', padding: 10, gap: 10, alignSelf: 'flex-end', position: 'absolute', }}>
-
-                                <TouchableOpacity onPress={() => setModalVisible(true)}>
-                                    <ModalTransactions />
-                                    <MaterialIcons name="filter-alt" size={24} color="black" />
-                                </TouchableOpacity>
-
-                                <TouchableOpacity onPress={() => setModalVisible(true)}>
-                                    <ModalTransactions />
-                                    <MaterialIcons name="sort" size={24} color="black" />
-                                </TouchableOpacity>
-                            </View >
                             <View style={{ position: 'relative', width: '100%', height: height, pointerEvents: 'none' }}>
                                 <ContentLoader
                                     speed={1.2}
@@ -147,30 +164,53 @@ const Transactions = ({ limit }) => {
 
                 <FlatList
                     contentContainerStyle={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}
-                    data={limitedData}
+                    data={dados}
                     keyExtractor={(item) => item.transaction_id}
                     renderItem={renderItem}
                     refreshing={refreshing}
                     onRefresh={loadData}
                     style={{ backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E' }}
                     ListHeaderComponent={
-                        <View style={styles.ListHeader}>
+                        <View style={[styles.ListHeader]}>
 
-                            <TouchableOpacity onPress={() => loadData()} style={{ backgroundColor: '#3B82F6', alignSelf: 'flex-end', padding: 10, borderRadius: 5 }} >
-                                <Text style={{ color: "white", fontSize: 14, fontWeight: 500 }}>Resetar Filtros!</Text>
-                            </TouchableOpacity>
-
-                            <View style={{ flexDirection: 'row', padding: 10, gap: 10, alignItems: 'center' }}>
-                                <TouchableOpacity onPress={() => setModalVisible(true)} style={{ alignSelf: 'flex-end', flexDirection: 'row', gap: 20 }}>
+                            <View style={{ flexDirection: 'row', alignSelf: 'flex-end', backgroundColor: "#00ff88aa", gap: 5 }}>
+                                <TouchableOpacity onPress={() => setModalVisible(true)} style={{ flexDirection: 'row', backgroundColor: "#ff00ffaa" }}>
                                     <ModalTransactions />
                                     <MaterialIcons name="filter-alt" size={24} color="black" />
                                 </TouchableOpacity>
-
-                                <TouchableOpacity onPress={() => setModalVisible(true)} style={{ alignSelf: 'flex-end', flexDirection: 'row', gap: 20 }}>
+                                <TouchableOpacity onPress={() => setModalVisible(true)} style={{ flexDirection: 'row', backgroundColor: "#ff00ffaa" }}>
                                     <ModalTransactions />
                                     <MaterialIcons name="sort" size={24} color="black" />
                                 </TouchableOpacity>
+
+                                <TouchableOpacity onPress={() => upCount()} style={{ flexDirection: 'row', backgroundColor: "#ff00ffaa" }}>
+                                    <ModalTransactions />
+                                    <MaterialIcons name="add" size={24} color="red" />
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={{ flexDirection: 'row', backgroundColor: "#ff00ffaa", padding: 10 }}>
+                                    <Text style={{ fontSize: 20 }}>{count}</Text>
+                                </TouchableOpacity>
                             </View>
+
+                            {
+                                filtrosAtivos.length > 0 ?
+                                    <>
+                                        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+                                            <Text style={{ fontSize: 16, alignSelf: 'flex-end', fontWeight: 'bold', color: isDarkMode ? "#EEE" : '#08380e' }}>Filtros Ativos: </Text>
+                                            {filtrosAtivos.map((item, index) =>
+                                                <TouchableOpacity key={index} style={{ backgroundColor: "#508bc5", padding: 5, }} onPress={() => removeItem(index)}>
+                                                    <Text style={{ color: "white", fontSize: 14 }}>{item}</Text>
+                                                </TouchableOpacity>
+                                            )}
+                                        </View>
+
+                                        <TouchableOpacity onPress={() => { setFiltrosAtivos([]); loadData() }} style={{ backgroundColor: '#c44343', alignSelf: 'flex-start', padding: 10, borderRadius: 5 }} >
+                                            <Text style={{ color: "white", fontSize: 14, fontWeight: 500 }}>Resetar Filtros!</Text>
+                                        </TouchableOpacity>
+                                    </>
+                                    : null
+                            }
 
                         </View>
                     }
@@ -188,13 +228,11 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 50,
         borderTopLeftRadius: 50,
         paddingHorizontal: 15,
-        paddingTop: 50,
-        flexDirection: 'column',
+        paddingTop: 30,
     },
     ListHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 10
+        flexDirection: 'column',
+        gap: 15,
+        marginBottom: 10,
     }
 })

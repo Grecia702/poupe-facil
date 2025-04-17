@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useMemo, useCallback, useEffect } from "react";
 import { View } from "react-native";
 import { TransactionContext } from "@context/transactionsContext.js";
 import { Calendar } from 'react-native-calendars';
@@ -8,7 +8,7 @@ import {
     SearchButton, Tag, ActiveFilters, ActiveText
 } from "./styles";
 
-export default function ModalView({ onPress }) {
+export default function ModalView({ onPress, setFiltrosAtivos }) {
     const { dados, setDados } = useContext(TransactionContext);
 
     const data = [
@@ -19,48 +19,82 @@ export default function ModalView({ onPress }) {
         { id: '5', categoria: 'Transporte', color: 'rgb(202, 160, 42)' },
     ]
 
-
-
     const [valor, setValor] = useState('');
     const [categoriasSelecionadas, setCategoriasSelecionadas] = useState([]);
     const [operator, setOperator] = useState()
-    const [selected, setSelected] = useState('');
+    const [date, setDate] = useState(null);
     const [filtros, setFiltros] = useState([])
 
-    const toggleCategoria = (categoria) => {
-        if (categoriasSelecionadas.includes(categoria)) {
-            setCategoriasSelecionadas(prev =>
-                prev.filter(item => item !== categoria)
-            );
-        } else {
-            setCategoriasSelecionadas(prev => [...prev, categoria]);
-        }
-    };
 
-    const toggleOperator = (symbol) => {
+
+    // const toggleCategoria = (categoria) => {
+    //     if (categoriasSelecionadas.includes(categoria)) {
+    //         setCategoriasSelecionadas(prev =>
+    //             prev.filter(item => item !== categoria)
+    //         );
+    //     } else {
+    //         setCategoriasSelecionadas(prev => [...prev, categoria]);
+    //     }
+    // };
+
+    const toggleOperator = useCallback((symbol) => {
         if (operator === symbol) {
-            setOperator(null)
+            setOperator(null);
             setFiltros(prev => prev.filter(item => item !== symbol));
-        }
-        else {
-            setOperator(symbol)
+        } else {
+            setOperator(symbol);
             setFiltros(prev => {
                 const updated = prev.filter(item => item !== 'Lesser' && item !== 'Greater');
                 return [...updated, symbol];
             });
         }
-    }
+    }, [operator, setOperator, setFiltros]);
 
-    const toggleFilters = (filtrosAtivos) => {
-        if (filtros.includes(filtrosAtivos)) {
-            setFiltros(prev =>
-                prev.filter(item => item !== filtrosAtivos)
-            );
-        }
-        else {
-            setFiltros(prev => [...prev, filtrosAtivos]);
-        }
-    };
+    // const toggleOperator = (symbol) => {
+    //     if (operator === symbol) {
+    //         setOperator(null)
+    //         setFiltros(prev => prev.filter(item => item !== symbol));
+    //     }
+    //     else {
+    //         setOperator(symbol)
+    //         setFiltros(prev => {
+    //             const updated = prev.filter(item => item !== 'Lesser' && item !== 'Greater');
+    //             return [...updated, symbol];
+    //         });
+    //     }
+    // }
+
+    // const toggleFilters = (filtrosAtivos) => {
+    //     if (filtros.includes(filtrosAtivos)) {
+    //         setFiltros(prev =>
+    //             prev.filter(item => item !== filtrosAtivos)
+    //         );
+    //     }
+    //     else {
+    //         setFiltros(prev => [...prev, filtrosAtivos]);
+    //     }
+    // };
+
+
+    const toggleCategoria = useCallback((categoria) => {
+        setCategoriasSelecionadas(prev => {
+            if (prev.includes(categoria)) {
+                return prev.filter(item => item !== categoria);
+            } else {
+                return [...prev, categoria];
+            }
+        });
+    }, []);
+
+    const toggleFilters = useCallback((filtrosAtivos) => {
+        setFiltros(prev =>
+            prev.includes(filtrosAtivos)
+                ? prev.filter(item => item !== filtrosAtivos)
+                : [...prev, filtrosAtivos]
+        );
+    }, []);
+
+
 
     const removeItem = (id) => {
         const novaLista = filtros.filter((_, index) => index !== id);
@@ -68,14 +102,11 @@ export default function ModalView({ onPress }) {
 
     }
 
-    function makeFilter(valor, date, categorias, operator) {
+    const makeFilter = useCallback((valor, date, categorias, operator) => {
         const valorNumber = valor !== '' ? parseFloat(valor) : null;
-
         const filtragem = dados.filter(item => {
             const itemValor = parseFloat(item.valor);
-
             let matchValor;
-
             if (valorNumber === null) {
                 matchValor = true;
             } else if (operator === 'Lesser') {
@@ -84,13 +115,101 @@ export default function ModalView({ onPress }) {
                 matchValor = itemValor > valorNumber;
             }
             const matchDate = date === '' || item.data_compra.startsWith(date);
+
             const matchCategoria = categorias.length === 0 || categorias.includes(item.categoria);
+
             return matchValor && matchDate && matchCategoria;
         });
-        setDados(filtragem)
-        onPress()
-        return filtragem;
-    }
+        // console.log("dados são: ", dados)
+
+        setDados(filtragem);
+        setFiltrosAtivos(filtros);
+        onPress();
+        return {
+            filtros: { valor, date, categorias, operator },
+            filtragem
+        };
+    }, [dados, filtros, setDados, setFiltrosAtivos, onPress]);
+
+
+    // console.log("Filtros: ", filtros)
+
+    const FiltrosAtivos = React.memo(({ filtros, removeItem }) => {
+        return (
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+                {filtros.map((item, index) => (
+                    <ActiveFilters key={index} color={"#1976D2"} onPress={() => removeItem(index)}>
+                        <ActiveText color={"white"}>{item.toString()}</ActiveText>
+                    </ActiveFilters>
+                ))}
+            </View>
+        );
+    });
+    const ListaCategorias = React.memo(({ data, categoriasSelecionadas, toggleCategoria, toggleFilters }) => {
+        return (
+            <List
+                data={data}
+                keyExtractor={(item) => item.id}
+                scrollEnabled={false}
+                renderItem={({ item }) => (
+                    <Filtro
+                        color={item.color}
+                        onPress={() => {
+                            toggleCategoria(item.categoria);
+                            toggleFilters(item.categoria);
+                        }}
+                        selected={categoriasSelecionadas.includes(item.categoria)}
+                    >
+                        <Tag color={item.color} />
+                        <Categoria selected={categoriasSelecionadas.includes(item.categoria)}>{item.categoria}</Categoria>
+                    </Filtro>
+                )}
+                contentContainerStyle={{
+                    marginTop: 10,
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    gap: 15,
+                }}
+            />
+        );
+    });
+
+    const CalendarioFiltro = React.memo(({ date, onSelectDate }) => {
+        return (
+            <Calendar
+                onDayPress={day => {
+                    onSelectDate(day.dateString);
+                }}
+                markedDates={{
+                    [date]: {
+                        selected: true,
+                        disableTouchEvent: false,
+                        selectedDotColor: 'orange',
+                    }
+                }}
+            />
+        );
+    });
+
+    const onSelectDate = useCallback((novaData) => {
+        if (novaData === date) return;
+
+        setFiltros(prev => {
+            if (prev.includes(novaData)) {
+                return prev;
+            }
+            const semDataAnterior = prev.filter(item => item !== date);
+            return [...semDataAnterior, novaData];
+        });
+
+        setDate(novaData);
+    }, [date, setFiltros, setDate]);
+
+    const handleRemoveItem = useCallback((index) => {
+        const novaLista = filtros.filter((_, i) => i !== index);
+        setFiltros(novaLista);
+    }, [filtros]);
+
 
     return (
         <Modal>
@@ -99,14 +218,7 @@ export default function ModalView({ onPress }) {
                     <TextModal>X</TextModal>
                 </TouchableOpacity>
                 <Title>Filtros Ativos: </Title>
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-
-                    {filtros.map((item, index) =>
-                        <ActiveFilters key={index} color={"#1976D2"} onPress={() => removeItem(index)}>
-                            <ActiveText color={"white"}>{item.toString()}</ActiveText>
-                        </ActiveFilters>
-                    )}
-                </View>
+                <FiltrosAtivos filtros={filtros} removeItem={handleRemoveItem} />
                 <Title>Valor</Title>
                 <TextInput placeholder="Valor" keyboardType="numeric" value={valor}
                     onChangeText={(texto) => {
@@ -125,37 +237,16 @@ export default function ModalView({ onPress }) {
                 </View>
                 <Title>Data</Title>
 
-                <Calendar
-                    onDayPress={day => {
-                        setSelected(day.dateString);
-                    }}
-                    markedDates={{
-                        [selected]: { selected: true, disableTouchEvent: true, selectedDotColor: 'orange' }
-                    }}
-                />
+                <CalendarioFiltro date={date} onSelectDate={onSelectDate} />
+
                 <Title>Categorias</Title>
-                <List
+                <ListaCategorias
                     data={data}
-                    keyExtractor={(item) => item.id}
-                    scrollEnabled={false}
-                    renderItem={({ item }) => (
-                        <Filtro
-                            color={item.color}
-                            onPress={() => { toggleCategoria(item.categoria); toggleFilters(item.categoria) }}
-                            selected={categoriasSelecionadas.includes(item.categoria)}
-                        >
-                            <Tag color={item.color} />
-                            <Categoria selected={categoriasSelecionadas.includes(item.categoria)}>{item.categoria}</Categoria>
-                        </Filtro>
-                    )}
-                    contentContainerStyle={{
-                        marginTop: 10,
-                        flexDirection: 'row',
-                        flexWrap: 'wrap',
-                        gap: 15,
-                    }}
+                    categoriasSelecionadas={categoriasSelecionadas}
+                    toggleCategoria={toggleCategoria}
+                    toggleFilters={toggleFilters}
                 />
-                <SearchButton color={'green'} onPress={() => makeFilter(valor, selected, categoriasSelecionadas, operator)}>
+                <SearchButton color={'green'} onPress={() => makeFilter(valor, date, categoriasSelecionadas, operator)}>
                     <TextModal>Buscar</TextModal>
                 </SearchButton>
             </ViewModal>
