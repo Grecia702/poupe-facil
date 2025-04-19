@@ -26,12 +26,30 @@ const AddTransaction = async (req, res) => {
     }
     catch (err) {
         console.error("Erro ao adicionar a transação: ", err)
-        return res.status(500).json({ message: 'Erro ao adicionar transação' })
+        return res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: error.message })
+    }
+}
+
+const ReadTransaction = async (req, res) => {
+    const { id } = req.params
+    try {
+        const Transactions = await transactionModel.ReadTransaction(id)
+        const Transaction = Transactions.total > 0 ? Transactions.firstResult : null
+        if (Transaction) {
+            return res.status(200).json(Transaction);
+        }
+        else {
+            return res.status(404).json({ message: "Transação não encontrada" })
+        }
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: error.message })
+        // throw new Error('Erro ao se conectar ao banco de dados');
     }
 }
 
 const RemoveTransaction = async (req, res) => {
-    const { id } = req.body
+    const { id } = req.params
     try {
         const Transactions = await transactionModel.ReadTransaction(id)
         const Transaction = Transactions.total > 0 ? Transactions.firstResult : null
@@ -46,23 +64,22 @@ const RemoveTransaction = async (req, res) => {
             return res.status(404).json({ message: 'Transação não encontrada' })
         }
     }
-    catch (err) {
-        return res.status(500).json({ message: 'Não foi possivel excluir a transação' })
+    catch (error) {
+        res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: error.message })
     }
 }
 const UpdateTransaction = async (req, res) => {
     const { id } = req.params;
     const campos = req.body;
-
     try {
         if (Object.keys(campos).length === 0 || !id) {
             return res.status(400).json({ erro: 'Nenhum campo fornecido' });
         }
+
         transactionModel.UpdateTransaction(id, campos);
         return res.status(200).json({ message: 'Transação atualizada com sucesso' })
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ erro: 'Erro no servidor' });
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: error.message })
     }
 }
 const ListarTransactions = async (req, res) => {
@@ -71,7 +88,7 @@ const ListarTransactions = async (req, res) => {
         const transacoes = await transactionModel.ListTransactions(userId);
         res.json(transacoes.rows);
     } catch (error) {
-        res.status(500).json({ message: 'Erro ao obter transações', error: error.message });
+        res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: error.message })
     }
 };
-module.exports = { AddTransaction, RemoveTransaction, ListarTransactions, UpdateTransaction };
+module.exports = { AddTransaction, ReadTransaction, RemoveTransaction, ListarTransactions, UpdateTransaction };

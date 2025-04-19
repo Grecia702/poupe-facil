@@ -37,7 +37,6 @@ const UpdateTransaction = async (id, campos) => {
     return await pool.query(query, parametros);
 };
 
-
 const DeleteTransaction = async (id) => {
     await pool.query("DELETE FROM transacoes WHERE id = $1", [id])
 }

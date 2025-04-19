@@ -2,7 +2,6 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import Cookies from 'js-cookie';
-import api from './axiosInstance'; // Importando a axios instance
 import { jwtDecode } from "jwt-decode";
 
 
@@ -12,7 +11,6 @@ export const AuthProvider = ({ children }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isReady, setIsReady] = useState(false);
-
     const login = () => {
         setIsLoggedIn(true);
         setIsLoading(false);
@@ -47,6 +45,7 @@ export const AuthProvider = ({ children }) => {
                     if (decodedToken.exp < currentTime) {
                         console.log("Token expirado.");
                         setIsLoggedIn(false);
+                        // navigation.replace('login')
                     } else {
                         setIsLoggedIn(true);
                     }

@@ -38,7 +38,7 @@ const LoginScreen = () => {
     // Requisição POST para login
     const handleLogin = async () => {
         try {
-            const response = await api.post(`/login`, {
+            const response = await api.post(`${API_URL}/auth/login`, {
                 email: email,
                 senha: password
             });
@@ -53,7 +53,6 @@ const LoginScreen = () => {
                     await SecureStore.setItemAsync('jwtToken', token);
                     console.log('Token armazenado no SecureStore (Android)');
                 }
-
                 setMessage('Login bem-sucedido!');
                 login();
                 navigation.replace('home');
@@ -174,6 +173,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 20,
         backgroundColor: 'white',
+        maxHeight: 60
     },
     button: {
         alignItems: 'center',

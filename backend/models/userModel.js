@@ -28,6 +28,6 @@ const UpdateUser = async (id, email) => {
 
 const DeleteUser = async (id) => {
     await pool.query("DELETE FROM usuario WHERE id = $1", [id])
-
+    throw new Error('Erro ao se conectar ao banco de dados');
 }
 module.exports = { FindUser, CreateUser, ListUser, UpdateUser, DeleteUser };

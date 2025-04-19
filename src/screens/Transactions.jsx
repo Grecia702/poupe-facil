@@ -4,20 +4,19 @@ import { MaterialIcons } from '@expo/vector-icons'
 import { TransactionContext } from '@context/transactionsContext';
 import { colorContext } from '@context/colorScheme'
 import TransactionCard from '@components/transactions';
-import { StyledScroll } from '@components/widget/styles';
 import ModalView from '@components/modal';
 import moment from 'moment';
+import { useNavigation } from '@react-navigation/native';
 import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
 import { useWindowDimensions } from 'react-native';
-import { jwtDecode } from "jwt-decode";
-import * as SecureStore from 'expo-secure-store';
 
 // TODO: rotas de criação/edição/exclusão de transações, implementar função de SORT, refatorar e otimizar
-const Transactions = ({ limit }) => {
+const Transactions = () => {
+    const navigation = useNavigation();
     const [modalVisible, setModalVisible] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
-    // const [isLoading, setIsLoading] = useState(true);
     const { dadosAPI, checkDadosAPI } = useContext(TransactionContext);
+    const [dropdownVisibleId, setDropdownVisibleId] = useState(null);
     const [dadosFiltrados, setDadosFiltrados] = useState([]);
     const { isDarkMode } = useContext(colorContext);
     const [filtrosChips, setFiltrosChips] = useState([]);
@@ -33,19 +32,12 @@ const Transactions = ({ limit }) => {
     const radius = 18;
     const priceWidth = 70;
 
-    // (async () => {
-    //     const token = await SecureStore.getItemAsync('jwtToken');
-    //     const decoded = jwtDecode(token).userId;
-    //     console.log("id é:", decoded);
-    //     console.log(dadosAPI)
-    // })();
-
-    const handleUpdate = async () => {
-        try {
-        }
-        catch {
-        }
-    }
+    // const handleUpdate = async () => {
+    //     try {
+    //     }
+    //     catch {
+    //     }
+    // }
 
     const loadData = async () => {
         setRefreshing(true);
@@ -58,7 +50,6 @@ const Transactions = ({ limit }) => {
         });
         setDadosFiltrados(dadosAPI);
         setFiltrosChips([])
-
         setTimeout(() => {
             setRefreshing(false);
         }, 500);
@@ -73,16 +64,25 @@ const Transactions = ({ limit }) => {
         const formattedDate = moment(item.data_compra).format('DD/MM/YYYY')
         if (item.tipo === "Despesa") {
             return (
-                <StyledScroll>
-                    <TransactionCard iconName="directions-car" color={'#dd6161'} state={isDarkMode} category={item.categoria} date={formattedDate} value={item.valor} />
-                </StyledScroll>
+                <View style={{ position: 'relative', paddingVertical: 10 }}>
+                    <TransactionCard iconName="directions-car" color={'#dd6161'}
+                        state={isDarkMode} category={item.categoria} date={formattedDate}
+                        value={item.valor} onPress={() => console.log("hello")}
+                        id={item.transaction_id}
+                        isVisible={dropdownVisibleId === item.transaction_id}
+                        setVisibleId={setDropdownVisibleId} />
+
+                </View>
             );
         } else {
             return (
-                <StyledScroll>
-                    <TransactionCard iconName="directions-car" color={'#2563EB'} state={isDarkMode} category={item.categoria} date={formattedDate} value={item.valor} />
-                </StyledScroll>
-
+                <View style={{ position: 'relative', paddingVertical: 10 }}>
+                    <TransactionCard iconName="directions-car" color={'#2563EB'} state={isDarkMode}
+                        category={item.categoria} date={formattedDate} value={item.valor} onPress={() => console.log("hello")}
+                        id={item.transaction_id}
+                        isVisible={dropdownVisibleId === item.transaction_id}
+                        setVisibleId={setDropdownVisibleId} />
+                </View>
             );
         }
     };
@@ -249,14 +249,15 @@ const Transactions = ({ limit }) => {
                                             : null
                                     }
                                 </View>
-
                                 <ModalTransactions />
                             </>
                         }
                     />
-                    <MaterialIcons name="add-circle" size={64} color={isDarkMode ? "white" : "#1b90df"}
-                        style={{ position: 'absolute', bottom: 10, right: 10 }}
-                    />
+                    <TouchableOpacity onPress={() => navigation.navigate('CreateTransaction')}>
+                        <MaterialIcons name="add-circle" size={64} color={isDarkMode ? "white" : "#1b90df"}
+                            style={{ position: 'absolute', bottom: 10, right: 10 }}
+                        />
+                    </TouchableOpacity>
                 </View>
             )}
         </>

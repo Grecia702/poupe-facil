@@ -1,13 +1,15 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/login';
-import React from 'react';
+import React, { useContext } from 'react';
 import DrawerRoutes from './drawer.routes';
-
+import EditTransactions from '../screens/EditTransactions';
+import CreateTransaction from '../screens/CreateTransactions';
+import { colorContext } from '@context/colorScheme';
 
 const Stack = createNativeStackNavigator();
 
 export default function StackRoutes() {
-
+    const { isDarkMode } = useContext(colorContext)
     return (
         <Stack.Navigator  >
             <Stack.Screen
@@ -21,8 +23,26 @@ export default function StackRoutes() {
                 component={DrawerRoutes}
                 options={{ title: 'Página Inicial', headerShown: false }}
             />
-
+            <Stack.Screen
+                name="EditTransactions"
+                component={EditTransactions}
+                options={{
+                    title: 'Editar Transação', headerShown: true,
+                    headerStyle: {
+                        backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E',
+                    }
+                }}
+            />
+            <Stack.Screen
+                name="CreateTransaction"
+                component={CreateTransaction}
+                options={{
+                    title: 'Criar Transação', headerShown: true,
+                    headerStyle: {
+                        backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E',
+                    }
+                }}
+            />
         </Stack.Navigator>
-
     );
 }

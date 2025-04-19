@@ -13,6 +13,7 @@ export const WidgetViewTeste = styled.View`
     align-items: center;
     flex-wrap: wrap;
     gap: ${({ gap = '15px' }) => gap};
+    position: relative;
 `;
 
 export const SectionTitle = styled.Text`
@@ -26,5 +27,6 @@ export const SectionTitle = styled.Text`
 export const StyledScroll = styled.ScrollView.attrs(() => ({
     contentContainerStyle: {
         paddingVertical: 10,
+
     },
 }))``;
