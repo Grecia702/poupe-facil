@@ -1,7 +1,10 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import Cookies from 'js-cookie';
+import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import { View, Text, Platform } from 'react-native';
+import Cookies from 'js-cookie';
+import api from './axiosInstance'; // Importando a axios instance
+import { jwtDecode } from "jwt-decode";
+
 
 export const AuthContext = createContext();
 
@@ -12,8 +15,8 @@ export const AuthProvider = ({ children }) => {
 
     const login = () => {
         setIsLoggedIn(true);
-        setIsLoading(false)
-        setIsReady(true)
+        setIsLoading(false);
+        setIsReady(true);
     };
 
     const logout = async () => {
@@ -30,23 +33,34 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const checkCookies = async () => {
             try {
+                let token = null;
                 if (Platform.OS === 'web') {
-                    const token = Cookies.get('jwtToken');
-                    setIsLoggedIn(!!token);
+                    token = Cookies.get('jwtToken');
+                } else {
+                    token = await SecureStore.getItemAsync('jwtToken');
                 }
-                else {
-                    const token = await SecureStore.getItemAsync('jwtToken');
-                    setIsLoggedIn(!!token)
+                if (token) {
+
+                    const decodedToken = jwtDecode(token);
+                    const currentTime = Date.now() / 1000;
+
+                    if (decodedToken.exp < currentTime) {
+                        console.log("Token expirado.");
+                        setIsLoggedIn(false);
+                    } else {
+                        setIsLoggedIn(true);
+                    }
+                } else {
+                    setIsLoggedIn(false);
                 }
-            }
-            catch (error) {
+            } catch (error) {
                 console.error("Erro ao obter o token:", error);
-            }
-            finally {
+            } finally {
                 setIsLoading(false);
-                setIsReady(true)
+                setIsReady(true);
             }
         };
+
         checkCookies();
     }, []);
 

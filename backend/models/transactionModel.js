@@ -17,9 +17,26 @@ const ReadTransaction = async (id) => {
     return { rows, total: rowCount, firstResult: rows[0] };
 }
 
-const UpdateTransaction = async (id, email) => {
-    await pool.query("UPDATE transacoes SET email = $1  WHERE id = $2", [email, id])
-}
+const UpdateTransaction = async (id, campos) => {
+    const setClause = Object.keys(campos)
+        .map((campo, i) => `${campo} = $${i + 1}`)
+        .join(', ');
+
+    const valores = Object.values(campos);
+
+    const query = `
+        UPDATE transacoes t
+        SET ${setClause} 
+        FROM usuario u
+        JOIN contasBancarias b ON b.id = u.id 
+        WHERE u.id = $1
+        AND t.id = $2
+        RETURNING u.*;
+    `;
+    const parametros = [...valores, id, campos.id_transacao];
+    return await pool.query(query, parametros);
+};
+
 
 const DeleteTransaction = async (id) => {
     await pool.query("DELETE FROM transacoes WHERE id = $1", [id])

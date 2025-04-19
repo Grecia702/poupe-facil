@@ -11,15 +11,13 @@ const Logout = () => {
     const { logout } = useContext(AuthContext);
 
     const logOut = async () => {
-
         try {
-            logout();
+            await logout();
             navigation.replace('login')
             console.log("Deslogado com sucesso")
         } catch (err) {
             console.log("Não foi possivel deslogar por conta do erro: ", err.response.data.message)
         }
-
     }
 
     return (

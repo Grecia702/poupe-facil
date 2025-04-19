@@ -9,10 +9,10 @@ import ModalView from '@components/modal';
 import moment from 'moment';
 import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
 import { useWindowDimensions } from 'react-native';
-
+import { jwtDecode } from "jwt-decode";
+import * as SecureStore from 'expo-secure-store';
 
 // TODO: rotas de criação/edição/exclusão de transações, implementar função de SORT, refatorar e otimizar
-
 const Transactions = ({ limit }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
@@ -33,6 +33,20 @@ const Transactions = ({ limit }) => {
     const radius = 18;
     const priceWidth = 70;
 
+    // (async () => {
+    //     const token = await SecureStore.getItemAsync('jwtToken');
+    //     const decoded = jwtDecode(token).userId;
+    //     console.log("id é:", decoded);
+    //     console.log(dadosAPI)
+    // })();
+
+    const handleUpdate = async () => {
+        try {
+        }
+        catch {
+        }
+    }
+
     const loadData = async () => {
         setRefreshing(true);
         await checkDadosAPI();
@@ -42,7 +56,6 @@ const Transactions = ({ limit }) => {
             operador: null,
             data: null
         });
-
         setDadosFiltrados(dadosAPI);
         setFiltrosChips([])
 
@@ -63,7 +76,6 @@ const Transactions = ({ limit }) => {
                 <StyledScroll>
                     <TransactionCard iconName="directions-car" color={'#dd6161'} state={isDarkMode} category={item.categoria} date={formattedDate} value={item.valor} />
                 </StyledScroll>
-
             );
         } else {
             return (
@@ -89,7 +101,6 @@ const Transactions = ({ limit }) => {
                 .flat();
             setFiltrosChips(retorno);
             filterDadosApi(filtrosCategorias)
-            console.log("Rodou!")
         };
         aplicarFiltrosAtivos();
     }, [filtrosCategorias])
@@ -115,18 +126,20 @@ const Transactions = ({ limit }) => {
     }
 
     const removeFiltro = (categoria) => {
+        const notArray = Object.keys(filtrosCategorias).find(item => filtrosCategorias[item] === categoria);
         const novosChips = filtrosChips.filter(item => item !== categoria);
-        const novoFiltroCategoria = {
-            ...filtrosCategorias,
-            categorias: filtrosCategorias.categorias.filter(item => item !== categoria),
-        };
+        const novoFiltroCategoria = { ...filtrosCategorias };
 
+        if (notArray) {
+            novoFiltroCategoria[notArray] = null;
+        } else {
+            novoFiltroCategoria.categorias = filtrosCategorias.categorias?.filter(item => item !== categoria);
+        }
         setFiltrosChips(novosChips);
         setFiltrosCategorias(novoFiltroCategoria);
         filterDadosApi(novoFiltroCategoria);
     };
 
-    console.log(filtrosCategorias)
 
     const ModalTransactions = () => {
         return (
@@ -197,53 +210,54 @@ const Transactions = ({ limit }) => {
                     </View>
                 </View>
             ) : (
+                <View style={{ flex: 1, backgroundColor: 'blue', position: 'relative' }}>
+                    <FlatList
+                        contentContainerStyle={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}
+                        data={dadosFiltrados}
+                        keyExtractor={(item) => item.transaction_id}
+                        renderItem={renderItem}
+                        refreshing={refreshing}
+                        onRefresh={loadData}
+                        style={{ backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E' }}
+                        ListHeaderComponent={
+                            <>
+                                <View style={[styles.ListHeader, { position: 'relative' }]}>
+                                    <View style={{ flexDirection: 'row', alignSelf: 'flex-end', gap: 5 }}>
+                                        <TouchableOpacity onPress={() => setModalVisible(true)} style={{ flexDirection: 'row', padding: 5, borderColor: isDarkMode ? "#DDD" : "#111", borderWidth: 2, borderRadius: 5 }}>
+                                            <MaterialIcons name="filter-alt" size={24} color={isDarkMode ? "#DDD" : "#111"} />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={() => console.log("sort")} style={{ flexDirection: 'row', padding: 5, borderColor: isDarkMode ? "#DDD" : "#111", borderWidth: 2, borderRadius: 5 }}>
+                                            <MaterialIcons name="sort" size={24} color={isDarkMode ? "#DDD" : "#111"} />
+                                        </TouchableOpacity>
+                                    </View>
+                                    {
+                                        filtrosChips.length > 0 ?
+                                            <>
+                                                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+                                                    <Text style={{ fontSize: 16, alignSelf: 'flex-end', fontWeight: 'bold', color: isDarkMode ? "#EEE" : '#08380e' }}>Filtros Ativos: </Text>
+                                                    {filtrosChips.map((item, index) =>
+                                                        <TouchableOpacity key={index} style={{ backgroundColor: "#508bc5", padding: 5, }} onPress={() => removeFiltro(item)}>
+                                                            <Text style={{ color: "white", fontSize: 14 }}>{item}</Text>
+                                                        </TouchableOpacity>
+                                                    )}
+                                                </View>
+                                                <TouchableOpacity onPress={() => { setFiltrosChips([]); loadData() }} style={{ backgroundColor: '#c44343', alignSelf: 'flex-start', padding: 10, borderRadius: 5 }} >
+                                                    <Text style={{ color: "white", fontSize: 14, fontWeight: 500 }}>Resetar Filtros!</Text>
+                                                </TouchableOpacity>
 
-                <FlatList
-                    contentContainerStyle={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}
-                    data={dadosFiltrados}
-                    keyExtractor={(item) => item.transaction_id}
-                    renderItem={renderItem}
-                    refreshing={refreshing}
-                    onRefresh={loadData}
-                    style={{ backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E' }}
-                    ListHeaderComponent={
-                        <>
-                            <View style={[styles.ListHeader]}>
-
-                                <View style={{ flexDirection: 'row', alignSelf: 'flex-end', gap: 5 }}>
-                                    <TouchableOpacity onPress={() => setModalVisible(true)} style={{ flexDirection: 'row', padding: 5, borderColor: isDarkMode ? "#DDD" : "#111", borderWidth: 2, borderRadius: 5 }}>
-                                        <MaterialIcons name="filter-alt" size={24} color={isDarkMode ? "#DDD" : "#111"} />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => console.log("sort")} style={{ flexDirection: 'row', padding: 5, borderColor: isDarkMode ? "#DDD" : "#111", borderWidth: 2, borderRadius: 5 }}>
-                                        <MaterialIcons name="sort" size={24} color={isDarkMode ? "#DDD" : "#111"} />
-                                    </TouchableOpacity>
+                                            </>
+                                            : null
+                                    }
                                 </View>
 
-                                {
-                                    filtrosChips.length > 0 ?
-                                        <>
-                                            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-                                                <Text style={{ fontSize: 16, alignSelf: 'flex-end', fontWeight: 'bold', color: isDarkMode ? "#EEE" : '#08380e' }}>Filtros Ativos: </Text>
-                                                {filtrosChips.map((item, index) =>
-                                                    <TouchableOpacity key={index} style={{ backgroundColor: "#508bc5", padding: 5, }} onPress={() => removeFiltro(item)}>
-                                                        <Text style={{ color: "white", fontSize: 14 }}>{item}</Text>
-                                                    </TouchableOpacity>
-                                                )}
-                                            </View>
-
-                                            <TouchableOpacity onPress={() => { setFiltrosChips([]); loadData() }} style={{ backgroundColor: '#c44343', alignSelf: 'flex-start', padding: 10, borderRadius: 5 }} >
-                                                <Text style={{ color: "white", fontSize: 14, fontWeight: 500 }}>Resetar Filtros!</Text>
-                                            </TouchableOpacity>
-                                        </>
-                                        : null
-                                }
-                            </View>
-                            <ModalTransactions />
-                        </>
-                    }
-
-                />
-
+                                <ModalTransactions />
+                            </>
+                        }
+                    />
+                    <MaterialIcons name="add-circle" size={64} color={isDarkMode ? "white" : "#1b90df"}
+                        style={{ position: 'absolute', bottom: 10, right: 10 }}
+                    />
+                </View>
             )}
         </>
 
@@ -259,6 +273,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 50,
         paddingHorizontal: 15,
         paddingTop: 30,
+
     },
     ListHeader: {
         flexDirection: 'column',

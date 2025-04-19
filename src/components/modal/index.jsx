@@ -77,9 +77,9 @@ export default function ModalView({ setModalVisible, setTesteFiltros }) {
         setModalVisible(false)
     };
 
-    console.log(data.map(item => {
-        return item.categoria
-    }))
+    // console.log(data.map(item => {
+    //     return item.categoria
+    // }))
     const FiltrosAtivos = React.memo(({ filtros, removeItem }) => {
         return (
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
@@ -158,7 +158,7 @@ export default function ModalView({ setModalVisible, setTesteFiltros }) {
     }, [filtros]);
 
 
-    const MapeiaCategorias = React.memo(() => {
+    const MapeiaCategorias = React.memo(({ data, categoriasSelecionadas, toggleCategoria, toggleFilters }) => {
         return (
             <>
                 <Title>Categorias</Title>
@@ -183,6 +183,7 @@ export default function ModalView({ setModalVisible, setTesteFiltros }) {
             </>
         )
     })
+
     return (
         <Modal>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
@@ -204,7 +205,13 @@ export default function ModalView({ setModalVisible, setTesteFiltros }) {
                                 <Text color={"white"} selected={operator === "Greater"}>{'>'} Maior que {'<'}</Text>
                             </TouchableOpacity>
                         </View>
-                        <MapeiaCategorias />
+
+                        <MapeiaCategorias
+                            data={data}
+                            categoriasSelecionadas={categoriasSelecionadas}
+                            toggleCategoria={toggleCategoria}
+                            toggleFilters={toggleFilters}
+                        />
 
                         <Title>Data</Title>
                         <CalendarioFiltro date={date} onSelectDate={onSelectDate} />

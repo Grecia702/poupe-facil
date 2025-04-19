@@ -8,6 +8,7 @@ import { AuthContext, useAuth } from '../../context/authContext';
 import { useNavigation } from '@react-navigation/native'
 import * as SecureStore from 'expo-secure-store';
 import { API_URL } from '@env'
+import api from '@context/axiosInstance';
 
 const LoginScreen = () => {
     const navigation = useNavigation();
@@ -21,15 +22,11 @@ const LoginScreen = () => {
         setVisible(!visible);
     };
 
-
     useEffect(() => {
-
         if (isLoggedIn && !isLoading) {
             navigation.replace('home')
         }
-
     }, [isLoading, isLoggedIn])
-
 
     if (isLoading || isLoggedIn) {
         return (
@@ -41,37 +38,36 @@ const LoginScreen = () => {
     // Requisição POST para login
     const handleLogin = async () => {
         try {
-            const response = await axios.post(`${API_URL}/login`, {
+            const response = await api.post(`/login`, {
                 email: email,
                 senha: password
             });
 
-            if (response.status === 200 && response.data.token) {
-
-                const token = response.data.token;
+            if (response.status === 200 && response.data.accessToken) {
+                const token = response.data.accessToken;
 
                 if (Platform.OS === 'web') {
                     Cookies.set('jwtToken', token, { expires: 7, path: '' });
                     console.log('Token armazenado no cookie (Web)');
-
                 } else if (Platform.OS === 'android') {
                     await SecureStore.setItemAsync('jwtToken', token);
-                    console.log('Token armazenado no cookie (Android)');
-
+                    console.log('Token armazenado no SecureStore (Android)');
                 }
+
                 setMessage('Login bem-sucedido!');
                 login();
-                navigation.replace('home')
+                navigation.replace('home');
             }
         } catch (error) {
             if (error.response) {
-                console.log(error.response.data.message)
-                setMessage(error.response.data.message || 'erro desconhecido do servidor');
+                console.log(error.response.data.message);
+                setMessage(error.response.data.message || 'Erro desconhecido do servidor');
             } else {
                 setMessage('Erro na requisição, tente novamente.');
             }
         }
     };
+
 
 
 

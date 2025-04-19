@@ -12,7 +12,7 @@ const AddTransaction = async (req, res) => {
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
-    console.log()
+
     try {
         if (tipo === "Despesa") {
             const despesa = valor * -1;
@@ -50,15 +50,28 @@ const RemoveTransaction = async (req, res) => {
         return res.status(500).json({ message: 'Não foi possivel excluir a transação' })
     }
 }
+const UpdateTransaction = async (req, res) => {
+    const { id } = req.params;
+    const campos = req.body;
 
-const ListarTransactions = async (req, res) => {
-    const userId = req.usuarioId
     try {
-        const transacoes = await transactionModel.ListTransactions(userId);
-        res.json(transacoes.rows)
-    }
-    catch (err) {
-        return res.status(500).json({ message: 'not found' })
+        if (Object.keys(campos).length === 0 || !id) {
+            return res.status(400).json({ erro: 'Nenhum campo fornecido' });
+        }
+        transactionModel.UpdateTransaction(id, campos);
+        return res.status(200).json({ message: 'Transação atualizada com sucesso' })
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ erro: 'Erro no servidor' });
     }
 }
-module.exports = { AddTransaction, RemoveTransaction, ListarTransactions };
+const ListarTransactions = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const transacoes = await transactionModel.ListTransactions(userId);
+        res.json(transacoes.rows);
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao obter transações', error: error.message });
+    }
+};
+module.exports = { AddTransaction, RemoveTransaction, ListarTransactions, UpdateTransaction };

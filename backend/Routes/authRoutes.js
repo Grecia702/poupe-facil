@@ -1,14 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const userController = require("../controller/userController");
 const authMiddleware = require('../middleware/authMiddleware');
 const authController = require('../controller/authController')
-
 const logger = require('../utils/loggerConfig')
 
-router.post("/signup", userController.SignUp);
-router.delete("/:id", authMiddleware, userController.deleteAccount)
-
+router.post("/login", authController.login);
+router.post('/token', authController.refresh);
+router.post('/logout', authController.logout);
 router.get("/protected", authMiddleware, (req, res) => {
     let clientIP = req.ip || req.connection.remoteAddress;
     if (clientIP === '::1') {

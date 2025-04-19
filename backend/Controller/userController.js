@@ -5,44 +5,44 @@ const jwt = require('jsonwebtoken')
 const moment = require('moment');
 
 
-const Login = async (req, res) => {
-    const { email, senha } = req.body;
-    try {
-        const usuarios = await userModel.ListUser(email);
-        const usuario = usuarios.total > 0 ? usuarios.firstResult : null
+// const Login = async (req, res) => {
+//     const { email, senha } = req.body;
+//     try {
+//         const usuarios = await userModel.ListUser(email);
+//         const usuario = usuarios.total > 0 ? usuarios.firstResult : null
 
-        if (!usuario) {
-            return res.status(401).json({ message: 'E-mail e/ou senha incorretos!' });
-        }
+//         if (!usuario) {
+//             return res.status(401).json({ message: 'E-mail e/ou senha incorretos!' });
+//         }
 
-        const senhaValida = await bcrypt.compare(senha, usuario.senha)
+//         const senhaValida = await bcrypt.compare(senha, usuario.senha)
 
-        if (senhaValida && usuario.email == email) {
+//         if (senhaValida && usuario.email == email) {
 
-            const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
+//             const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
 
-            console.log("login feito pelo usuario ", usuario.email, "durante as", timestamp, "horas")
+//             console.log("login feito pelo usuario ", usuario.email, "durante as", timestamp, "horas")
 
 
-            const token = jwt.sign({ id: usuario.id }, process.env.JWT_SECRET, { expiresIn: '2h' });
+//             const token = jwt.sign({ id: usuario.id }, process.env.JWT_SECRET, { expiresIn: '2h' });
 
-            res.cookie('jwtToken', token, {
-                httpOnly: true,
-                secure: false,
-                sameSite: 'None',
-                maxAge: 2 * 60 * 60 * 1000,
-                path: '/'
-            });
-            return res.status(200).json({
-                token,
-                message: 'Login bem-sucedido!'
-            });
-        }
-    }
-    catch (err) {
-        return res.status(500).json({ message: 'Erro ao processar a requisição', error: err.message });
-    }
-}
+//             res.cookie('jwtToken', token, {
+//                 httpOnly: true,
+//                 secure: false,
+//                 sameSite: 'None',
+//                 maxAge: 2 * 60 * 60 * 1000,
+//                 path: '/'
+//             });
+//             return res.status(200).json({
+//                 token,
+//                 message: 'Login bem-sucedido!'
+//             });
+//         }
+//     }
+//     catch (err) {
+//         return res.status(500).json({ message: 'Erro ao processar a requisição', error: err.message });
+//     }
+// }
 
 const SignUp = async (req, res) => {
 
@@ -100,4 +100,4 @@ const deleteAccount = async (req, res) => {
 }
 
 
-module.exports = { Login, SignUp, deleteAccount };
+module.exports = { SignUp, deleteAccount };

@@ -15,6 +15,7 @@ export default function TransactionCard({ iconName, state, color, category, date
             </InfoView>
 
             <Value $state={state}>{value}</Value>
+            <MaterialIcons name="more-vert" size={24} color="black" />
         </CardTransaction>
     )
 }
