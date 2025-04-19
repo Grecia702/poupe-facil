@@ -27,7 +27,6 @@ export default function DrawerRoutes() {
                     backgroundColor: isDarkMode ? "#202020" : "#dde6e9"
                 },
                 drawerLabelStyle: {
-
                     color: isDarkMode ? "#888787" : "#1f2122",
                 },
                 headerStyle: {
@@ -36,7 +35,8 @@ export default function DrawerRoutes() {
                     // borderColor: isDarkMode ? "rgba(240, 240, 240, 0.05)" : 'rgba(0, 0, 0, 0.05)',
                 },
                 headerTintColor: isDarkMode ? 'white' : 'black',
-                drawerActiveTintColor: isDarkMode ? "#fff" : 'green',
+                drawerActiveTintColor: isDarkMode ? "#b9b9b9" : 'green',
+                drawerInactiveTintColor: isDarkMode ? "#5a5757" : '#1a3523',
                 drawerActiveBackgroundColor: isDarkMode ? '#3a3939' : '#c7eec7',
                 title: '',
                 headerRight: () =>

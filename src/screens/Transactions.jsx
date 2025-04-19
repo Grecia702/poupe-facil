@@ -1,4 +1,4 @@
-import { StyleSheet, FlatList, TouchableOpacity, Modal, Text, View } from 'react-native'
+import { StyleSheet, FlatList, TouchableOpacity, Modal, Text, View, Pressable } from 'react-native'
 import React, { useState, useContext, useEffect, useMemo } from 'react'
 import { MaterialIcons } from '@expo/vector-icons'
 import { TransactionContext } from '@context/transactionsContext';
@@ -26,6 +26,8 @@ const Transactions = () => {
         operador: null,
         data: null
     })
+    // const[menuVisible, setMenuVisible] = useState(false)
+
     const { height, width } = useWindowDimensions();
     const rectHeight = 30;
     const rectWidth = 100;
@@ -210,7 +212,9 @@ const Transactions = () => {
                     </View>
                 </View>
             ) : (
-                <View style={{ flex: 1, backgroundColor: 'blue', position: 'relative' }}>
+                <Pressable onPress={() => setDropdownVisibleId(null)} style={{ flex: 1 }}
+                    pointerEvents="auto"
+                >
                     <FlatList
                         contentContainerStyle={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}
                         data={dadosFiltrados}
@@ -254,11 +258,11 @@ const Transactions = () => {
                         }
                     />
                     <TouchableOpacity onPress={() => navigation.navigate('CreateTransaction')}>
-                        <MaterialIcons name="add-circle" size={64} color={isDarkMode ? "white" : "#1b90df"}
+                        <MaterialIcons name="add-circle" size={64} color={"#1b90df"}
                             style={{ position: 'absolute', bottom: 10, right: 10 }}
                         />
                     </TouchableOpacity>
-                </View>
+                </Pressable>
             )}
         </>
 

@@ -1,26 +1,41 @@
-import { TouchableOpacity, View, Text } from "react-native";
+import { TouchableOpacity, View, Text, Pressable } from "react-native";
 import { CardTransaction, Title, Date, IconCard, InfoView, Value } from "./styles";
 import { MaterialIcons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native';
-
+import { colorContext } from '@context/colorScheme'
+import { useContext } from "react";
 export default function TransactionCard({ iconName, state, color, category, date, value, isVisible, setVisibleId, id }) {
     const navigation = useNavigation();
 
+    const { isDarkMode } = useContext(colorContext)
     const handleToggleDropdown = () => {
-        setVisibleId(id);
-        if (isVisible) {
-            setVisibleId(null)
-        }
+        setVisibleId(isVisible ? null : id);
+    };
+
+    const handleClose = () => {
+        setVisibleId(null);
     };
 
     const DropDown = () => {
         return (
             <>
+                <Pressable
+                    onPress={handleClose}
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        zIndex: 1,
+                    }}
+                />
+
                 <View style={{
                     position: 'absolute',
                     top: 0,
                     right: 20,
-                    backgroundColor: '#3b3b3b',
+                    backgroundColor: isDarkMode ? '#3b3b3b' : '#fff',
                     elevation: 10,
                     borderWidth: 1,
                     borderRadius: 6,
@@ -29,11 +44,11 @@ export default function TransactionCard({ iconName, state, color, category, date
                 }}>
                     <TouchableOpacity onPress={() => navigation.navigate('EditTransactions', { transactionId: id })
                     } style={{ paddingVertical: 10, paddingHorizontal: 20 }}>
-                        <Text style={{ color: 'white', textAlign: 'center' }}>Editar</Text>
+                        <Text style={{ color: isDarkMode ? '#EEE' : '#222', textAlign: 'center' }}>Editar</Text>
                     </TouchableOpacity>
                     <View style={{ backgroundColor: "#222", height: 2, width: '100 %' }} />
                     <TouchableOpacity style={{ paddingVertical: 10, paddingHorizontal: 20 }}>
-                        <Text style={{ color: 'white', textAlign: 'center' }}>Apagar</Text>
+                        <Text style={{ color: isDarkMode ? '#EEE' : '#222', textAlign: 'center' }}>Apagar</Text>
                     </TouchableOpacity>
                 </View>
             </>
