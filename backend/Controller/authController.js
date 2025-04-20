@@ -24,13 +24,13 @@ const login = async (req, res) => {
     try {
         const usuarios = await userModel.ListUser(email);
         const usuario = usuarios.total > 0 ? usuarios.firstResult : null
+        const senhaValida = await bcrypt.compare(senha, usuario.senha)
+
         if (!usuario) {
             return res.status(401).json({ message: 'E-mail e/ou senha incorretos!' });
         }
-        const senhaValida = await bcrypt.compare(senha, usuario.senha)
         if (senhaValida && usuario.email == email) {
             const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
-
             console.log("login feito pelo usuario ", usuario.email, "durante as", timestamp, "horas")
             const payload = {
                 userId: usuario.id,
@@ -38,13 +38,19 @@ const login = async (req, res) => {
             const { userId } = payload
             const accessToken = generateAccessToken(payload);
             const refreshToken = generateRefreshToken(payload);
-            const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+            const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
             await pool.query('INSERT INTO refresh_tokens (usuario_id, token, expires_at) VALUES ($1, $2, $3)', [userId, refreshToken, expiresAt]);
             res.cookie('jwtToken', accessToken, {
                 httpOnly: true,
                 secure: true,
                 sameSite: 'strict',
                 maxAge: 15 * 60 * 1000
+            });
+            res.cookie('refreshToken', refreshToken, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'strict',
+                maxAge: 30 * 24 * 60 * 60 * 1000
             });
             return res.status(200).json({
                 accessToken,
@@ -63,12 +69,11 @@ const login = async (req, res) => {
 
 
 const refresh = async (req, res) => {
-
-    const { refreshToken } = req.body;
+    let refreshToken = req.cookies.refreshToken;
+    console.log(refreshToken)
     if (!refreshToken) {
         return res.status(403).json({ message: 'Cookie invalido' });
     }
-
     const result = await pool.query('SELECT * FROM refresh_tokens WHERE token = $1', [refreshToken]);
     if (result.rowCount === 0) {
         return res.status(403).json({ message: 'Access denied' });
@@ -77,7 +82,6 @@ const refresh = async (req, res) => {
     try {
         const decoded = verifyRefreshToken(refreshToken);
         const newAccessToken = generateAccessToken({ userId: decoded.userId });
-
         res.cookie('jwtToken', newAccessToken, {
             httpOnly: true,
             secure: true,
@@ -86,9 +90,8 @@ const refresh = async (req, res) => {
         });
 
         res.status(200).json({ message: 'Cookie gerado com sucesso' });
-
     } catch (err) {
-        return res.sendStatus(403);
+        return res.status(403).json({ message: "Erro", error: err.message });
     }
 };
 
