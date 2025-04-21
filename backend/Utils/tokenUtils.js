@@ -1,7 +1,8 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
+
 const generateAccessToken = (payload) => {
-    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1m' });
 };
 
 const generateRefreshToken = (payload) => {
@@ -9,11 +10,33 @@ const generateRefreshToken = (payload) => {
 };
 
 const verifyAccessToken = (token) => {
-    return jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    try {
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        return { valid: true, expired: false, decoded };
+    } catch (err) {
+        const decoded = jwt.decode(token);
+        if (err.name === 'TokenExpiredError') {
+            return { valid: false, expired: true, decoded };
+        }
+        return {
+            valid: false,
+            expired: false,
+            error: err.message,
+            err: err.name,
+            rawError: err,
+            decoded
+        };
+    }
 };
 
+
 const verifyRefreshToken = (token) => {
-    return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+    try {
+        const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+        return { valid: true, expired: false, decoded };
+    } catch (err) {
+        return { valid: false, expired: err.name === 'TokenExpiredError', error: err.message };
+    }
 };
 
 module.exports = {

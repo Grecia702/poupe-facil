@@ -1,74 +1,54 @@
-import { Platform, StyleSheet, Text, View, SafeAreaView, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
 import Fontisto from '@expo/vector-icons/Fontisto';
-import React, { useState, useContext, useEffect } from 'react';
-import axios from 'axios';
-import Cookies from 'js-cookie';
+import React, { useState, useEffect } from 'react';
 import Feather from '@expo/vector-icons/Feather';
-import { AuthContext, useAuth } from '../../context/authContext';
+import { useAuth } from '@context/authContext';
 import { useNavigation } from '@react-navigation/native'
-import * as SecureStore from 'expo-secure-store';
-import { API_URL } from '@env'
-import api from '@context/axiosInstance';
 
 const LoginScreen = () => {
     const navigation = useNavigation();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [credentials, setCredentials] = useState({ email: '', senha: '' });
     const [message, setMessage] = useState('');
     const [visible, setVisible] = useState(true);
-    const { isLoggedIn, isLoading, login, isReady } = useContext(AuthContext);
+    const { isAuthenticated, isLoading } = useAuth();
+    const { loginMutation } = useAuth()
 
     const toggleShowPassword = () => {
         setVisible(!visible);
     };
 
     useEffect(() => {
-        if (isLoggedIn && !isLoading) {
-            navigation.replace('home')
+        if (!isLoading) {
+            if (isAuthenticated) {
+                navigation.replace('home');
+            }
         }
-    }, [isLoading, isLoggedIn])
+    }, [isAuthenticated, isLoading]);
 
-    if (isLoading || isLoggedIn) {
+    if (isLoading || isAuthenticated) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#46bb50' }}>
                 <Text>Loading...</Text>
             </View>
         );
     }
-    // Requisição POST para login
+
     const handleLogin = async () => {
-        try {
-            const response = await api.post(`${API_URL}/auth/login`, {
-                email: email,
-                senha: password
-            });
-
-            if (response.status === 200 && response.data.accessToken) {
-                const token = response.data.accessToken;
-
-                if (Platform.OS === 'web') {
-                    Cookies.set('jwtToken', token, { expires: 7, path: '' });
-                    console.log('Token armazenado no cookie (Web)');
-                } else if (Platform.OS === 'android') {
-                    await SecureStore.setItemAsync('jwtToken', token);
-                    console.log('Token armazenado no SecureStore (Android)');
-                }
-                setMessage('Login bem-sucedido!');
-                login();
-                navigation.replace('home');
-            }
-        } catch (error) {
-            if (error.response) {
-                console.log(error.response.data.message);
-                setMessage(error.response.data.message || 'Erro desconhecido do servidor');
-            } else {
-                setMessage('Erro na requisição, tente novamente.');
-            }
+        if (!credentials.email || !credentials.senha) {
+            setMessage('Preencha todos os campos.');
+            return;
         }
+
+        if (!/\S+@\S+\.\S+/.test(credentials.email)) {
+            setMessage('Formato de e-mail inválido.');
+            return;
+        }
+
+        loginMutation.mutate(credentials, {
+            onSuccess: () => navigation.replace('home'),
+            onError: () => setMessage('Falha no login. Verifique suas credenciais.'),
+        });
     };
-
-
-
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -82,10 +62,10 @@ const LoginScreen = () => {
                 <TextInput
                     style={styles.input}
                     placeholder="Insira Seu Email"
-                    value={email}
+                    value={credentials.email}
                     keyboardType='email-address'
                     autoFocus={true}
-                    onChangeText={setEmail}
+                    onChangeText={(text) => setCredentials({ ...credentials, email: text })}
                 />
 
                 <View style={styles.viewContainer}>
@@ -97,10 +77,11 @@ const LoginScreen = () => {
                     <TextInput
                         style={[styles.input, { flex: 1 }]}
                         placeholder="Insira Sua Senha"
-                        value={password}
+                        value={credentials.senha}
                         autoCapitalize="none"
+                        onChangeText={(text) => setCredentials({ ...credentials, senha: text })}
                         secureTextEntry={visible}
-                        onChangeText={setPassword}
+                        required
                     />
 
                     <Feather
@@ -121,17 +102,13 @@ const LoginScreen = () => {
                     Esqueci a minha senha
                 </Link> */}
 
-                {/* <Pressable
-                    onPress={handleLogin}
-                    title='Login'
-                    color='white'
-                    bgColor='#3a9e58' ></Pressable> */}
-
-                <Pressable style={styles.button} onPress={handleLogin}>
+                <TouchableOpacity style={styles.button} onPress={handleLogin}>
                     <Text style={styles.buttonText}>Login</Text>
-                </Pressable>
+                </TouchableOpacity>
 
-                <Text style={styles.message}>{message}</Text>
+                <Text style={[styles.message, { color: loginMutation.isError ? 'red' : 'green' }]}>
+                    {message}
+                </Text>
                 {/* 
                 <Link href="/signup" style={{ alignSelf: 'center', textDecorationLine: 'underline' }}>
                     Não tem uma conta? Cadastre-se

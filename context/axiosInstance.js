@@ -1,7 +1,5 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
-import Cookies from 'js-cookie';
 import { API_URL } from '@env'
 
 const api = axios.create({
@@ -12,12 +10,8 @@ const api = axios.create({
 api.interceptors.request.use(
     async (config) => {
         let token = null;
+        token = await SecureStore.getItemAsync('jwtToken');
 
-        if (Platform.OS === 'web') {
-            token = Cookies.get('jwtToken');
-        } else if (Platform.OS === 'android') {
-            token = await SecureStore.getItemAsync('jwtToken');
-        }
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
