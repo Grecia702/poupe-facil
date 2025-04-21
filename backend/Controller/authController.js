@@ -111,7 +111,16 @@ const logout = async (req, res) => {
         }
         else {
             await pool.query('DELETE FROM refresh_tokens WHERE token = $1', [refreshToken])
-            res.clearCookie('refreshToken');
+            res.clearCookie('accessToken', {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'strict'
+            });
+            res.clearCookie('refreshToken', {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'strict'
+            });
             return res.status(200).json({ message: 'Token apagado com sucesso' });
         }
     } catch (err) {
