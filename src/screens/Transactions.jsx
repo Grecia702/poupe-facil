@@ -52,11 +52,6 @@ const Transactions = () => {
 
     };
 
-    // useEffect(() => {
-    //     loadData();
-    // }, []);
-
-
     const renderItem = ({ item }) => {
         const formattedDate = moment(item.data_compra).format('DD/MM/YYYY')
         if (item.tipo === "Despesa") {

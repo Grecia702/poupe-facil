@@ -1,8 +1,7 @@
 import React, { createContext, useContext } from 'react';
 import api from './axiosInstance';
-import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
-import { API_URL } from '@env'
+import { useAuth } from '@context/authContext';
 
 export const TransactionContext = createContext();
 
@@ -13,14 +12,16 @@ const getTransacoes = async () => {
         return data;
     } catch (error) {
         console.log('Erro ao fazer a requisição:', error);
-        throw error;  // Não esquecer de re-lançar o erro para o React Query lidar com ele.
+        throw error;
     }
 };
-export const TransactionProvider = ({ children }) => {
 
+export const TransactionProvider = ({ children }) => {
+    const { isAuthenticated } = useAuth();
     const { data: dadosAPI, isLoading, error, refetch } = useQuery({
         queryKey: ['transaction_id'],
         queryFn: getTransacoes,
+        enabled: isAuthenticated,
         onSuccess: (data) => {
             console.log('Query foi bem-sucedida:', data);
         },

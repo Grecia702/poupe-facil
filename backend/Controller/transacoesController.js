@@ -84,7 +84,8 @@ const UpdateTransaction = async (req, res) => {
 }
 const ListarTransactions = async (req, res) => {
     try {
-        const userId = req.user.userId;
+        const { userId } = req.user.decoded
+        // const userId = req.user.userId;
         const transacoes = await transactionModel.ListTransactions(userId);
         res.json(transacoes.rows);
     } catch (error) {

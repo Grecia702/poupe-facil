@@ -53,32 +53,46 @@ export const AuthProvider = ({ children }) => {
         },
     });
 
+
+    // Função pra manter o usuario logado / renovar tokens de acessos
     useEffect(() => {
         const checkToken = async () => {
             try {
                 const token = await SecureStore.getItemAsync('accessToken');
-                if (!token) {
+                const expired = !token || jwtDecode(token).exp < Date.now() / 1000;
+                if (!expired) {
+                    setIsAuthenticated(true);
+                    return setIsLoading(false);
+                }
+                const refreshToken = await SecureStore.getItemAsync('refreshToken');
+                if (!refreshToken) {
+                    console.log("Nenhum refresh token encontrado.");
+                    await SecureStore.deleteItemAsync('accessToken');
+                    await SecureStore.deleteItemAsync('refreshToken');
                     setIsAuthenticated(false);
+                    setIsLoading(false);
                     return;
                 }
-                const decodedToken = jwtDecode(token);
-                const currentTime = Date.now() / 1000;
-
-                const response = await api.get('/auth/protected', {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
+                const response = await axios.post(
+                    `${API_URL}/auth/refresh`,
+                    {},
+                    {
+                        headers: { Authorization: `Bearer ${refreshToken}` },
+                        timeout: 3000,
+                        validateStatus: () => true,
                     }
-                });
-                console.log('Resposta da rota protegida:', response);
-                console.log('Status:', response.status);
-
-                if (decodedToken.exp > currentTime || response.data?.newAccessToken) {
+                );
+                if (response.status === 200) {
+                    await SecureStore.setItemAsync('accessToken', response.data.newAccessToken);
                     setIsAuthenticated(true);
                 } else {
-                    setIsAuthenticated(false);
+                    console.log("Erro ao renovar token:", response.data.message);
+                    throw new Error(response.data.message);
                 }
             } catch (error) {
-                console.log("Erro ao validar sessão:", error.response?.data || error);
+                console.log("Erro final:", error.message);
+                await SecureStore.deleteItemAsync('accessToken');
+                await SecureStore.deleteItemAsync('refreshToken');
                 setIsAuthenticated(false);
             } finally {
                 setIsLoading(false);

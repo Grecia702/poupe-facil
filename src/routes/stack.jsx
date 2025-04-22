@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/login';
 import React, { useContext } from 'react';
 import DrawerRoutes from './drawer.routes';
+import AuthLoadingScreen from '@context/authLoadingScreen';
 import EditTransactions from '../screens/EditTransactions';
 import CreateTransaction from '../screens/CreateTransactions';
 import { colorContext } from '@context/colorScheme';
@@ -12,6 +13,7 @@ export default function StackRoutes() {
     const { isDarkMode } = useContext(colorContext)
     return (
         <Stack.Navigator  >
+            <Stack.Screen name="AuthLoading" component={AuthLoadingScreen} options={{ headerShown: false }} />
             <Stack.Screen
                 name="login"
                 component={LoginScreen}

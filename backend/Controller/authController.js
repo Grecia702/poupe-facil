@@ -21,7 +21,6 @@ const {
 // LOGIN
 const login = async (req, res) => {
     const { email, senha } = req.body;
-    // console.log(req.body)
     try {
         const usuarios = await userModel.ListUser(email);
         const usuario = usuarios.total > 0 ? usuarios.firstResult : null
@@ -42,20 +41,6 @@ const login = async (req, res) => {
             const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
             const agent = req.get('User-Agent')
             await pool.query('INSERT INTO refresh_tokens (usuario_id, token, user_agent, expires_at) VALUES ($1, $2, $3, $4)', [userId, refreshToken, agent, expiresAt]);
-
-            res.cookie('accessToken', accessToken, {
-                httpOnly: true,
-                secure: true,
-                sameSite: 'strict',
-                maxAge: 15 * 60 * 1000
-            });
-
-            res.cookie('refreshToken', refreshToken, {
-                httpOnly: true,
-                secure: true,
-                sameSite: 'strict',
-                maxAge: 30 * 24 * 60 * 60 * 1000
-            });
             return res.status(200).json({
                 accessToken,
                 refreshToken,
@@ -72,32 +57,39 @@ const login = async (req, res) => {
 };
 
 
-// const refresh = async (req, res) => {
-//     let refreshToken = req.cookies.refreshToken;
-//     // console.log(refreshToken)
-//     if (!refreshToken) {
-//         return res.status(403).json({ message: 'Cookie invalido' });
-//     }
-//     const result = await pool.query('SELECT * FROM refresh_tokens WHERE token = $1', [refreshToken]);
-//     if (result.rowCount === 0) {
-//         return res.status(403).json({ message: 'Access denied' });
-//     }
+const refresh = async (req, res) => {
+    if (req.headers.authorization?.startsWith('Bearer ')) {
+        const refreshToken = req.headers.authorization.split(' ')[1];
+        const userAgent = req.get('User-Agent')
+        const result = await pool.query('SELECT * FROM refresh_tokens WHERE token = $1', [refreshToken]);
+        const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
+        if (result.rowCount === 0) {
+            return res.status(401).setHeader('Content-Type', 'application/json').json({ message: 'Refresh token não existe' });
+        }
+        try {
+            const { valid, expired, decoded } = verifyRefreshToken(refreshToken);
 
-//     try {
-//         const decoded = verifyRefreshToken(refreshToken);
-//         const newAccessToken = generateAccessToken({ userId: decoded.userId });
-//         res.cookie('jwtToken', newAccessToken, {
-//             httpOnly: true,
-//             secure: true,
-//             sameSite: 'strict',
-//             maxAge: 15 * 60 * 1000
-//         });
+            if (expired) {
+                await pool.query('DELETE FROM refresh_tokens WHERE token = $1 ', [refreshToken]);
+                console.log("token invalidado as", timestamp)
+                return res.status(401).json({ message: 'Refresh token expirado, faça login novamente' });
+            }
 
-//         res.status(200).json({ message: 'Cookie gerado com sucesso' });
-//     } catch (err) {
-//         return res.status(403).json({ message: "Erro", error: err.message });
-//     }
-// };
+            if (!valid) {
+                return res.status(403).json({ message: 'Refresh token inválido' });
+            }
+            const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
+            const newAccessToken = generateAccessToken({ userId: decoded.userId });
+            console.log("Token renovado com sucesso as", timestamp)
+            return res.status(200).json({ message: 'Token renovado com sucesso', newAccessToken });
+        } catch (err) {
+            return res.status(500).json({ message: "Erro ao validar token", error: err.message });
+        }
+    }
+    else {
+        return res.status(401).json({ message: 'Token invalido' });
+    }
+};
 
 const logout = async (req, res) => {
     let refreshToken = req.cookies.refreshToken || req.body.refreshToken;
@@ -130,5 +122,6 @@ const logout = async (req, res) => {
 
 module.exports = {
     login,
-    logout
+    logout,
+    refresh
 };
