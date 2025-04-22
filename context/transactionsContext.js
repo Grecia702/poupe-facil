@@ -1,65 +1,42 @@
-import React, { createContext, useState, useEffect } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import React, { createContext, useContext } from 'react';
 import api from './axiosInstance';
+import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
+import { API_URL } from '@env'
 
 export const TransactionContext = createContext();
 
+const getTransacoes = async () => {
+    try {
+        console.log('Iniciando requisição para transações...');
+        const { data } = await api.get('/profile/transaction/');
+        return data;
+    } catch (error) {
+        console.log('Erro ao fazer a requisição:', error);
+        throw error;  // Não esquecer de re-lançar o erro para o React Query lidar com ele.
+    }
+};
 export const TransactionProvider = ({ children }) => {
-    // const [dadosAPI, setDadosAPI] = useState([]);
-    // // const [transaction, setTransaction] = useState();
 
-    // const checkDadosAPI = async () => {
-    //     try {
-    //         const token = await SecureStore.getItemAsync('jwtToken');
-    //         if (!token) {
-    //             console.log("Token não encontrado");
-    //             return;
-    //         }
-    //         const response = await api.get('/profile/transaction/', {
-    //             headers: {
-    //                 Authorization: `Bearer ${token}`,
-    //             },
-    //             withCredentials: true,
-    //         });
-    //         if (response.status === 200) {
-    //             setDadosAPI(response.data);
-    //         }
-    //     } catch (error) {
-    //         console.log('Erro ao fazer requisição:', error);
-    //     }
-    // };
-
-    // useEffect(() => {
-    //     checkDadosAPI();
-    // }, []);
-
-    // const fetchData = async (id) => {
-    //     try {
-    //         const token = await SecureStore.getItemAsync('jwtToken');
-    //         if (!token) {
-    //             console.log("Token não encontrado");
-    //             return;
-    //         }
-    //         const response = await api.get(`/profile/transaction/${id}`, {
-    //             headers: {
-    //                 Authorization: `Bearer ${token}`,
-    //             },
-    //             withCredentials: true,
-    //         });
-
-    //         if (response.status === 200) {
-    //             // setTransaction(response.data)
-    //             return response.data;
-    //         }
-    //     } catch (error) {
-    //         console.log('Erro ao fazer requisição:', error);
-    //     }
-    // };
-
+    const { data: dadosAPI, isLoading, error, refetch } = useQuery({
+        queryKey: ['transaction_id'],
+        queryFn: getTransacoes,
+        onSuccess: (data) => {
+            console.log('Query foi bem-sucedida:', data);
+        },
+        onError: (error) => {
+            console.log('Erro na query:', error);
+        }
+    })
 
     return (
-        <TransactionContext.Provider value={{}}>
+        <TransactionContext.Provider value={{ dadosAPI, isLoading, error, refetch }}>
             {children}
         </TransactionContext.Provider>
     );
+};
+
+
+export const useTransactionAuth = () => {
+    return useContext(TransactionContext)
 };

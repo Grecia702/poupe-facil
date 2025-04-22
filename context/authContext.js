@@ -5,6 +5,7 @@ import api from './axiosInstance'
 import axios from 'axios';
 import { API_URL } from '@env'
 import { jwtDecode } from "jwt-decode";
+
 export const AuthContext = createContext();
 
 const postLogin = async (loginData) => {
@@ -28,7 +29,7 @@ export const AuthProvider = ({ children }) => {
     const loginMutation = useMutation({
         mutationFn: postLogin,
         onSuccess: async (data) => {
-            await SecureStore.setItemAsync('jwtToken', data.accessToken);
+            await SecureStore.setItemAsync('accessToken', data.accessToken);
             await SecureStore.setItemAsync('refreshToken', data.refreshToken);
             setIsAuthenticated(true);
             console.log('Login bem-sucedido', data);
@@ -42,7 +43,7 @@ export const AuthProvider = ({ children }) => {
     const logoutMutation = useMutation({
         mutationFn: postLogout,
         onSuccess: async () => {
-            await SecureStore.deleteItemAsync('jwtToken');
+            await SecureStore.deleteItemAsync('accessToken');
             await SecureStore.deleteItemAsync('refreshToken');
             setIsAuthenticated(false);
             console.log('Logout bem-sucedido');
@@ -55,26 +56,38 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const checkToken = async () => {
             try {
-                let token = await SecureStore.getItemAsync('jwtToken');
-                if (token) {
-                    const decodedToken = jwtDecode(token);
-                    const currentTime = Date.now() / 1000;
-                    if (decodedToken.exp > currentTime) {
-                        // TOKEN VÁLIDO
-                        setIsAuthenticated(true);
-                    } else {
-                        // TOKEN EXPIRADO
-                        setIsAuthenticated(false);
+                const token = await SecureStore.getItemAsync('accessToken');
+                if (!token) {
+                    setIsAuthenticated(false);
+                    return;
+                }
+                const decodedToken = jwtDecode(token);
+                const currentTime = Date.now() / 1000;
+
+                const response = await api.get('/auth/protected', {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
                     }
+                });
+                console.log('Resposta da rota protegida:', response);
+                console.log('Status:', response.status);
+
+                if (decodedToken.exp > currentTime || response.data?.newAccessToken) {
+                    setIsAuthenticated(true);
+                } else {
+                    setIsAuthenticated(false);
                 }
             } catch (error) {
-                console.error("Erro ao obter o token:", error);
+                console.log("Erro ao validar sessão:", error.response?.data || error);
+                setIsAuthenticated(false);
             } finally {
                 setIsLoading(false);
             }
         };
         checkToken();
     }, []);
+
+
 
 
     return (

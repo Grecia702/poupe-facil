@@ -25,13 +25,13 @@ const LoginScreen = () => {
         }
     }, [isAuthenticated, isLoading]);
 
-    if (isLoading || isAuthenticated) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#46bb50' }}>
-                <Text>Loading...</Text>
-            </View>
-        );
-    }
+    // if (isLoading || isAuthenticated) {
+    //     return (
+    //         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#46bb50' }}>
+    //             <Text>Loading...</Text>
+    //         </View>
+    //     );
+    // }
 
     const handleLogin = async () => {
         if (!credentials.email || !credentials.senha) {

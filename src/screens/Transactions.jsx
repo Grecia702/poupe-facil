@@ -9,13 +9,14 @@ import moment from 'moment';
 import { useNavigation } from '@react-navigation/native';
 import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
 import { useWindowDimensions } from 'react-native';
+import { useTransactionAuth } from '@context/transactionsContext';
 
 // TODO: rotas de criação/edição/exclusão de transações, implementar função de SORT, refatorar e otimizar
 const Transactions = () => {
     const navigation = useNavigation();
     const [modalVisible, setModalVisible] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
-    const { dadosAPI, checkDadosAPI } = useContext(TransactionContext);
+    const { dadosAPI, refetch } = useTransactionAuth();
     const [dropdownVisibleId, setDropdownVisibleId] = useState(null);
     const [dadosFiltrados, setDadosFiltrados] = useState([]);
     const { isDarkMode } = useContext(colorContext);
@@ -26,7 +27,6 @@ const Transactions = () => {
         operador: null,
         data: null
     })
-    // const[menuVisible, setMenuVisible] = useState(false)
 
     const { height, width } = useWindowDimensions();
     const rectHeight = 30;
@@ -34,16 +34,10 @@ const Transactions = () => {
     const radius = 18;
     const priceWidth = 70;
 
-    // const handleUpdate = async () => {
-    //     try {
-    //     }
-    //     catch {
-    //     }
-    // }
 
     const loadData = async () => {
         setRefreshing(true);
-        await checkDadosAPI();
+        refetch();
         setFiltrosCategorias({
             categorias: [],
             valor: null,
@@ -57,9 +51,10 @@ const Transactions = () => {
         }, 500);
 
     };
-    useEffect(() => {
-        loadData();
-    }, []);
+
+    // useEffect(() => {
+    //     loadData();
+    // }, []);
 
 
     const renderItem = ({ item }) => {

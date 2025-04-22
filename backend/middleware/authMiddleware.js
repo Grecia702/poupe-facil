@@ -24,6 +24,7 @@ module.exports = async (req, res, next) => {
         let accessToken = req.cookies.accessToken;
         if (!accessToken && req.headers.authorization?.startsWith('Bearer ')) {
             accessToken = req.headers.authorization.split(' ')[1];
+            console.log(accessToken)
         }
 
         if (!accessToken) {
@@ -48,20 +49,25 @@ module.exports = async (req, res, next) => {
                 httpOnly: true,
                 secure: true,
                 sameSite: 'strict',
-                maxAge: 1 * 60 * 1000
+                maxAge: 15 * 60 * 1000
             });
             req.user = { userId: decoded.userId };
             console.log("Autenticação renovada")
+            req.newAccessToken = newAccessToken;
             return next();
         }
 
         const result = verifyAccessToken(accessToken);
         if (result.valid) {
             req.user = result.decoded;
+            console.log(req.headers.authorization)
             console.log("Autenticação persiste")
             return next();
         }
+        else {
+            return res.status(401).json({ message: 'Access token inválido ou expirado' });
+        }
     } catch (error) {
-        return res.status(401).json({ error: 'Token inválido', error: error.message });
+        return res.status(500).json({ error: 'Possivel erro no sistema', error: error.message });
     }
 };

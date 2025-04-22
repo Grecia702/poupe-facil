@@ -28,8 +28,10 @@ export default function HomeScreen() {
   const mensalExpense = EXPENSES[meses];
   const { isDarkMode } = useContext(colorContext)
 
+
   const upCount = () => {
     if (progress < 1) {
+      buscarTransacao(26);
       setProgress(progress => Math.round((progress + 0.05) * 100) / 100);
     }
   }
