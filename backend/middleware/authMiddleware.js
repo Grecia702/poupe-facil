@@ -3,21 +3,7 @@ const express = require('express');
 const app = express();
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
-const moment = require('moment');
-const { Pool } = require('pg');
-const pool = new Pool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
-});
-
-const {
-    verifyAccessToken,
-    verifyRefreshToken,
-    generateAccessToken
-} = require('../utils/tokenUtils');
+const { verifyAccessToken } = require('../utils/tokenUtils');
 
 module.exports = (req, res, next) => {
     let token = req.cookies.accessToken;

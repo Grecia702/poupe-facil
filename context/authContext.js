@@ -41,15 +41,27 @@ export const AuthProvider = ({ children }) => {
     });
 
     const logoutMutation = useMutation({
-        mutationFn: postLogout,
-        onSuccess: async () => {
-            await SecureStore.deleteItemAsync('accessToken');
-            await SecureStore.deleteItemAsync('refreshToken');
-            setIsAuthenticated(false);
-            console.log('Logout bem-sucedido');
+        mutationFn: async () => {
+            const refreshToken = await SecureStore.getItemAsync('refreshToken');
+            return axios.post(`${API_URL}/auth/logout`, {}, {
+                headers: { Authorization: `Bearer ${refreshToken}` },
+                timeout: 3000,
+                validateStatus: () => true,
+            });
+        },
+        onSuccess: async (responseLogout) => {
+            if (responseLogout.status === 200) {
+                await SecureStore.deleteItemAsync('accessToken');
+                await SecureStore.deleteItemAsync('refreshToken');
+                setIsAuthenticated(false);
+                console.log('Logout bem-sucedido');
+            } else {
+                console.log("Erro ao apagar token:", responseLogout.data.message);
+                throw new Error(responseLogout.data.message);
+            }
         },
         onError: (error) => {
-            console.error('Erro ao fazer logout', error.message);
+            console.error('Erro ao fazer logout:', error.message);
         },
     });
 
