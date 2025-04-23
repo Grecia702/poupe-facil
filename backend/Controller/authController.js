@@ -2,6 +2,7 @@ require('dotenv').config();
 const userModel = require("../models/userModel");
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt')
+const saltRounds = 12;
 const moment = require('moment');
 const logger = require('../utils/loggerConfig')
 
@@ -67,6 +68,32 @@ const refresh = async (req, res) => {
     return res.status(200).json({ message: 'Token renovado com sucesso', newAccessToken });
 };
 
+const signup = async (req, res) => {
+    const { nome, email, senha } = req.body;
+    try {
+        const searchUser = await userModel.FindUser(email);
+        const uniqueEmail = searchUser.total === 0
+        console.log(uniqueEmail)
+
+        if (!nome && !email && !senha) {
+            if (!uniqueEmail) {
+                console.log("email ja existe")
+                return res.status(409).json({ message: 'Esse e-mail já está em uso!' });
+            }
+            const passwordHash = await bcrypt.hash(senha, saltRounds);
+            userModel.CreateUser(nome, email, passwordHash)
+            return res.status(201).json({ message: 'Usuário criado com sucesso!' });
+        }
+        else {
+            console.log("Campos em branco");
+            return res.status(400).json({ message: 'Campo(s) em branco' });
+        }
+    }
+    catch (err) {
+        console.error('Erro ao cadastrar usuário:', err);
+        return res.status(500).json({ message: 'Erro ao cadastrar usuário', error: err.message });
+    }
+}
 
 const logout = async (req, res) => {
     const refreshToken = req.headers.authorization.split(' ')[1];
@@ -95,5 +122,6 @@ const logout = async (req, res) => {
 module.exports = {
     login,
     logout,
-    refresh
+    refresh,
+    signup
 };

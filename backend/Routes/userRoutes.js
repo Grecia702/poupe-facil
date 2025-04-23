@@ -6,7 +6,6 @@ const authController = require('../controller/authController')
 
 const logger = require('../utils/loggerConfig')
 
-router.post("/signup", userController.SignUp);
 router.delete("/", authMiddleware, userController.deleteAccount)
 
 router.get("/protected", authMiddleware, (req, res) => {
