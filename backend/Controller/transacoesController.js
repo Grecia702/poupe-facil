@@ -31,8 +31,8 @@ const AddTransaction = async (req, res) => {
 }
 
 const ReadTransaction = async (req, res) => {
-    const { id } = req.params
     try {
+        const { id } = req.params
         const Transactions = await transactionModel.ReadTransaction(id)
         const Transaction = Transactions.total > 0 ? Transactions.firstResult : null
         if (Transaction) {

@@ -5,7 +5,7 @@ import { TouchableOpacity } from 'react-native';
 import { colorContext } from '../../context/colorScheme';
 import TabRoutes from './tab.router';
 // import StackRoutes from './stack';
-import Transactions from '../screens/Transactions'
+import Transactions from '../screens/Transactions/Transactions'
 import Accounts from '../screens/Accounts'
 import CreditCards from '../screens/CreditCards'
 import Budget from '../screens/Budget'

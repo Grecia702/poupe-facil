@@ -1,7 +1,6 @@
 import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { useRoute } from '@react-navigation/native';
-import { TransactionContext } from '@context/transactionsContext';
 import { format } from 'date-fns';
 import api from '@context/axiosInstance'
 

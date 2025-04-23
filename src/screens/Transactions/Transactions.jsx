@@ -1,7 +1,6 @@
 import { StyleSheet, FlatList, TouchableOpacity, Modal, Text, View, Pressable } from 'react-native'
 import React, { useState, useContext, useEffect, useMemo } from 'react'
 import { MaterialIcons } from '@expo/vector-icons'
-import { TransactionContext } from '@context/transactionsContext';
 import { colorContext } from '@context/colorScheme'
 import TransactionCard from '@components/transactions';
 import ModalView from '@components/modal';

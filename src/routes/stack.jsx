@@ -3,8 +3,8 @@ import LoginScreen from '../screens/login';
 import React, { useContext } from 'react';
 import DrawerRoutes from './drawer.routes';
 import AuthLoadingScreen from '@context/authLoadingScreen';
-import EditTransactions from '../screens/EditTransactions';
-import CreateTransaction from '../screens/CreateTransactions';
+import EditTransactions from '../screens/Transactions/EditTransactions';
+import CreateTransaction from '../screens/Transactions/CreateTransactions';
 import { colorContext } from '@context/colorScheme';
 
 const Stack = createNativeStackNavigator();
@@ -32,7 +32,8 @@ export default function StackRoutes() {
                     title: 'Editar Transação', headerShown: true,
                     headerStyle: {
                         backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E',
-                    }
+                    },
+                    headerTintColor: isDarkMode ? "white" : 'black'
                 }}
             />
             <Stack.Screen
@@ -42,7 +43,8 @@ export default function StackRoutes() {
                     title: 'Criar Transação', headerShown: true,
                     headerStyle: {
                         backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E',
-                    }
+                    },
+                    headerTintColor: isDarkMode ? "white" : 'black'
                 }}
             />
         </Stack.Navigator>

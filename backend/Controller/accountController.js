@@ -1,58 +1,59 @@
 const accountModel = require("../models/accountModel");
 const moment = require('moment');
-const jwt = require('jsonwebtoken');
 
-const AddAccount = async (req, res) => {
-    const timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
-    const { categoria, tipo, valor } = req.body
-    const token = req.headers.authorization?.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'Token não fornecido' });
-    }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id;
+const CreateAccount = async (req, res) => {
+    const timestamp = moment().format('YYYY-MM-DD');
     try {
-        if (tipo === "Despesa") {
-            const despesa = valor * -1;
-            accountModel.CreateAccount(userId, categoria, tipo, despesa, timestamp);
-            return res.status(200).json({ message: 'Despesa Cadastrada' })
+        const { nome_conta, saldo, desc_conta } = req.body
+        const { userId } = req.user.decoded
+        const Contas = await accountModel.ReadAccount(nome_conta, 'nome_conta')
+        const ContaExiste = Contas.total > 0
+
+        if (!nome_conta) {
+            return res.status(400).json({ message: 'Campos obrigatórios ausentes' });
         }
-        else if (tipo === "Receita") {
-            accountModel.CreateAccount(userId, categoria, tipo, valor, timestamp);
-            return res.status(200).json({ message: 'Receita Cadastrada' })
+
+        if (ContaExiste) {
+            return res.status(400).json({ message: 'Já existe uma conta com este nome' })
         }
+
+        if (!saldo && saldo !== 0) {
+            throw new Error("O campo 'saldo' é obrigatório.");
+        }
+
+        accountModel.CreateAccount(userId, nome_conta, timestamp, saldo, desc_conta);
+        return res.status(200).json({ message: 'Conta Cadastrada' })
     }
     catch (err) {
-        console.error("Erro ao adicionar a transação: ", err)
-        return res.status(500).json({ message: 'Erro ao adicionar transação' })
+        console.error("Erro ao adicionar a conta: ", err)
+        return res.status(500).json({ message: 'Erro ao adicionar conta' })
     }
 }
 
 const RemoveAccount = async (req, res) => {
-    const { id } = req.body
     try {
-        const Transactions = await accountModel.ReadAccount(id)
-        const Transaction = Transactions.total > 0 ? Transactions.firstResult : null
+        const { userId } = req.user.decoded
+        const { id } = req.params;
+        const account = await accountModel.ListAccount(id, userId)
+        const ContaExiste = account.total > 0
 
-        if (Transaction) {
+        if (ContaExiste) {
             await accountModel.DeleteAccount(id)
-            console.log("Transacao Exclúida: ", id)
-            return res.status(200).json({ message: 'Transação excluída com sucesso' })
+            console.log("Conta Exclúida: ", id)
+            return res.status(200).json({ message: 'Conta excluída com sucesso' })
         }
-        if (!Transaction) {
-            console.log("Transacao não encontrada: ", id)
-            return res.status(404).json({ message: 'Transação não encontrada' })
+        else {
+            return res.status(404).json({ message: 'Conta não encontrada' })
         }
     }
     catch (err) {
-        return res.status(500).json({ message: 'Não foi possivel excluir a transação' })
+        return res.status(500).json({ message: 'Não foi possivel excluir a conta' })
     }
 }
 
 const ListAccount = async (req, res) => {
-    const userId = req.usuarioId
     try {
+        const { userId } = req.user.decoded
         const account = await accountModel.ListAccount(userId);
         res.json(account.rows)
     }
@@ -61,4 +62,24 @@ const ListAccount = async (req, res) => {
         return res.status(500).json({ message: 'not found' })
     }
 }
-module.exports = { AddAccount, RemoveAccount, ListAccount };
+
+const FindAccount = async (req, res) => {
+    try {
+        const { userId } = req.user.decoded
+        const { id } = req.params
+        const account = await accountModel.ListAccount(id, userId);
+        const contaEncontrada = account.total > 0 ? account.firstResult : null
+        if (contaEncontrada) {
+            return res.status(200).json(account.rows)
+        }
+        else {
+            return res.status(404).json({ message: 'Conta não encontrada' })
+        }
+
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({ message: 'not found' })
+    }
+}
+module.exports = { CreateAccount, RemoveAccount, ListAccount, FindAccount };

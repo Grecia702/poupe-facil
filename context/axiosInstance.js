@@ -6,6 +6,10 @@ const api = axios.create({
     baseURL: API_URL,
 });
 
+const refreshAxios = axios.create({
+    baseURL: API_URL
+});
+
 api.interceptors.request.use(
     async (config) => {
         let token = null;
@@ -18,7 +22,7 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-axios.interceptors.response.use(
+api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
@@ -29,13 +33,26 @@ axios.interceptors.response.use(
                 if (!refreshToken) {
                     throw new Error("No refresh token available");
                 }
-                const refreshResponse = await axios.post(`${API_URL}/auth/refresh`, {
-                    refreshToken,
-                });
+                const refreshResponse = await refreshAxios.post(
+                    '/auth/refresh',
+                    {},
+                    {
+                        headers: {
+                            Authorization: `Bearer ${refreshToken}`,
+                        },
+                        timeout: 5000,
+                    }
+                );
+                if (refreshResponse.status !== 200 || !refreshResponse.data.newAccessToken) {
+                    throw new Error("Refresh token inválido ou expirado");
+                }
                 const { newAccessToken } = refreshResponse.data;
                 await SecureStore.setItemAsync('accessToken', newAccessToken);
+
+                originalRequest.headers = originalRequest.headers || {};
                 originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-                return axios(originalRequest);
+
+                return api(originalRequest);
             } catch (refreshError) {
                 console.log("Falha ao renovar token:", refreshError);
                 await SecureStore.deleteItemAsync('accessToken');
@@ -43,10 +60,10 @@ axios.interceptors.response.use(
                 return Promise.reject(refreshError);
             }
         }
+
         return Promise.reject(error);
     }
 );
-
 
 
 export default api;

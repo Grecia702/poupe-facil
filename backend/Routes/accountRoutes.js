@@ -4,8 +4,9 @@ const authMiddleware = require('../middleware/authMiddleware');
 const accountController = require('../controller/accountController')
 const logger = require('../utils/loggerConfig')
 
-router.post("/account", authMiddleware, accountController.AddAccount)
-router.delete("/account/delete", authMiddleware, accountController.RemoveAccount)
-router.get("/account/list", authMiddleware, accountController.ListAccount)
+router.post("/", authMiddleware, accountController.CreateAccount)
+router.delete("", authMiddleware, accountController.RemoveAccount)
+router.get("/", authMiddleware, accountController.ListAccount)
+router.get("/:id", authMiddleware, accountController.FindAccount)
 
 module.exports = router
