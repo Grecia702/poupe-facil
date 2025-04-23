@@ -21,7 +21,7 @@ const login = async (req, res) => {
     const { email, senha } = req.body;
     const agent = req.get('User-Agent')
     try {
-        const usuarios = await userModel.ListUser(email);
+        const usuarios = await userModel.FindUser(email);
         const usuario = usuarios.total > 0 ? usuarios.firstResult : null
         const senhaValida = await bcrypt.compare(senha, usuario.senha)
 

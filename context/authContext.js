@@ -13,6 +13,11 @@ const postLogin = async (loginData) => {
     return res.data;
 };
 
+const postSignUp = async (signUpData) => {
+    const res = await api.post('/auth/signup', signUpData);
+    return res.data;
+};
+
 const postLogout = async () => {
     const refreshToken = await SecureStore.getItemAsync('refreshToken');
     const res = await axios.post(`${API_URL}/auth/logout`,
@@ -37,6 +42,20 @@ export const AuthProvider = ({ children }) => {
 
         onError: (error) => {
             console.error('Erro ao fazer login', error.message);
+        },
+    });
+
+    const signUpMutation = useMutation({
+        mutationFn: postSignUp,
+        onSuccess: async (data) => {
+            await SecureStore.setItemAsync('accessToken', data.accessToken);
+            await SecureStore.setItemAsync('refreshToken', data.refreshToken);
+            setIsAuthenticated(true);
+            console.log('Usuário Cadastrado com sucesso', data);
+        },
+
+        onError: (error) => {
+            console.error('Erro ao fazer cadastro', error.message);
         },
     });
 

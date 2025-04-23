@@ -8,17 +8,12 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-const FindUser = async (email) => {
-    const { rows, rowCount } = await pool.query("SELECT * FROM usuario WHERE email = $1", [email]);
-    return { rows, rowCount };
-}
-
 const CreateUser = async (nome, email, senha) => {
     await pool.query("INSERT INTO usuario (nome, email, senha) VALUES ($1, $2, $3)", [nome, email, senha]);
 }
 
-const ListUser = async (email) => {
-    const { rows, rowCount } = await pool.query("SELECT id, nome, email, senha FROM usuario WHERE email = $1", [email]);
+const ListUser = async (id) => {
+    const { rows, rowCount } = await pool.query("SELECT id, nome, email, senha FROM usuario WHERE id = $1", [id]);
     return { rows, total: rowCount, firstResult: rows[0] };
 }
 
@@ -28,6 +23,10 @@ const UpdateUser = async (id, email) => {
 
 const DeleteUser = async (id) => {
     await pool.query("DELETE FROM usuario WHERE id = $1", [id])
-    throw new Error('Erro ao se conectar ao banco de dados');
+}
+
+const FindUser = async (email) => {
+    const { rows, rowCount } = await pool.query("SELECT id, email, senha FROM usuario WHERE email = $1", [email]);
+    return { rows, total: rowCount, firstResult: rows[0] };
 }
 module.exports = { FindUser, CreateUser, ListUser, UpdateUser, DeleteUser };

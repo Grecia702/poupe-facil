@@ -1,6 +1,6 @@
-import { StyleSheet, Text, View, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, TextInput, TouchableOpacity, Pressable } from 'react-native';
 import Fontisto from '@expo/vector-icons/Fontisto';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import { useAuth } from '@context/authContext';
 import { useNavigation } from '@react-navigation/native'
@@ -10,7 +10,6 @@ const LoginScreen = () => {
     const [credentials, setCredentials] = useState({ email: '', senha: '' });
     const [message, setMessage] = useState('');
     const [visible, setVisible] = useState(true);
-    const { isAuthenticated, isLoading } = useAuth();
     const { loginMutation } = useAuth()
 
     const toggleShowPassword = () => {
@@ -93,10 +92,10 @@ const LoginScreen = () => {
                 <Text style={[styles.message, { color: loginMutation.isError ? 'red' : 'green' }]}>
                     {message}
                 </Text>
-                {/* 
-                <Link href="/signup" style={{ alignSelf: 'center', textDecorationLine: 'underline' }}>
-                    Não tem uma conta? Cadastre-se
-                </Link> */}
+
+                <Pressable href="/signup" style={{ alignSelf: 'center', textDecorationLine: 'underline' }} onPress={() => navigation.navigate('signup')}>
+                    <Text style={{ alignSelf: 'center', textDecorationLine: 'underline' }}>Não tem uma conta? Cadastre-se</Text>
+                </Pressable>
             </View>
         </SafeAreaView>
     );

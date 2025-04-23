@@ -1,11 +1,12 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import LoginScreen from '../screens/login';
 import React, { useContext } from 'react';
 import DrawerRoutes from './drawer.routes';
-import AuthLoadingScreen from '@context/authLoadingScreen';
+import LoginScreen from '../screens/login';
+import SignupScreen from '../screens/Signup';
 import EditTransactions from '../screens/Transactions/EditTransactions';
 import CreateTransaction from '../screens/Transactions/CreateTransactions';
 import { colorContext } from '@context/colorScheme';
+import AuthLoadingScreen from '@context/authLoadingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +19,12 @@ export default function StackRoutes() {
                 name="login"
                 component={LoginScreen}
                 options={{ title: 'Página Login', headerShown: false }}
+
+            />
+            <Stack.Screen
+                name="signup"
+                component={SignupScreen}
+                options={{ title: 'Página Cadastro', headerShown: false }}
 
             />
             <Stack.Screen

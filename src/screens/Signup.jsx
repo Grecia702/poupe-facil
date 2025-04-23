@@ -1,53 +1,51 @@
-import { API_URL } from '@env'
 import { StyleSheet, Text, View, SafeAreaView, TextInput, Pressable } from 'react-native'
-import { Link } from 'expo-router';
 import Fontisto from '@expo/vector-icons/Fontisto';
-import { Inter_300Light, useFonts } from '@expo-google-fonts/inter';
-
 import React, { useState } from 'react';
-import axios from 'axios';
-
+import { useNavigation } from '@react-navigation/native'
+import { useAuth } from '@context/authContext';
 
 const SignupScreen = () => {
-
-    const [nome, setNome] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [passwordRepeat, setPasswordRepeat] = useState('');
+    const navigation = useNavigation();
+    const [credentials, setCredentials] = useState({ nome: '', email: '', senha: '', confirmarSenha: '' });
     const [message, setMessage] = useState('');
+    const { signUpMutation } = useAuth()
 
-    const handleSignup = () => {
-        axios
-            .post(`${API_URL}/signup`, { nome: nome, email: email, senha: password, senhaRepeat: passwordRepeat })
-            .then((response) => {
-                if (response.status === 200) {
-                    setMessage(response.data.message);
-                }
-            })
-            .catch((error) => {
-                if (error.response) {
-                    setMessage(error.response.data.message);
-                } else {
-                    setMessage('Erro na requisição, tente novamente.');
-                }
-            });
+    const handleSignUp = async () => {
+        if (!credentials.nome || !credentials.email || !credentials.senha || !credentials.confirmarSenha) {
+            setMessage('Preencha todos os campos.');
+            return;
+        }
+
+        if (!/\S+@\S+\.\S+/.test(credentials.email)) {
+            setMessage('Formato de e-mail inválido.');
+            return;
+        }
+
+        if (credentials.senha != credentials.confirmarSenha) {
+            setMessage('Senhas não coincidem.');
+            return;
+        }
+
+        signUpMutation.mutate(credentials, {
+            onSuccess: () => navigation.replace('home'),
+            onError: () => setMessage('Falha no login. Verifique suas credenciais.'),
+        });
     };
-
 
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.view}>
                 <Text style={styles.title}>Cadastre-se</Text>
                 <View style={styles.viewContainer}>
-                    <Fontisto name="email" size={24} color="black" />
+                    <Fontisto name="person" size={24} color="black" />
                     <Text style={styles.text}>Nome</Text>
                 </View>
 
                 <TextInput
                     style={styles.input}
                     placeholder='Insira Seu Nome'
-                    value={nome}
-                    onChangeText={setNome}
+                    value={credentials.nome}
+                    onChangeText={(text) => setCredentials({ ...credentials, nome: text })}
                 />
 
                 <View style={styles.viewContainer}>
@@ -58,8 +56,8 @@ const SignupScreen = () => {
                 <TextInput
                     style={styles.input}
                     placeholder='Insira Seu Email'
-                    value={email}
-                    onChangeText={setEmail}
+                    value={credentials.email}
+                    onChangeText={(text) => setCredentials({ ...credentials, email: text })}
                 />
 
                 <View style={styles.viewContainer}>
@@ -70,9 +68,9 @@ const SignupScreen = () => {
                 <TextInput
                     style={styles.input}
                     placeholder='Insira Sua Senha'
-                    value={password}
+                    value={credentials.senha}
                     secureTextEntry={true}
-                    onChangeText={setPassword}
+                    onChangeText={(text) => setCredentials({ ...credentials, senha: text })}
                 />
 
                 <View style={styles.viewContainer}>
@@ -83,19 +81,17 @@ const SignupScreen = () => {
                 <TextInput
                     style={styles.input}
                     placeholder='Insira Sua Senha Novamente'
-                    value={passwordRepeat}
-                    onChangeText={setPasswordRepeat}
+                    value={credentials.confirmarSenha}
+                    onChangeText={(text) => setCredentials({ ...credentials, confirmarSenha: text })}
                 />
 
-                <Pressable style={styles.button} onPress={handleSignup}>
+                <Pressable style={styles.button} onPress={handleSignUp}>
                     <Text style={styles.buttonText}>Cadastrar</Text>
                 </Pressable>
                 <Text style={styles.message}>{message}</Text>
-                <Link href="/login" style={{ alignSelf: "center" }}>
-                    <Text style={{ textDecorationLine: 'underline' }}>
-                        Fazer Login
-                    </Text>
-                </Link>
+                <Pressable style={{ alignSelf: "center" }} onPress={() => navigation.navigate('login')}>
+                    <Text style={{ textDecorationLine: 'underline' }}>Fazer Login</Text>
+                </Pressable>
             </View>
         </SafeAreaView>
     )
