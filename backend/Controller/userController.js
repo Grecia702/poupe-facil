@@ -9,7 +9,7 @@ const SignUp = async (req, res) => {
         const uniqueEmail = searchUser.total === 0
         console.log(uniqueEmail)
 
-        if (nome != '' && email != '' && senha != '') {
+        if (!nome && !email && !senha) {
             if (!uniqueEmail) {
                 console.log("email ja existe")
                 return res.status(409).json({ message: 'Esse e-mail já está em uso!' });
