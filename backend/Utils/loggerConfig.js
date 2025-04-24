@@ -21,5 +21,5 @@ const logger = winston.createLogger({
     ]
 });
 
-logger.info(`Servidor aberto`);
+
 module.exports = logger;

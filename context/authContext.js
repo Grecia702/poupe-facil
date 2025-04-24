@@ -48,12 +48,9 @@ export const AuthProvider = ({ children }) => {
     const signUpMutation = useMutation({
         mutationFn: postSignUp,
         onSuccess: async (data) => {
-            await SecureStore.setItemAsync('accessToken', data.accessToken);
-            await SecureStore.setItemAsync('refreshToken', data.refreshToken);
-            setIsAuthenticated(true);
+            ;
             console.log('Usuário Cadastrado com sucesso', data);
         },
-
         onError: (error) => {
             console.error('Erro ao fazer cadastro', error.message);
         },
@@ -136,7 +133,7 @@ export const AuthProvider = ({ children }) => {
 
 
     return (
-        <AuthContext.Provider value={{ loginMutation, logoutMutation, isAuthenticated, isLoading }}>
+        <AuthContext.Provider value={{ loginMutation, logoutMutation, signUpMutation, isAuthenticated, isLoading }}>
             {children}
         </AuthContext.Provider>
     );

@@ -1,8 +1,9 @@
 import { StyleSheet, Text, View, SafeAreaView, TextInput, Pressable } from 'react-native'
 import Fontisto from '@expo/vector-icons/Fontisto';
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { useAuth } from '@context/authContext';
+import Toast from 'react-native-toast-message';
 
 const SignupScreen = () => {
     const navigation = useNavigation();
@@ -13,28 +14,72 @@ const SignupScreen = () => {
     const handleSignUp = async () => {
         if (!credentials.nome || !credentials.email || !credentials.senha || !credentials.confirmarSenha) {
             setMessage('Preencha todos os campos.');
+            showError(message)
             return;
         }
 
         if (!/\S+@\S+\.\S+/.test(credentials.email)) {
             setMessage('Formato de e-mail inválido.');
+            showError(message)
             return;
         }
 
         if (credentials.senha != credentials.confirmarSenha) {
             setMessage('Senhas não coincidem.');
+            showError(message)
             return;
         }
-
         signUpMutation.mutate(credentials, {
-            onSuccess: () => navigation.replace('home'),
-            onError: () => setMessage('Falha no login. Verifique suas credenciais.'),
+            onSuccess: () => {
+                showNotif();
+            },
+            onError: () => {
+                setMessage('Falha no login. Verifique suas credenciais.')
+                showError(message);
+            },
         });
     };
 
+    const showNotif = () => {
+        Toast.show({
+            type: 'success',
+            text1: 'Usuário cadastrado com sucesso',
+            position: 'top',
+            visibilityTime: 1500,
+            topOffset: 20,
+            style: {
+                backgroundColor: 'green',
+            },
+            text1Style: {
+                fontSize: 16,
+            }
+        });
+        setTimeout(() => {
+            navigation.navigate('login');
+        }, 1600);
+    }
+
+    const showError = (text) => {
+        Toast.show({
+            type: 'error',
+            text1: text,
+            position: 'top',
+            visibilityTime: 1500,
+            topOffset: 20,
+            style: {
+                backgroundColor: 'red',
+            },
+            text1Style: {
+                fontSize: 16,
+            }
+        });
+    }
+
     return (
         <SafeAreaView style={styles.safeArea}>
+            <Toast />
             <View style={styles.view}>
+
                 <Text style={styles.title}>Cadastre-se</Text>
                 <View style={styles.viewContainer}>
                     <Fontisto name="person" size={24} color="black" />
@@ -82,14 +127,17 @@ const SignupScreen = () => {
                     style={styles.input}
                     placeholder='Insira Sua Senha Novamente'
                     value={credentials.confirmarSenha}
+                    secureTextEntry={true}
                     onChangeText={(text) => setCredentials({ ...credentials, confirmarSenha: text })}
                 />
 
                 <Pressable style={styles.button} onPress={handleSignUp}>
                     <Text style={styles.buttonText}>Cadastrar</Text>
                 </Pressable>
-                <Text style={styles.message}>{message}</Text>
-                <Pressable style={{ alignSelf: "center" }} onPress={() => navigation.navigate('login')}>
+                {/* <Text style={styles.message}>{message}</Text> */}
+                <Pressable style={{ alignSelf: "center" }} onPress={() => {
+                    navigation.navigate('login');
+                }}>
                     <Text style={{ textDecorationLine: 'underline' }}>Fazer Login</Text>
                 </Pressable>
             </View>
@@ -143,6 +191,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
         backgroundColor: '#3a9e58',
         borderWidth: 1,
+        borderRadius: 10,
         borderColor: "black"
 
     },
