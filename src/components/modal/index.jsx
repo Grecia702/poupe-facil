@@ -184,6 +184,8 @@ export default function ModalView({ setModalVisible, setTesteFiltros }) {
         )
     })
 
+
+
     return (
         <Modal>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>

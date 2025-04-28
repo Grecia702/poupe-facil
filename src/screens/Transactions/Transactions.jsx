@@ -33,7 +33,6 @@ const Transactions = () => {
     const radius = 18;
     const priceWidth = 70;
 
-
     const loadData = async () => {
         setRefreshing(true);
         refetch();
@@ -49,33 +48,6 @@ const Transactions = () => {
             setRefreshing(false);
         }, 500);
 
-    };
-
-    const renderItem = ({ item }) => {
-        const formattedDate = moment(item.data_compra).format('DD/MM/YYYY')
-        if (item.tipo === "Despesa") {
-            return (
-                <View style={{ position: 'relative', paddingVertical: 10 }}>
-                    <TransactionCard iconName="directions-car" color={'#dd6161'}
-                        state={isDarkMode} category={item.categoria} date={formattedDate}
-                        value={item.valor} onPress={() => console.log("hello")}
-                        id={item.transaction_id}
-                        isVisible={dropdownVisibleId === item.transaction_id}
-                        setVisibleId={setDropdownVisibleId} />
-
-                </View>
-            );
-        } else {
-            return (
-                <View style={{ position: 'relative', paddingVertical: 10 }}>
-                    <TransactionCard iconName="directions-car" color={'#2563EB'} state={isDarkMode}
-                        category={item.categoria} date={formattedDate} value={item.valor} onPress={() => console.log("hello")}
-                        id={item.transaction_id}
-                        isVisible={dropdownVisibleId === item.transaction_id}
-                        setVisibleId={setDropdownVisibleId} />
-                </View>
-            );
-        }
     };
 
     useEffect(() => {
@@ -147,6 +119,25 @@ const Transactions = () => {
             </Modal>
         );
     }
+
+    const renderItem = ({ item }) => {
+        const formattedDate = moment(item.data_compra).format('DD/MM/YYYY')
+        return (
+            <View style={{ position: 'relative', paddingVertical: 10 }}>
+                <TransactionCard
+                    iconName={item.categoria}
+                    color={item.tipo === "Despesa" ? '#dd6161' : '#2563EB'}
+                    state={isDarkMode}
+                    category={item.categoria}
+                    date={formattedDate} value={item.valor}
+                    onPress={() => console.log("hello")}
+                    id={item.transaction_id}
+                    isVisible={dropdownVisibleId === item.transaction_id}
+                    setVisibleId={setDropdownVisibleId} />
+            </View>
+        );
+    };
+
     return (
         <>
             {refreshing ? (

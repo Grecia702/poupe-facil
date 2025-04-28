@@ -3,12 +3,11 @@ import api from './axiosInstance';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@context/authContext';
 
-export const TransactionContext = createContext();
+export const ContasContext = createContext();
 
-const getTransacoes = async () => {
+const getContas = async () => {
     try {
-        console.log('Iniciando requisição para transações...');
-        const { data } = await api.get('/profile/transaction/');
+        const { data } = await api.get('/profile/account/');
         return data;
     } catch (error) {
         console.log('Erro ao fazer a requisição:', error);
@@ -16,11 +15,11 @@ const getTransacoes = async () => {
     }
 };
 
-export const TransactionProvider = ({ children }) => {
+export const ContasProvider = ({ children }) => {
     const { isAuthenticated } = useAuth();
-    const { data: dadosAPI, isLoading, error, refetch } = useQuery({
-        queryKey: ['transaction_id'],
-        queryFn: getTransacoes,
+    const { data: dadosContas, isLoading, error, refetch } = useQuery({
+        queryKey: ['id'],
+        queryFn: getContas,
         enabled: isAuthenticated,
         onSuccess: (data) => {
             console.log('Query foi bem-sucedida:', data);
@@ -31,13 +30,13 @@ export const TransactionProvider = ({ children }) => {
     })
 
     return (
-        <TransactionContext.Provider value={{ dadosAPI, isLoading, error, refetch }}>
+        <ContasContext.Provider value={{ dadosContas, isLoading, error, refetch }}>
             {children}
-        </TransactionContext.Provider>
+        </ContasContext.Provider>
     );
 };
 
 
-export const useTransactionAuth = () => {
-    return useContext(TransactionContext)
+export const useContasAuth = () => {
+    return useContext(ContasContext)
 };

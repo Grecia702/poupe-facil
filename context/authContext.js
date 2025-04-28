@@ -7,7 +7,7 @@ import { API_URL } from '@env'
 import { jwtDecode } from "jwt-decode";
 
 export const AuthContext = createContext();
-
+console.log(API_URL)
 const postLogin = async (loginData) => {
     const res = await api.post('/auth/login', loginData);
     return res.data;

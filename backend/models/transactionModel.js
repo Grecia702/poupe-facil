@@ -42,7 +42,7 @@ const DeleteTransaction = async (id) => {
 }
 
 const ListTransactions = async (id) => {
-    const { rows, rowCount } = await pool.query("SELECT transaction_id, conta, categoria, tipo, valor, data_compra FROM user_transactions WHERE user_id = $1", [id]);
+    const { rows, rowCount } = await pool.query("SELECT * FROM user_transactions WHERE user_id = $1", [id]);
     return { rows, total: rowCount, firstResult: rows[0] };
 
 }

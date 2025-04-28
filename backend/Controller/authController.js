@@ -19,6 +19,7 @@ const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
 
 // LOGIN
 const login = async (req, res) => {
+
     const { email, senha } = req.body;
     const agent = req.get('User-Agent')
     try {

@@ -54,6 +54,7 @@ ios/build/
 .vscode/
 *.iml
 
+backend/
 # 🧠 TypeScript
 *.tsbuildinfo
 
@@ -65,3 +66,5 @@ app-example
 
 # 🔧 Configs sensíveis
 /config.js
+
+/.idea

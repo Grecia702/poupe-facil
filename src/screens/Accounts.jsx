@@ -1,119 +1,170 @@
-import { StyleSheet, Text, View, FlatList, Platform } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { API_URL } from '@env'
-import Cookies from 'js-cookie'; // Mantenha js-cookie para armazenar o JWT no cookie
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, Modal, Pressable } from 'react-native';
+import React, { useState, useContext, useMemo, useCallback } from 'react';
+import Account from '@components/accounts';
+import { useContasAuth } from '@context/contaContext';
+import { useTransactionAuth } from '@context/transactionsContext';
+import TransactionCard from '@components/transactions'
+import { colorContext } from '@context/colorScheme';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Separator } from '../components/accounts/styles';
+import { format } from 'date-fns';
 
-const BankAccount = ({ limit }) => {
-    const [dados, setDados] = useState([])
 
-    const checkDados = async () => {
-        if (Platform.OS === 'web') {
-            const token = Cookies.get('jwtToken');
+const BankAccount = () => {
+    const meses = [
+        "Jan", "Fev", "Mar", "Abr",
+        "Mai", "Jun", "Jul", "Ago",
+        "Set", "Out", "Nov", "Dec",
+    ]
+    const { dadosContas } = useContasAuth();
+    const { dadosAPI } = useTransactionAuth();
+    const { isDarkMode } = useContext(colorContext);
+    const [month, setMonth] = useState(meses[2]);
+    const [year, setYear] = useState(2025)
+    const [yearModal, setYearModal] = useState(2025)
+    const [visibleId, setVisibleId] = useState(null)
+    const [aberto, setAberto] = useState(false);
 
-            if (!token) {
-                console.log("Token não encontrado.");
-                return;
-            }
-        } else if (Platform.OS === 'android') {
+    const contasMemo = useMemo(() => dadosContas, [dadosContas]);
+    const transacoesMemo = useMemo(() => dadosAPI, [dadosAPI])
 
-            const token = await SecureStore.getItemAsync('jwtToken');
-            if (!token) {
-                console.log("Token mobile não encontrado.");
-                return;
-            }
-        }
-        try {
-            const response = await axios.get(`${API_URL}/profile/account/list`, {
-                withCredentials: true
-            });
-
-            console.log("Dados recebidos:", response.data);
-            if (response.status === 200) {
-                setDados(response.data);
-            }
-        }
-        catch (error) {
-            console.log("Erro ao fazer requisição:", error);
-        }
-    }
-
-    useEffect(() => {
-        checkDados();
+    const handleYearChange = useCallback((direction) => {
+        setYear(prevYear => prevYear + direction);
     }, []);
 
-    return (
-        <FlatList
-            contentContainerStyle={styles.list}
-            data={dados.slice(0, limit)}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-                <View style={styles.container}>
-                    <Ionicons style={styles.icon} name="cart" size={24} color="white" />
-                    <MaterialCommunityIcons name="dots-horizontal" style={styles.menu} size={24} color="white" />
-                    <MaterialCommunityIcons name="square-edit-outline" style={styles.edit} size={24} color="white" />
-                    <View style={styles.info}>
-                        <Text style={styles.nome_conta}>{item.nome_conta}</Text>
-                        <Text style={styles.saldo}>R${item.saldo}</Text>
-                    </View>
-                </View>
-            )}
-        />
-    )
-}
 
-const styles = StyleSheet.create({
-    container: {
-        flexDirection: "row",
-        minHeight: 60,
-        height: 'auto',
-        width: 'auto',
-        backgroundColor: 'rgb(0, 0, 0)',
-        borderBottomColor: "rgb(185, 185, 185)",
-        borderBottomWidth: 1,
-        paddingHorizontal: 15,
-        alignItems: "center",
-        position: 'relative',
-    },
-    icon: {
-        alignSelf: "center",
-        backgroundColor: "rgb(39, 39, 39)",
-        padding: 10,
-        borderWidth: 1,
-        borderRadius: 30,
-    },
-    info: {
-        flexDirection: "row",
-        flex: 1,
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginLeft: 10,
-    },
-    nome_conta: {
-        color: 'rgb(214, 214, 214)',
-        fontSize: 20,
-        fontWeight: "700"
-    },
-    saldo: {
-        textAlign: "left",
-        width: 110,
-        color: 'rgb(214, 214, 214)',
-        fontSize: 16,
-        fontWeight: '600',
-        textDecorationLine: 'underline'
-    },
-    menu: {
-        position: 'absolute',
-        top: 0,
-        right: "2%",
-    },
-    edit: {
-        position: 'absolute',
-        top: "45%",
-        right: "2%",
-    }
-});
+    const ModalData = () => {
+        return (
+            <Modal
+                transparent
+                visible={aberto}
+                animationType="fade"
+                onRequestClose={() => setAberto(false)}
+            >
+                <Pressable style={styles.overlay} onPress={() => setAberto(false)}>
+                    <View style={[styles.dropdown, { backgroundColor: isDarkMode ? '#333' : '#fff' }]}>
+                        <View style={{ flexDirection: 'row' }}>
+                            <TouchableOpacity onPress={() => setYearModal(prev => prev - 1)}>
+                                <MaterialIcons name="arrow-back-ios" size={24} color={isDarkMode ? "#CCC" : "#222"} />
+                            </TouchableOpacity>
+                            <Text style={{ color: isDarkMode ? '#fff' : '#333' }}>{yearModal}</Text>
+                            <TouchableOpacity onPress={() => setYearModal(prev => prev + 1)}>
+                                <MaterialIcons name="arrow-forward-ios" size={24} color={isDarkMode ? "#CCC" : "#222"} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={{ flexDirection: 'row' }}>
+                            {meses.map((item, index) => (
+                                <Text key={index} style={{ color: isDarkMode ? '#fff' : '#333' }}>{item} </Text>
+                            ))}
+                        </View>
+                    </View>
+                </Pressable>
+            </Modal>
+        );
+    };
+
+    const HeaderComponent = () => {
+        return (
+            <View style={{ flexDirection: 'row', alignSelf: 'center', gap: 5 }}>
+                <TouchableOpacity onPress={() => setMonth(prev => prev - 1)}>
+                    <MaterialIcons name="arrow-back-ios" size={24} color={isDarkMode ? "#CCC" : "#222"} />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => setAberto(true)}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: isDarkMode ? "#CCC" : "#222" }}>
+                        {month}
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setMonth(prev => prev + 1)}>
+                    <MaterialIcons name="arrow-forward-ios" size={24} color={isDarkMode ? "#CCC" : "#222"} />
+                </TouchableOpacity>
+                <ModalData />
+            </View>
+        );
+    };
+    return (
+        <>
+            <FlatList
+                data={contasMemo}
+                keyExtractor={(item) => item.id}
+                contentContainerStyle={[styles.contentContainer, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}
+                style={{ backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E' }}
+                ListHeaderComponent={HeaderComponent}
+                renderItem={({ item }) => {
+                    const isExpanded = visibleId === item.id;
+                    const conta_id = item.id
+                    return (
+                        <>
+                            <Account
+                                name={item.nome_conta}
+                                value={item.saldo}
+                                color={isDarkMode ? "#DDD" : "#ddd"}
+                                textColor={isDarkMode ? "#DDD" : "#222"}
+                                id={item.id}
+                                onPress={setVisibleId}
+                            />
+                            <Separator color={isDarkMode ? "#cccccc6f" : "#22222275"} />
+                            {isExpanded && (
+                                transacoesMemo
+                                    ?.filter(item => item.account_id === conta_id)
+                                    .map(item => {
+                                        return (
+                                            <View key={item.transaction_id} style={[styles.transactionCards]}>
+                                                <TransactionCard
+                                                    iconName={item.categoria}
+                                                    color={item.tipo === "Despesa" ? '#dd6161' : '#2563EB'}
+                                                    state={isDarkMode}
+                                                    category={item.categoria}
+                                                    date={format(item.data_transacao, "dd/MM/yyyy")}
+                                                    value={item.valor}
+                                                    onPress={() => console.log("hello")}
+                                                    id={item.transaction_id}
+                                                />
+                                            </View>
+                                        )
+                                    })
+                            )}
+                        </>
+                    );
+                }}
+            />
+
+        </>
+    );
+};
 
 export default BankAccount;
+
+const styles = StyleSheet.create({
+    contentContainer: {
+        flex: 1,
+        padding: 15,
+        gap: 15,
+        borderTopRightRadius: 50,
+        borderTopLeftRadius: 50,
+        paddingHorizontal: 15,
+        paddingTop: 30,
+    },
+    transactionCards: {
+        padding: 15,
+        elevation: 2
+    },
+    overlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)', // overlay meio escuro
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    dropdown: {
+        alignItems: 'center',
+        padding: 20,
+        borderRadius: 10,
+        elevation: 10, // sombra no Android
+        shadowColor: '#000', // sombra no iOS
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+
+    },
+});

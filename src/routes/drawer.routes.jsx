@@ -64,11 +64,11 @@ export default function DrawerRoutes() {
                 }}
             />
             <Drawer.Screen
-                name="Contas Bancárias"
+                name="Contas"
                 component={Accounts}
                 options={{
                     drawerIcon: ({ color, size }) => <FontAwesome name="bank" size={size} color={color} />,
-                    drawerLabel: 'Contas Bancárias',
+                    drawerLabel: 'Contas',
                 }}
             />
             <Drawer.Screen

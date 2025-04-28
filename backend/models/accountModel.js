@@ -14,8 +14,8 @@ const CreateAccount = async (id_usuario, nome_conta, timestamp, saldo, desc_cont
     );
 }
 
-const ReadAccount = async (valor, nome_campo) => {
-    const { rows, rowCount } = await pool.query(`SELECT id, nome_conta, data_criacao, saldo FROM contasBancarias WHERE ${nome_campo} = $1`, [valor]);
+const FindAccountByID = async (id, userId) => {
+    const { rows, rowCount } = await pool.query(`SELECT id, nome_conta, data_criacao, saldo FROM contasBancarias WHERE id = $1 AND id_usuario = $2`, [id, userId]);
     return { rows, total: rowCount, firstResult: rows[0] };
 }
 
@@ -27,8 +27,20 @@ const DeleteAccount = async (id) => {
     await pool.query("DELETE FROM contasBancarias WHERE id = $1", [id])
 }
 
-const ListAccount = async (id, id_usuario) => {
-    const { rows, rowCount } = await pool.query("SELECT * FROM contasBancarias WHERE id = $1 AND id_usuario = $2", [id, id_usuario]);
+const ListAllAccounts = async (id) => {
+    const { rows, rowCount } = await pool.query("SELECT * FROM contasBancarias WHERE id_usuario = $1", [id]);
     return { rows, total: rowCount, firstResult: rows[0] };
 }
-module.exports = { CreateAccount, ReadAccount, UpdateAccount, DeleteAccount, ListAccount };
+
+const ListTransactionsByAccount = async (accountId, userId) => {
+    const query = `
+    SELECT b.nome_conta, t.categoria, t.tipo, t.valor, t.data_transacao 
+    FROM contasBancarias AS b 
+    JOIN transacoes AS t ON t.id_contaBancaria = b.id 
+    WHERE id_usuario = $1 AND b.id= $2`;
+
+    const { rows, rowCount } = await pool.query(query, [userId, accountId]);
+    return { rows, total: rowCount, firstResult: rows[0] };
+}
+
+module.exports = { CreateAccount, FindAccountByID, UpdateAccount, DeleteAccount, ListAllAccounts, ListTransactionsByAccount };

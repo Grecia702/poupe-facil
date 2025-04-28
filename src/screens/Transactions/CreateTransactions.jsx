@@ -2,7 +2,6 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity, Modal, FlatList } 
 import React, { useState } from 'react'
 import { CATEGORIAS } from '../../utils/categorias';
 import { MaterialIcons } from '@expo/vector-icons'
-import api from '@context/axiosInstance'
 
 const CreateTransactions = () => {
     const [selected, setSelected] = useState(CATEGORIAS[0]);
@@ -12,7 +11,7 @@ const CreateTransactions = () => {
 
 
 
-    console.log(fields)
+    // console.log(fields)
 
     return (
         <View style={styles.container}>

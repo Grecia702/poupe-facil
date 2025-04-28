@@ -4,10 +4,16 @@ import { API_URL } from '@env'
 
 const api = axios.create({
     baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
 });
 
 const refreshAxios = axios.create({
-    baseURL: API_URL
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
 });
 
 api.interceptors.request.use(
@@ -40,7 +46,7 @@ api.interceptors.response.use(
                         headers: {
                             Authorization: `Bearer ${refreshToken}`,
                         },
-                        timeout: 5000,
+                        timeout: 7000,
                     }
                 );
                 if (refreshResponse.status !== 200 || !refreshResponse.data.newAccessToken) {

@@ -54,8 +54,8 @@ const RemoveAccount = async (req, res) => {
 const ListAccount = async (req, res) => {
     try {
         const { userId } = req.user.decoded
-        const account = await accountModel.ListAccount(userId);
-        res.json(account.rows)
+        const account = await accountModel.ListAllAccounts(userId);
+        return res.json(account.rows)
     }
     catch (err) {
         console.log(err)
@@ -67,7 +67,7 @@ const FindAccount = async (req, res) => {
     try {
         const { userId } = req.user.decoded
         const { id } = req.params
-        const account = await accountModel.ListAccount(id, userId);
+        const account = await accountModel.FindAccountByID(id, userId);
         const contaEncontrada = account.total > 0 ? account.firstResult : null
         if (contaEncontrada) {
             return res.status(200).json(account.rows)
@@ -79,7 +79,27 @@ const FindAccount = async (req, res) => {
     }
     catch (err) {
         console.log(err)
-        return res.status(500).json({ message: 'not found' })
+        return res.status(500).json({ message: 'Erro na requisição', error: err.message })
     }
 }
-module.exports = { CreateAccount, RemoveAccount, ListAccount, FindAccount };
+
+const ListTransactionsByAccount = async (req, res) => {
+    try {
+        const { userId } = req.user.decoded
+        const { id } = req.params
+        const account = await accountModel.ListTransactionsByAccount(id, userId);
+        const contaEncontrada = account.total > 0 ? account.firstResult : null
+        if (contaEncontrada) {
+            return res.status(200).json(account.rows)
+        }
+        else {
+            return res.status(404).json({ message: 'Conta não encontrada' })
+        }
+
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({ message: 'Erro na requisição', error: err.message })
+    }
+}
+module.exports = { CreateAccount, RemoveAccount, ListAccount, FindAccount, ListTransactionsByAccount };

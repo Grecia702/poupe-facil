@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { colorContext } from '../../context/colorScheme';
+import { colorContext } from '@context/colorScheme';
 import { FlatList, Pressable } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react'
 import { Picker } from '@react-native-picker/picker';
@@ -18,8 +18,14 @@ import WidgetTeste from '@components/widget';
 import Account from '@components/accounts';
 import { Separator } from '@components/accounts/styles';
 import * as Progress from 'react-native-progress';
+import { useTransactionAuth } from '@context/transactionsContext';
+import { format, parseISO, compareDesc } from 'date-fns';
+import VisaoGeral from '@components/header';
+import { useContasAuth } from '@context/contaContext';
 
 export default function HomeScreen() {
+  const { dadosAPI } = useTransactionAuth();
+  const { dadosContas } = useContasAuth();
   const [meses, setMeses] = useState(MESES[0].label);
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshing, setRefreshing] = useState(true);
@@ -28,20 +34,35 @@ export default function HomeScreen() {
   const mensalExpense = EXPENSES[meses];
   const { isDarkMode } = useContext(colorContext)
 
+  // console.log(dadosAPI)
+  const recentTransactions = dadosAPI?.sort((a, b) => compareDesc(parseISO(a.data_transacao), parseISO(b.data_transacao)))
+    .slice(0, 5);
 
-  const upCount = () => {
-    if (progress < 1) {
-      buscarTransacao(26);
-      setProgress(progress => Math.round((progress + 0.05) * 100) / 100);
+  const transacoes = dadosAPI?.reduce((acc, item) => {
+    const valor = parseFloat(item.valor)
+    if (item.tipo === "Despesa") {
+      acc.despesas -= valor;
     }
-  }
+    else {
+      acc.receitas += valor;
+    }
+    return acc;
+  }, { receitas: 0, despesas: 0 })
 
-  const handleRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1500);
-  };
+  const saldoContas = dadosContas?.reduce((acc, item) => {
+    return acc + parseFloat(item.saldo)
+  }, 0)
+
+  const despesas = transacoes?.despesas || 0
+  const receitas = transacoes?.receitas || 0
+  const saldoTotal = (receitas - despesas) || 0
+
+  // const upCount = () => {
+  //   if (progress < 1) {
+  //     buscarTransacao(26);
+  //     setProgress(progress => Math.round((progress + 0.05) * 100) / 100);
+  //   }
+  // }
 
   useEffect(() => {
     setTimeout(() => {
@@ -52,7 +73,6 @@ export default function HomeScreen() {
   const handleSelectItem = (label) => {
     setSelectedItem(label);
   };
-
 
   const arrFormatted = mensalExpense.map((
     { id, label, value, percent }) =>
@@ -67,16 +87,29 @@ export default function HomeScreen() {
 
   return (
     <Container color={isDarkMode ? "rgb(26, 26, 26)" : "#c6ebe9"}>
-      <Geral />
+      <VisaoGeral saldo={(saldoTotal).toFixed(2) ?? 0} receitas={receitas ?? 0} despesas={despesas ?? 0} />
       <Wrapper>
         <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Contas"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
-
-          <Account name={'Conta Corrente'} color={isDarkMode ? "#e9e9e9" : "#f0eeee"} textColor={isDarkMode ? "#e9e9e9" : "#2c2c2c"} />
-          <Account name={'Carteira'} color={isDarkMode ? "#e9e9e9" : "#f0eeee"} textColor={isDarkMode ? "#e9e9e9" : "#2c2c2c"} />
-          <Account name={'Poupança'} color={isDarkMode ? "#e9e9e9" : "#f0eeee"} textColor={isDarkMode ? "#e9e9e9" : "#2c2c2c"} />
+          <Text onPress={() => navigation.navigate('Contas')}
+            style={{
+              textDecorationLine: 'underline',
+              color: isDarkMode ? "#e9e9e9" : "#202020",
+              fontSize: 12,
+              alignSelf: 'flex-end',
+            }}>Ver mais</Text>
+          {
+            dadosContas?.map(item => (
+              (<Account name={item.nome_conta}
+                key={item.id}
+                color={isDarkMode ? "#e9e9e9" : "#f0eeee"}
+                value={item.saldo}
+                textColor={isDarkMode ? "#e9e9e9" : "#2c2c2c"}
+              />)
+            ))
+          }
           <Separator isDarkMode={isDarkMode} />
           <Text style={{ fontSize: 16, color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>Saldo Total:</Text>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>R$1200,00</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>{saldoContas}</Text>
         </WidgetTeste>
 
 
@@ -111,11 +144,24 @@ export default function HomeScreen() {
               fontSize: 12,
               alignSelf: 'flex-end',
             }}>Ver mais</Text>
-          <TransactionCard iconName="directions-car" color={'#2563EB'} state={isDarkMode} category={"Carro"} date={"11/09/2025"} value={"-3499,99"} />
-          <TransactionCard iconName="fastfood" color={'#F97316'} state={isDarkMode} category={"Alimentação"} date={"11/09/2025"} value={"-249,99"} />
-          <TransactionCard iconName="shopping-cart" color={'#ec34e3'} state={isDarkMode} category={"Compras"} date={"11/09/2025"} value={"-599,99"} />
-          <TransactionCard iconName="shopping-cart" color={'#ec34e3'} state={isDarkMode} category={"Compras"} date={"11/09/2025"} value={"-999,99"} />
-          <TransactionCard iconName="shopping-cart" color={'#ec34e3'} state={isDarkMode} category={"Compras"} date={"10/09/2025"} value={"-299,99"} />
+
+          {Array.isArray(recentTransactions) ? (
+            recentTransactions.map((item, index) => (
+              <TransactionCard
+                key={index}
+                iconName={item.categoria}
+                color={item?.tipo === "Despesa" ? "#dd5454" : "#2563EB"}
+                state={isDarkMode}
+                category={item?.categoria}
+                date={format(item?.data_transacao, 'dd/MM/yyyy')}
+                value={item?.valor} />
+            ))
+          ) : (
+            <>
+              <Text>Voce não criou nenhuma transação</Text>
+            </>
+          )
+          }
         </WidgetTeste>
 
         <Temp>
@@ -174,13 +220,9 @@ export default function HomeScreen() {
               data={arrFormatted}
               keyExtractor={(item) => item.id}
               refreshing={refreshing}
-              onRefresh={handleRefresh}
               scrollEnabled={false}
               renderItem={({ item }) => (
-
-
                 <Card
-
                   // Função para buscar a cor do ITEM LABEL que está sendo renderizado na flatlist
                   color={findColor(item.label)}
                   title={item.label}
