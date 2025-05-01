@@ -4,8 +4,11 @@ import React, { useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import { useAuth } from '@context/authContext';
 import { useNavigation } from '@react-navigation/native'
+import { useToast } from 'react-native-toast-notifications';
+
 
 const LoginScreen = () => {
+    const toast = useToast();
     const navigation = useNavigation();
     const [credentials, setCredentials] = useState({ email: '', senha: '' });
     const [message, setMessage] = useState('');
@@ -18,20 +21,39 @@ const LoginScreen = () => {
 
     const handleLogin = async () => {
         if (!credentials.email || !credentials.senha) {
-            setMessage('Preencha todos os campos.');
+            toastError('Preencha todos os campos.');
             return;
         }
 
         if (!/\S+@\S+\.\S+/.test(credentials.email)) {
-            setMessage('Formato de e-mail inválido.');
+            toastError('Formato de e-mail inválido.');
             return;
         }
 
         loginMutation.mutate(credentials, {
-            onSuccess: () => navigation.replace('home'),
-            onError: () => setMessage('Falha no login. Verifique suas credenciais.'),
+            onSuccess: () => toastSuccess(),
+            onError: (error) => toastError(error),
         });
     };
+
+    const toastSuccess = () => {
+        toast.show('Seja bem-vindo novamente', {
+            type: 'success',
+            duration: 1500,
+        });
+        setTimeout(() => {
+            navigation.navigate('home');
+        }, 50);
+    }
+
+    const toastError = (text) => {
+        toast.show(`${text}`, {
+            type: 'error',
+            duration: 1500,
+        });
+    }
+
+
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -93,7 +115,7 @@ const LoginScreen = () => {
                     {message}
                 </Text>
 
-                <Pressable href="/signup" style={{ alignSelf: 'center', textDecorationLine: 'underline' }} onPress={() => navigation.navigate('signup')}>
+                <Pressable style={{ alignSelf: 'center', textDecorationLine: 'underline' }} onPress={() => navigation.navigate('signup')}>
                     <Text style={{ alignSelf: 'center', textDecorationLine: 'underline' }}>Não tem uma conta? Cadastre-se</Text>
                 </Pressable>
             </View>

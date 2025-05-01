@@ -9,7 +9,10 @@ const Logout = () => {
     const handleLogout = async () => {
         logoutMutation.mutate(null, {
             onSuccess: () => {
-                navigation.replace('login');
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'login' }],
+                });
             },
             onError: () => {
                 setMessage('Falha no logout, tente novamente');

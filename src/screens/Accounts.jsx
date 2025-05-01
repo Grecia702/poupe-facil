@@ -1,14 +1,75 @@
 import { StyleSheet, Text, View, TouchableOpacity, FlatList, Modal, Pressable } from 'react-native';
 import React, { useState, useContext, useMemo, useCallback } from 'react';
+import TransactionCard from '@components/transactions'
 import Account from '@components/accounts';
 import { useContasAuth } from '@context/contaContext';
 import { useTransactionAuth } from '@context/transactionsContext';
-import TransactionCard from '@components/transactions'
 import { colorContext } from '@context/colorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Separator } from '../components/accounts/styles';
 import { format } from 'date-fns';
+import { useNavigation } from '@react-navigation/native';
+import { useToast } from 'react-native-toast-notifications';
 
+
+const ModalData = ({ isDarkMode, meses, open, setOpen }) => {
+    const [yearModal, setYearModal] = useState(2025)
+    const [selectedMonth, setSelectedMonth] = useState(null);
+    return (
+        <Modal
+            transparent
+            visible={open}
+            animationType="fade"
+            onRequestClose={() => setOpen(false)}
+        >
+            <Pressable style={styles.overlay} onPress={() => setOpen(false)}>
+                <View style={[styles.dropdown, { backgroundColor: isDarkMode ? '#333' : '#fff' }]}>
+                    <View style={{ flexDirection: 'row' }}>
+                        <TouchableOpacity onPress={() => setYearModal(prev => prev - 1)}>
+                            <MaterialIcons name="arrow-back-ios" size={24} color={isDarkMode ? "#CCC" : "#222"} />
+                        </TouchableOpacity>
+                        <Text style={{ color: isDarkMode ? '#fff' : '#333' }}>{yearModal}</Text>
+                        <TouchableOpacity onPress={() => setYearModal(prev => prev + 1)}>
+                            <MaterialIcons name="arrow-forward-ios" size={24} color={isDarkMode ? "#CCC" : "#222"} />
+                        </TouchableOpacity>
+                    </View>
+                    <View>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+                            {meses.map((item, index) => {
+                                const isSelected = selectedMonth === index;
+                                return (
+                                    <TouchableOpacity onPress={() => setSelectedMonth(index)}>
+                                        <Text key={index}
+                                            style={{
+                                                padding: 5,
+                                                backgroundColor: isSelected ? (isDarkMode ? '#1e40af' : '#3b82f6')
+                                                    : 'transparent',
+                                                color: isSelected || isDarkMode ? '#e8e9ec'
+                                                    : '#111111',
+                                                fontWeight: isSelected ? '500' : '400',
+                                                marginHorizontal: 4
+                                            }}>
+                                            {item}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )
+                            })}
+                        </View>
+                    </View>
+
+                    <View style={styles.buttonWrapper}>
+                        <TouchableOpacity style={[styles.button, { backgroundColor: '#c74b4b' }]}>
+                            <Text style={styles.buttonText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => setOpen(prev => !prev)} style={styles.button}>
+                            <Text style={styles.buttonText}>OK</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Pressable>
+        </Modal>
+    );
+};
 
 const BankAccount = () => {
     const meses = [
@@ -16,81 +77,63 @@ const BankAccount = () => {
         "Mai", "Jun", "Jul", "Ago",
         "Set", "Out", "Nov", "Dec",
     ]
-    const { dadosContas } = useContasAuth();
+    const navigation = useNavigation();
+    const { dadosContas, refetch } = useContasAuth();
     const { dadosAPI } = useTransactionAuth();
     const { isDarkMode } = useContext(colorContext);
-    const [month, setMonth] = useState(meses[2]);
-    const [year, setYear] = useState(2025)
-    const [yearModal, setYearModal] = useState(2025)
+    const [monthIndex, setMonthIndex] = useState(new Date().getMonth());
+    const [dropdownVisibleId, setDropdownVisibleId] = useState(null);
     const [visibleId, setVisibleId] = useState(null)
-    const [aberto, setAberto] = useState(false);
+    const [open, setOpen] = useState(false);
+    const [refreshing, setRefreshing] = useState(false)
+    const accountMemo = useMemo(() => dadosContas, [dadosContas]);
+    const transactionMemo = useMemo(() => dadosAPI, [dadosAPI])
+    const currentMonth = meses[monthIndex];
 
-    const contasMemo = useMemo(() => dadosContas, [dadosContas]);
-    const transacoesMemo = useMemo(() => dadosAPI, [dadosAPI])
+    const toast = useToast();
+    const showNotif = () => {
+        toast.show('Sucesso! Cadê meu dinheiro?', {
+            type: 'success',
+            duration: 1500,
+        })
+    }
 
-    const handleYearChange = useCallback((direction) => {
-        setYear(prevYear => prevYear + direction);
-    }, []);
-
-
-    const ModalData = () => {
-        return (
-            <Modal
-                transparent
-                visible={aberto}
-                animationType="fade"
-                onRequestClose={() => setAberto(false)}
-            >
-                <Pressable style={styles.overlay} onPress={() => setAberto(false)}>
-                    <View style={[styles.dropdown, { backgroundColor: isDarkMode ? '#333' : '#fff' }]}>
-                        <View style={{ flexDirection: 'row' }}>
-                            <TouchableOpacity onPress={() => setYearModal(prev => prev - 1)}>
-                                <MaterialIcons name="arrow-back-ios" size={24} color={isDarkMode ? "#CCC" : "#222"} />
-                            </TouchableOpacity>
-                            <Text style={{ color: isDarkMode ? '#fff' : '#333' }}>{yearModal}</Text>
-                            <TouchableOpacity onPress={() => setYearModal(prev => prev + 1)}>
-                                <MaterialIcons name="arrow-forward-ios" size={24} color={isDarkMode ? "#CCC" : "#222"} />
-                            </TouchableOpacity>
-                        </View>
-
-                        <View style={{ flexDirection: 'row' }}>
-                            {meses.map((item, index) => (
-                                <Text key={index} style={{ color: isDarkMode ? '#fff' : '#333' }}>{item} </Text>
-                            ))}
-                        </View>
-                    </View>
-                </Pressable>
-            </Modal>
-        );
-    };
 
     const HeaderComponent = () => {
         return (
             <View style={{ flexDirection: 'row', alignSelf: 'center', gap: 5 }}>
-                <TouchableOpacity onPress={() => setMonth(prev => prev - 1)}>
+                <TouchableOpacity onPress={() => setMonthIndex(prev => (prev - 1 + 12) % 12)}>
                     <MaterialIcons name="arrow-back-ios" size={24} color={isDarkMode ? "#CCC" : "#222"} />
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => setAberto(true)}>
+                <TouchableOpacity onPress={() => setOpen(true)}>
                     <Text style={{ fontSize: 16, fontWeight: 'bold', color: isDarkMode ? "#CCC" : "#222" }}>
-                        {month}
+                        {currentMonth}
                     </Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setMonth(prev => prev + 1)}>
+                <TouchableOpacity onPress={() => setMonthIndex(prev => (prev + 1) % 12)}>
                     <MaterialIcons name="arrow-forward-ios" size={24} color={isDarkMode ? "#CCC" : "#222"} />
                 </TouchableOpacity>
-                <ModalData />
+                <ModalData
+                    isDarkMode={isDarkMode}
+                    meses={meses}
+                    open={open}
+                    setOpen={setOpen}
+                />
             </View>
         );
     };
     return (
-        <>
+        <View style={{ flex: 1 }}>
             <FlatList
-                data={contasMemo}
+                data={dadosContas}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={[styles.contentContainer, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}
                 style={{ backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E' }}
                 ListHeaderComponent={HeaderComponent}
+                showsVerticalScrollIndicator={true}
+                refreshing={refreshing}
+                onRefresh={refetch}
                 renderItem={({ item }) => {
                     const isExpanded = visibleId === item.id;
                     const conta_id = item.id
@@ -99,14 +142,18 @@ const BankAccount = () => {
                             <Account
                                 name={item.nome_conta}
                                 value={item.saldo}
-                                color={isDarkMode ? "#DDD" : "#ddd"}
-                                textColor={isDarkMode ? "#DDD" : "#222"}
+                                icon={item.icone}
+                                color={isDarkMode ? "#222" : "#DDD"}
+                                textColor={isDarkMode ? "#CCC" : "#222"}
+                                onPress={() => console.log("hello")}
                                 id={item.id}
-                                onPress={setVisibleId}
+                                isVisible={dropdownVisibleId === item.id}
+                                setVisibleId={setDropdownVisibleId}
+                                setRefreshing={setRefreshing}
                             />
                             <Separator color={isDarkMode ? "#cccccc6f" : "#22222275"} />
                             {isExpanded && (
-                                transacoesMemo
+                                transactionMemo
                                     ?.filter(item => item.account_id === conta_id)
                                     .map(item => {
                                         return (
@@ -118,7 +165,7 @@ const BankAccount = () => {
                                                     category={item.categoria}
                                                     date={format(item.data_transacao, "dd/MM/yyyy")}
                                                     value={item.valor}
-                                                    onPress={() => console.log("hello")}
+                                                    onPress={() => console.log(item.transaction_id)}
                                                     id={item.transaction_id}
                                                 />
                                             </View>
@@ -129,8 +176,17 @@ const BankAccount = () => {
                     );
                 }}
             />
-
-        </>
+            <TouchableOpacity onPress={() => navigation.navigate('CreateAccount')}>
+                <MaterialIcons name="add-circle" size={64} color={"#3f74d8"}
+                    style={{ position: 'absolute', bottom: 10, right: 10 }}
+                />
+            </TouchableOpacity>
+            {/* <TouchableOpacity onPress={() => showNotif()}>
+                <MaterialIcons name="add-circle" size={64} color={"#d83fcb"}
+                    style={{ position: 'absolute', bottom: 10, left: 10 }}
+                />
+            </TouchableOpacity> */}
+        </View>
     );
 };
 
@@ -138,7 +194,7 @@ export default BankAccount;
 
 const styles = StyleSheet.create({
     contentContainer: {
-        flex: 1,
+        minHeight: '100%',
         padding: 15,
         gap: 15,
         borderTopRightRadius: 50,
@@ -152,19 +208,36 @@ const styles = StyleSheet.create({
     },
     overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)', // overlay meio escuro
+        backgroundColor: 'rgba(0,0,0,0.5)',
         justifyContent: 'center',
         alignItems: 'center',
     },
     dropdown: {
         alignItems: 'center',
+        maxWidth: '60%',
         padding: 20,
+        gap: 10,
         borderRadius: 10,
-        elevation: 10, // sombra no Android
-        shadowColor: '#000', // sombra no iOS
+        elevation: 10,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 4,
+    },
 
+    buttonWrapper: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignSelf: 'stretch'
+    },
+    button: {
+        height: 'auto',
+        padding: 5,
+        borderRadius: 5,
+        backgroundColor: '#2b37e2'
+    },
+    buttonText: {
+        color: '#FFF',
+        fontWeight: '500'
     },
 });

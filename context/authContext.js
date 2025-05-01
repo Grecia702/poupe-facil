@@ -7,7 +7,6 @@ import { API_URL } from '@env'
 import { jwtDecode } from "jwt-decode";
 
 export const AuthContext = createContext();
-console.log(API_URL)
 const postLogin = async (loginData) => {
     const res = await api.post('/auth/login', loginData);
     return res.data;
@@ -40,15 +39,14 @@ export const AuthProvider = ({ children }) => {
             console.log('Login bem-sucedido', data);
         },
 
-        onError: (error) => {
-            console.error('Erro ao fazer login', error.message);
-        },
+        // onError: (error) => {
+        //     console.error('Erro ao fazer login', error);
+        // },
     });
 
     const signUpMutation = useMutation({
         mutationFn: postSignUp,
         onSuccess: async (data) => {
-            ;
             console.log('Usuário Cadastrado com sucesso', data);
         },
         onError: (error) => {

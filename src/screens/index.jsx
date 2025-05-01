@@ -49,9 +49,11 @@ export default function HomeScreen() {
     return acc;
   }, { receitas: 0, despesas: 0 })
 
-  const saldoContas = dadosContas?.reduce((acc, item) => {
+  const saldo = dadosContas?.reduce((acc, item) => {
     return acc + parseFloat(item.saldo)
   }, 0)
+
+  const saldoContas = saldo?.toFixed(2)
 
   const despesas = transacoes?.despesas || 0
   const receitas = transacoes?.receitas || 0
@@ -99,17 +101,19 @@ export default function HomeScreen() {
             }}>Ver mais</Text>
           {
             dadosContas?.map(item => (
-              (<Account name={item.nome_conta}
+              (<Account
+                name={item.nome_conta}
                 key={item.id}
-                color={isDarkMode ? "#e9e9e9" : "#f0eeee"}
                 value={item.saldo}
-                textColor={isDarkMode ? "#e9e9e9" : "#2c2c2c"}
+                icon={item.icone}
+                color={isDarkMode ? "#222" : "#DDD"}
+                textColor={isDarkMode ? "#CCC" : "#222"}
               />)
             ))
           }
-          <Separator isDarkMode={isDarkMode} />
+          <Separator color={isDarkMode ? "#cccccc6f" : "#22222275"} />
           <Text style={{ fontSize: 16, color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>Saldo Total:</Text>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>{saldoContas}</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>R${saldoContas}</Text>
         </WidgetTeste>
 
 

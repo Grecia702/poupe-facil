@@ -1,11 +1,12 @@
 import { StyleSheet, Text, View, SafeAreaView, TextInput, Pressable } from 'react-native'
 import Fontisto from '@expo/vector-icons/Fontisto';
 import React, { useState } from 'react';
-import { useNavigation, useFocusEffect } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import { useAuth } from '@context/authContext';
-import Toast from 'react-native-toast-message';
+import { useToast } from 'react-native-toast-notifications';
 
 const SignupScreen = () => {
+    const toast = useToast();
     const navigation = useNavigation();
     const [credentials, setCredentials] = useState({ nome: '', email: '', senha: '', confirmarSenha: '' });
     const [message, setMessage] = useState('');
@@ -41,37 +42,19 @@ const SignupScreen = () => {
     };
 
     const showNotif = () => {
-        Toast.show({
+        toast.show('Usuário cadastrado com sucesso', {
             type: 'success',
-            text1: 'Usuário cadastrado com sucesso',
-            position: 'top',
-            visibilityTime: 1500,
-            topOffset: 20,
-            style: {
-                backgroundColor: 'green',
-            },
-            text1Style: {
-                fontSize: 16,
-            }
+            duration: 1500,
         });
         setTimeout(() => {
             navigation.navigate('login');
-        }, 1600);
+        }, 500);
     }
 
     const showError = (text) => {
-        Toast.show({
+        toast.show(text, {
             type: 'error',
-            text1: text,
-            position: 'top',
-            visibilityTime: 1500,
-            topOffset: 20,
-            style: {
-                backgroundColor: 'red',
-            },
-            text1Style: {
-                fontSize: 16,
-            }
+            duration: 1500,
         });
     }
 

@@ -18,7 +18,7 @@ if (!isEmulatorRunning()) {
     console.log("⏳ Waiting for emulator to boot...");
     setTimeout(() => {
         execSync("npx expo start --android", { stdio: "inherit" });
-    }, 15000); // aguarda 15 segundos para o emulador iniciar
+    }, 25000); // aguarda 15 segundos para o emulador iniciar
 } else {
     console.log("✅ Emulator already running.");
     execSync("npx expo start --android", { stdio: "inherit" });

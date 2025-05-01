@@ -1,6 +1,7 @@
 import styled from "styled-components";
 
 export const AccountCard = styled.TouchableOpacity`
+    position: relative;
     flex-direction: row;
     width: 100%;
     align-items: center;

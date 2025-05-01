@@ -9,6 +9,16 @@ const CreateTransactions = () => {
     const agora = new Date().toLocaleDateString('pt-BR').slice(0, 10)
     const [fields, setFields] = useState({ valor: '0,00', categoria: '', data: `${agora}`, conta: '', tipo: '' });
 
+    const categoriaIcons = {
+        Contas: 'credit-card',
+        Alimentação: 'restaurant-menu',
+        Carro: 'directions-car',
+        Internet: 'computer',
+        Lazer: 'beach-access',
+        Educação: 'menu-book',
+        Compras: 'shopping-cart',
+        Outros: 'more-horiz',
+    };
 
 
     // console.log(fields)

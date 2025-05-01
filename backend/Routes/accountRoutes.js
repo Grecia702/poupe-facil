@@ -5,7 +5,7 @@ const accountController = require('../controller/accountController')
 const logger = require('../utils/loggerConfig')
 
 router.post("/", authMiddleware, accountController.CreateAccount)
-router.delete("/", authMiddleware, accountController.RemoveAccount)
+router.delete("/:id", authMiddleware, accountController.RemoveAccount)
 router.get("/", authMiddleware, accountController.ListAccount)
 router.get("/:id", authMiddleware, accountController.FindAccount)
 router.get("/transactions/:id", authMiddleware, accountController.ListTransactionsByAccount)

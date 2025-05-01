@@ -68,3 +68,7 @@ app-example
 /config.js
 
 /.idea
+
+# Backups
+
+packagebackup.json
