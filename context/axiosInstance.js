@@ -33,7 +33,7 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        if (error.response) {
+        if (error.response?.data.message === 'E-mail e/ou senha incorretos!') {
             return Promise.reject(error.response.data.message);
         }
 

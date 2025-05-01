@@ -4,31 +4,32 @@ import { MaterialIcons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native';
 import { colorContext } from '@context/colorScheme'
 import { useContext, useState } from "react";
-import Toast from 'react-native-toast-message';
+import { useToast } from 'react-native-toast-notifications';
+import { useTransactionAuth } from "@context/transactionsContext";
+import { loadData } from "@shopify/react-native-skia";
 
 
+const ModalConfirmDelete = ({ open, setOpen, isDarkMode, transactionId, loadData }) => {
+    const { refetch, deleteTransactionMutation } = useTransactionAuth();
+    const toast = useToast();
 
-const ModalConfirmDelete = ({ open, setOpen }) => {
-    const navigation = useNavigation();
-    const showNotif = () => {
-        // setOpen(prev => !prev)
 
-        Toast.show({
-            type: 'success',
-            text1: 'Transação deletada com sucesso',
-            position: 'top',
-            visibilityTime: 1500,
-            topOffset: 0,
-            style: {
-                backgroundColor: 'green',
-            },
-            text1Style: {
-                fontSize: 16,
-            }
+    const deleteTransaction = (transactionId) => {
+        deleteTransactionMutation.mutate(transactionId, {
+            onSuccess: () => showDeleteNotif(),
+            onError: (error) => toastError(error),
         });
-        // setTimeout(() => {
-        //     navigation.navigate('Transactions');
-        // }, 2000);
+    }
+
+    const showDeleteNotif = () => {
+        setOpen(prev => !prev)
+        toast.show('Conta deletada com sucesso', {
+            type: 'success',
+            duration: 1500,
+        });
+        setTimeout(() => {
+            loadData()
+        }, 500);
     }
 
     return (
@@ -39,8 +40,8 @@ const ModalConfirmDelete = ({ open, setOpen }) => {
             onRequestClose={() => setOpen(false)}
         >
             <Pressable style={styles.overlay} onPress={() => setOpen(prev => !prev)}>
-                <View style={[styles.modal, { backgroundColor: "#FFF" }]}>
-                    <Text style={{ lineHeight: 20, textAlign: 'center' }}>
+                <View style={[styles.modal, { backgroundColor: isDarkMode ? "#333" : "#e8f5e6" }]}>
+                    <Text style={{ lineHeight: 20, textAlign: 'center', color: isDarkMode ? "#e8f5e6" : "#333" }}>
                         Você tem certeza que quer {'\n'}
                         apagar esta transação?
                     </Text>
@@ -52,7 +53,7 @@ const ModalConfirmDelete = ({ open, setOpen }) => {
                             <Text>Cancelar</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => showNotif()}
+                        <TouchableOpacity onPress={() => deleteTransaction(transactionId)}
                             style={{ padding: 8, backgroundColor: '#ca4c4c', borderRadius: 5 }}
                         >
                             <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>Deletar</Text>
@@ -65,7 +66,7 @@ const ModalConfirmDelete = ({ open, setOpen }) => {
 }
 
 
-export default function TransactionCard({ iconName, state, color, category, date, value, isVisible, setVisibleId, id }) {
+export default function TransactionCard({ loadData, iconName, state, color, category, date, value, isVisible, setVisibleId, id }) {
     const navigation = useNavigation();
     const { isDarkMode } = useContext(colorContext)
     const [isOpen, setIsOpen] = useState(false)
@@ -124,7 +125,13 @@ export default function TransactionCard({ iconName, state, color, category, date
                         style={{ paddingVertical: 10, paddingHorizontal: 20 }}>
                         <Text style={{ color: isDarkMode ? '#EEE' : '#222', textAlign: 'center' }}>Apagar</Text>
                     </TouchableOpacity>
-                    <ModalConfirmDelete open={isOpen} setOpen={setIsOpen} />
+                    <ModalConfirmDelete
+                        open={isOpen}
+                        setOpen={setIsOpen}
+                        loadData={loadData}
+                        transactionId={id}
+                        isDarkMode={isDarkMode}
+                    />
                 </View>
             </>
         );
@@ -153,7 +160,7 @@ export default function TransactionCard({ iconName, state, color, category, date
                         color={state ? "white" : "black"} />
                 </TouchableOpacity>
             </CardTransaction>
-            <Toast />
+
         </View>
     )
 }

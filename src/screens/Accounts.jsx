@@ -98,6 +98,9 @@ const BankAccount = () => {
         })
     }
 
+    const handleExpand = (id) => {
+        setVisibleId((prevId) => (prevId === id ? null : id));
+    };
 
     const HeaderComponent = () => {
         return (
@@ -145,7 +148,7 @@ const BankAccount = () => {
                                 icon={item.icone}
                                 color={isDarkMode ? "#222" : "#DDD"}
                                 textColor={isDarkMode ? "#CCC" : "#222"}
-                                onPress={() => console.log("hello")}
+                                onPress={handleExpand}
                                 id={item.id}
                                 isVisible={dropdownVisibleId === item.id}
                                 setVisibleId={setDropdownVisibleId}

@@ -128,9 +128,10 @@ const Transactions = () => {
                     iconName={item.categoria}
                     color={item.tipo === "Despesa" ? '#dd6161' : '#2563EB'}
                     state={isDarkMode}
+                    loadData={loadData}
                     category={item.categoria}
-                    date={formattedDate} value={item.valor}
-                    onPress={() => console.log("hello")}
+                    date={formattedDate}
+                    value={item.valor}
                     id={item.transaction_id}
                     isVisible={dropdownVisibleId === item.transaction_id}
                     setVisibleId={setDropdownVisibleId} />

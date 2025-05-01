@@ -1,32 +1,36 @@
 const transactionModel = require("../models/transactionModel");
 const moment = require('moment');
-const jwt = require('jsonwebtoken');
+
 
 const AddTransaction = async (req, res) => {
     const timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
-    const { categoria, tipo, valor } = req.body
-    const token = req.headers.authorization?.split(' ')[1];
+    const { id_contabancaria, categoria, valor, natureza } = req.body
+    const { userId } = req.user.decoded
 
-    if (!token) {
-        return res.status(401).json({ error: 'Token não fornecido' });
-    }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id;
-
+    const tipo = "Despesa"
     try {
+        if (!categoria || !valor || !natureza || !id_contabancaria) {
+            return res.status(400).json({ message: 'Campos Obrigatórios vazios' })
+        }
+        const validAccount = await transactionModel.checkValidAccount(id_contabancaria, userId)
+        if (!validAccount) {
+            return res.status(400).json({ message: 'Conta invalida' })
+        }
         if (tipo === "Despesa") {
             const despesa = valor * -1;
-            transactionModel.CreateTransaction(userId, categoria, tipo, despesa, timestamp);
+            transactionModel.CreateTransaction(id_contabancaria, categoria, tipo, valor, timestamp, natureza);
+            console.log('Despesa Cadastrada pelo usuario, ', userId)
             return res.status(200).json({ message: 'Despesa Cadastrada' })
         }
         else if (tipo === "Receita") {
-            transactionModel.CreateTransaction(userId, categoria, tipo, valor, timestamp);
+            transactionModel.CreateTransaction(id_contabancaria, categoria, tipo, valor, timestamp, natureza);
+            console.log('Receita Cadastrada pelo usuario, ', userId)
             return res.status(200).json({ message: 'Receita Cadastrada' })
         }
     }
     catch (err) {
         console.error("Erro ao adicionar a transação: ", err)
-        return res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: error.message })
+        return res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: err.message })
     }
 }
 
@@ -85,7 +89,6 @@ const UpdateTransaction = async (req, res) => {
 const ListarTransactions = async (req, res) => {
     try {
         const { userId } = req.user.decoded
-        // const userId = req.user.userId;
         const transacoes = await transactionModel.ListTransactions(userId);
         res.json(transacoes.rows);
     } catch (error) {

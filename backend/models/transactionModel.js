@@ -8,8 +8,21 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-const CreateTransaction = async (id_contabancaria, categoria, tipo, valor, data_transacao) => {
-    await pool.query("INSERT INTO transacoes (id_contabancaria, categoria, tipo, valor, data_transacao) VALUES ($1, $2, $3, $4, $5)", [id_contabancaria, categoria, tipo, valor, data_transacao]);
+const checkValidAccount = async (accountId, userId) => {
+    const query = `
+    SELECT 1 
+    FROM contasBancarias 
+    WHERE id = $1 AND id_usuario = $2
+  `;
+    const { rowCount } = await pool.query(query, [accountId, userId]);
+    return rowCount > 0;
+}
+
+const CreateTransaction = async (id_contabancaria, categoria, tipo, valor, data_transacao, natureza) => {
+    const query = `
+    INSERT INTO transacoes (id_contabancaria, categoria, tipo, valor, data_transacao, natureza) 
+    VALUES ($1, $2, $3, $4, $5, $6)`;
+    await pool.query(query, [id_contabancaria, categoria, tipo, valor, data_transacao, natureza]);
 }
 
 const ReadTransaction = async (id) => {
@@ -46,4 +59,4 @@ const ListTransactions = async (id) => {
     return { rows, total: rowCount, firstResult: rows[0] };
 
 }
-module.exports = { CreateTransaction, ReadTransaction, UpdateTransaction, DeleteTransaction, ListTransactions };
+module.exports = { checkValidAccount, CreateTransaction, ReadTransaction, UpdateTransaction, DeleteTransaction, ListTransactions };

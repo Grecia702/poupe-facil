@@ -66,7 +66,7 @@ const ModalConfirmDelete = ({ open, setOpen, isDarkMode, accountId, setRefreshin
 
 
 
-export default function Account({ name, value, icon, color, textColor, isVisible, setVisibleId, setRefreshing, id }) {
+export default function Account({ name, value, icon, color, textColor, isVisible, setVisibleId, setRefreshing, id, onPress }) {
     const { isDarkMode } = useContext(colorContext)
     const navigation = useNavigation();
     const [isOpen, setIsOpen] = useState(false)
@@ -130,7 +130,7 @@ export default function Account({ name, value, icon, color, textColor, isVisible
 
         <>
             {isVisible && <DropDown />}
-            <AccountCard>
+            <AccountCard onPress={() => onPress(id)}>
                 <IconCard color={color}>
                     <MaterialIcons
                         name={icon}

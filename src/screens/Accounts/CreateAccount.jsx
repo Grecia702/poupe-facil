@@ -24,7 +24,6 @@ const CreateAccount = () => {
             return
         }
 
-
         createAccountMutation.mutate(fields, {
             onSuccess: () => showNotif(),
             onError: (error) => errorToast(error),
@@ -48,10 +47,6 @@ const CreateAccount = () => {
             duration: 1500,
         })
     }
-
-
-
-
 
     return (
         <SafeAreaView style={styles.container}>
