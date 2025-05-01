@@ -121,7 +121,7 @@ const Transactions = () => {
     }
 
     const renderItem = ({ item }) => {
-        const formattedDate = moment(item.data_compra).format('DD/MM/YYYY')
+        const formattedDate = moment(item.data_transacao).format('DD/MM/YYYY')
         return (
             <View style={{ position: 'relative', paddingVertical: 10 }}>
                 <TransactionCard

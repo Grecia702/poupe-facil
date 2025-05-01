@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native'
 import { colorContext } from '@context/colorScheme';
 import api from '@context/axiosInstance'
 import { format } from 'date-fns';
+import { useQueryClient } from '@tanstack/react-query';
 
 const CreateTransactions = () => {
     const agora = format(new Date(), 'dd/MM/yyyy');
@@ -25,9 +26,9 @@ const CreateTransactions = () => {
 
     const navigation = useNavigation();
     const { isDarkMode } = useContext(colorContext);
-    const { createTransactionMutation } = useTransactionAuth()
+    const { createTransactionMutation, refetch } = useTransactionAuth()
     const toast = useToast();
-
+    const queryClient = useQueryClient();
 
     const searchAccount = async () => {
         try {
@@ -50,7 +51,12 @@ const CreateTransactions = () => {
             return
         }
         createTransactionMutation.mutate(fields, {
-            onSuccess: () => showNotif(),
+            onSuccess: () => {
+                queryClient.invalidateQueries(['transaction_id']);
+                refetch().then(() => {
+                    showNotif()
+                })
+            },
             onError: (error) => errorToast(error),
         });
 
