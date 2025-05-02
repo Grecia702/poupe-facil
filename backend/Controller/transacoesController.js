@@ -1,54 +1,54 @@
 const transactionModel = require("../models/transactionModel");
+const { CreateTransactionService, ListTransactionsService, getTransactionByID } = require("../services/transactionService")
 const moment = require('moment');
 
 
 const AddTransaction = async (req, res) => {
-    const timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
-    const { id_contabancaria, categoria, valor, natureza } = req.body
-    const { userId } = req.user.decoded
-
-    const tipo = "Despesa"
     try {
-        if (!categoria || !valor || !natureza || !id_contabancaria) {
-            return res.status(400).json({ message: 'Campos Obrigatórios vazios' })
+        const { userId } = req.user.decoded
+        const dados = req.body
+        await CreateTransactionService(dados, userId);
+
+        return res.status(200).json({ message: 'Transação criada com sucesso' });
+    } catch (error) {
+        console.error('Erro na criação da transação:', error.message);
+
+        if (error.message.includes('Campos obrigatórios faltando')) {
+            return res.status(400).json({
+                message: 'Campos obrigatórios em branco',
+                campos_faltando: error.message.split(': ')[1]
+            });
         }
-        const validAccount = await transactionModel.checkValidAccount(id_contabancaria, userId)
-        if (!validAccount) {
-            return res.status(400).json({ message: 'Conta invalida' })
+        if (error.message === 'Valor da receita tem que ser maior ou diferente de 0 ') {
+            return res.status(400).json({ message: error.message });
         }
-        if (tipo === "Despesa") {
-            const despesa = valor * -1;
-            transactionModel.CreateTransaction(id_contabancaria, categoria, tipo, valor, timestamp, natureza);
-            console.log('Despesa Cadastrada pelo usuario, ', userId)
-            return res.status(200).json({ message: 'Despesa Cadastrada' })
+        if (error.message === 'Valor da despesa tem que ser maior ou diferente de 0 ') {
+            return res.status(400).json({ message: error.message });
         }
-        else if (tipo === "Receita") {
-            transactionModel.CreateTransaction(id_contabancaria, categoria, tipo, valor, timestamp, natureza);
-            console.log('Receita Cadastrada pelo usuario, ', userId)
-            return res.status(200).json({ message: 'Receita Cadastrada' })
+        if (error.message === 'Transações fixas devem ter frequência definida') {
+            return res.status(400).json({ message: error.message });
         }
-    }
-    catch (err) {
-        console.error("Erro ao adicionar a transação: ", err)
-        return res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: err.message })
+        if (error.message === 'Conta inválida') {
+            return res.status(400).json({ message: error.message });
+        }
+
+        res.status(500).json({ message: 'Erro interno no servidor', error: error.message });
     }
 }
 
 const ReadTransaction = async (req, res) => {
     try {
         const { id } = req.params
-        const Transactions = await transactionModel.ReadTransaction(id)
-        const Transaction = Transactions.total > 0 ? Transactions.firstResult : null
-        if (Transaction) {
-            return res.status(200).json(Transaction);
-        }
-        else {
-            return res.status(404).json({ message: "Transação não encontrada" })
-        }
+        const { userId } = req.user.decoded
+        const transacoes = await getTransactionByID(userId, id);
+        res.json(transacoes);
     }
     catch (error) {
+        // console.error('Erro ao listar transação:', error.message);
+        if (error.message === 'Nenhuma transação com essa ID foi encontrada') {
+            return res.status(400).json({ message: error.message });
+        }
         res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: error.message })
-        // throw new Error('Erro ao se conectar ao banco de dados');
     }
 }
 
@@ -86,11 +86,12 @@ const UpdateTransaction = async (req, res) => {
         res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: error.message })
     }
 }
+
 const ListarTransactions = async (req, res) => {
     try {
         const { userId } = req.user.decoded
-        const transacoes = await transactionModel.ListTransactions(userId);
-        res.json(transacoes.rows);
+        const transacoes = await getTransactionByID(userId);
+        res.json(transacoes);
     } catch (error) {
         res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: error.message })
     }

@@ -54,7 +54,7 @@ ios/build/
 .vscode/
 *.iml
 
-backend/
+# backend/
 # 🧠 TypeScript
 *.tsbuildinfo
 

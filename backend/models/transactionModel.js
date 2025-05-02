@@ -18,15 +18,15 @@ const checkValidAccount = async (accountId, userId) => {
     return rowCount > 0;
 }
 
-const CreateTransaction = async (id_contabancaria, categoria, tipo, valor, data_transacao, natureza) => {
+const CreateTransaction = async (id_contabancaria, categoria, tipo, valor, data_transacao, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia) => {
     const query = `
-    INSERT INTO transacoes (id_contabancaria, categoria, tipo, valor, data_transacao, natureza) 
-    VALUES ($1, $2, $3, $4, $5, $6)`;
-    await pool.query(query, [id_contabancaria, categoria, tipo, valor, data_transacao, natureza]);
+    INSERT INTO transacoes (id_contabancaria, categoria, tipo, valor, data_transacao, natureza , recorrente, frequencia_recorrencia, proxima_ocorrencia) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+    await pool.query(query, [id_contabancaria, categoria, tipo, valor, data_transacao, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia]);
 }
 
-const ReadTransaction = async (id) => {
-    const { rows, rowCount } = await pool.query("SELECT id, id_contabancaria, categoria, tipo, valor, data_transacao FROM transacoes WHERE id = $1", [id]);
+const ReadTransaction = async (userId, transactionId) => {
+    const { rows, rowCount } = await pool.query("SELECT * FROM user_transactions WHERE user_id = $1 AND transaction_id = $2 ", [userId, transactionId]);
     return { rows, total: rowCount, firstResult: rows[0] };
 }
 
