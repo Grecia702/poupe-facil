@@ -33,8 +33,8 @@ export default function CustomToast({ message, type }) {
 
 const styles = StyleSheet.create({
     container: {
-        paddingHorizontal: 10,
-        width: '80%',
+        paddingHorizontal: 15,
+        minWidth: '80%',
         paddingVertical: 15,
         borderRadius: 5,
         borderLeftWidth: 10,

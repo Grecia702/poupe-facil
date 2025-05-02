@@ -66,7 +66,7 @@ const ModalConfirmDelete = ({ open, setOpen, isDarkMode, transactionId, loadData
 }
 
 
-export default function TransactionCard({ loadData, iconName, state, color, category, date, value, isVisible, setVisibleId, id }) {
+export default function TransactionCard({ loadData, iconName, state, color, category, date, value, type, isVisible, setVisibleId, id }) {
     const navigation = useNavigation();
     const { isDarkMode } = useContext(colorContext)
     const [isOpen, setIsOpen] = useState(false)
@@ -147,10 +147,11 @@ export default function TransactionCard({ loadData, iconName, state, color, cate
                         color="white"
                         size={24}
                     />
+
                 </IconCard>
                 <InfoView>
                     <Title $state={state}>{category}</Title>
-                    <Date $state={state}>{date}</Date>
+                    <Date $state={state}>{type} - {date}</Date>
                 </InfoView>
 
                 <Value $state={state}>{value}</Value>

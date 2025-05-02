@@ -7,7 +7,7 @@ export const WidgetViewTeste = styled.View`
     flex-direction:  ${({ direction = 'row' }) => direction};
     background-color: ${({ color }) => color};
     border-radius: 25px;
-    padding: 20px;
+    padding: 15px;
     margin-top: 20px;
     justify-content: space-between;
     align-items: center;

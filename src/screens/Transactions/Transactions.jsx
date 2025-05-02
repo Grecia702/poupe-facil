@@ -132,6 +132,7 @@ const Transactions = () => {
                     category={item.categoria}
                     date={formattedDate}
                     value={item.valor}
+                    type={item.natureza}
                     id={item.transaction_id}
                     isVisible={dropdownVisibleId === item.transaction_id}
                     setVisibleId={setDropdownVisibleId} />

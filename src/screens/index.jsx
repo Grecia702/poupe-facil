@@ -157,6 +157,7 @@ export default function HomeScreen() {
                 color={item?.tipo === "Despesa" ? "#dd5454" : "#2563EB"}
                 state={isDarkMode}
                 category={item?.categoria}
+                type={item.natureza}
                 date={format(item?.data_transacao, 'dd/MM/yyyy')}
                 value={item?.valor} />
             ))
