@@ -1,52 +1,59 @@
 import React, { useContext } from "react";
-import { colorContext } from '../../../context/colorScheme';
+import { View } from "react-native";
+import { colorContext } from '@context/colorScheme';
 import Svg from "react-native-svg";
-import { VictoryPie, VictoryLabel } from "victory-native";
-import { CATEGORIAS } from '../../utils/categorias'
-import { View } from "./styles";
+import { VictoryPie, VictoryLabel, VictoryTooltip } from "victory-native";
 
 export default function PieChart({ data, total, selected, height, width }) {
     const { isDarkMode } = useContext(colorContext)
 
-    function findColor(props) {
-        return CATEGORIAS.find(({ label }) => label === props).color
-    }
+    const categoriaCores = {
+        Contas: "rgb(160, 48, 44)",
+        Alimentação: "rgb(204, 118, 38)",
+        Carro: "rgb(57, 184, 74)",
+        Internet: "rgb(64, 155, 230)",
+        Lazer: "rgb(114, 13, 109)",
+        Educação: "rgb(68, 59, 90)",
+        Compras: "rgb(148, 137, 37)",
+        Outros: "rgb(83, 87, 83)",
+    };
 
     return (
-        <View>
-            <Svg width={width} height={height} viewBox={`0 0 ${height} ${width}`}>
+        <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+            <Svg width={width} height={height} viewBox={`-20 -20 ${width + 40} ${height + 40}`} >
                 <VictoryPie
                     standalone={false}
                     data={data}
-                    x="label"
-                    y="value"
+                    x={data.x}
                     width={width}
                     height={height}
-                    innerRadius={(width / 2) * 0.8}
-                    labelRadius={100}
+                    labelRadius={(150 / 2) * 1.1}
+                    innerRadius={(200 / 2) * 0.8}
                     padAngle={3}
                     style={{
                         data: {
-                            fillOpacity: ({ datum }) => (datum.label === selected || selected === "") ? 1 : 0.5,
-                            stroke: ({ datum }) => datum.label === selected ? findColor(datum.label) : 'none',
+                            fillOpacity: ({ datum }) => (datum.x === selected || selected === "") ? 1 : 0.5,
+                            stroke: ({ datum }) => datum.x === selected ? categoriaCores[datum.x] : 'none',
                             strokeOpacity: 0.5,
                             strokeWidth: 10
                         },
                         labels: {
-                            display: "none",
-                            fontSize: 16,
-                            fill: "black",
+                            display: ({ datum }) => datum.x === selected ? 'inline' : 'none',
+                            padding: 20,
+                            fontSize: 18,
+                            fill: isDarkMode ? '#cccecb' : "black",
                             fontWeight: "600",
                         }
                     }}
-                    animate={{ duration: 500, easing: "quadInOut" }}
-                    colorScale={data.map((item) => findColor(item.label))}
+                    animate={{ duration: 500 }}
+                    labels={({ datum }) => `Quantidade: ${Math.round(datum.z)} `}
+                    colorScale={data.map((item) => categoriaCores[item.x])}
                 />
                 <VictoryLabel
                     textAnchor="middle"
                     verticalAnchor="middle"
-                    style={{ fontSize: 20, fill: isDarkMode ? "#ebeeee" : "#090522", fontWeight: "bold" }}
-                    text={`Total: \nR$${total}`}
+                    style={{ fontSize: 24, fill: isDarkMode ? "#ebeeee" : "#17132e", fontWeight: "bold" }}
+                    text={`Total: \nR$${Number(total).toFixed(2)}`}
                     x={width / 2}
                     y={height / 2}
                 />

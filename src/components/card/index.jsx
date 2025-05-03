@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { Container, Tag, Title, Text, SubText } from './styles'
-import { colorContext } from '../../../context/colorScheme';
+import { colorContext } from '@context/colorScheme';
 
 
 

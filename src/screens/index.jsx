@@ -1,15 +1,11 @@
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { colorContext } from '@context/colorScheme';
 import { FlatList, Pressable } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react'
-import { Picker } from '@react-native-picker/picker';
+import React, { useContext, useEffect, useState, useMemo } from 'react'
 import { CATEGORIAS } from '../utils/categorias'
-import { EXPENSES } from '../utils/expenses'
-import { Container, Title, TextParagraph, DropDown, Wrapper, Temp } from '../components/main/styles';
+import { Container, Wrapper } from '../components/main/styles';
 import Card from '@components/card';
-import { MESES } from '../utils/months';
 import ContentLoader, { Rect } from 'react-content-loader/native'
-import Geral from '@components/header';
 import PieChart from '@components/pieChart';
 import { WidgetView } from '@components/transactions/styles';
 import { useNavigation } from '@react-navigation/native';
@@ -18,31 +14,31 @@ import WidgetTeste from '@components/widget';
 import Account from '@components/accounts';
 import { Separator } from '@components/accounts/styles';
 import * as Progress from 'react-native-progress';
-import { useTransactionAuth } from '@context/transactionsContext';
-import { format, parseISO, compareDesc } from 'date-fns';
 import VisaoGeral from '@components/header';
+import { useTransactionAuth } from '@context/transactionsContext';
 import { useContasAuth } from '@context/contaContext';
 
-export default function HomeScreen() {
-  const { dadosAPI } = useTransactionAuth();
-  const { dadosContas } = useContasAuth();
-  const [meses, setMeses] = useState(MESES[0].label);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [refreshing, setRefreshing] = useState(true);
-  const [progress, setProgress] = useState(0.00);
-  const navigation = useNavigation();
-  const mensalExpense = EXPENSES[meses];
-  const { isDarkMode } = useContext(colorContext)
 
-  // console.log(dadosAPI)
-  const recentTransactions = dadosAPI?.sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao))
-    .slice(0, 5);
+const groupByCategory = ((dadosAPI) => {
+  if (!dadosAPI) {
+    return [];
+  }
 
-  // recentTransactions.map(item => {
-  //   console.log(typeof item.valor)
-  // })
+  return Object.values(
+    dadosAPI.reduce((acc, item) => {
+      const valor = parseFloat(item.valor);
+      if (!acc[item.categoria]) {
+        acc[item.categoria] = { x: item.categoria, y: 0, z: 0 };
+      }
+      acc[item.categoria].y += valor;
+      acc[item.categoria].z += 1;
+      return acc;
+    }, {})
+  );
+});
 
-  const transacoes = dadosAPI?.reduce((acc, item) => {
+const GroupByType = ((dadosAPI) => {
+  return dadosAPI?.reduce((acc, item) => {
     const valor = parseFloat(item.valor)
     if (item.tipo === "Despesa") {
       acc.despesas -= valor;
@@ -52,6 +48,30 @@ export default function HomeScreen() {
     }
     return acc;
   }, { receitas: 0, despesas: 0 })
+})
+
+export default function HomeScreen() {
+  const { dadosAPI } = useTransactionAuth();
+  const { dadosContas } = useContasAuth();
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [refreshing, setRefreshing] = useState(true);
+  const [progress, setProgress] = useState(0.00);
+  const navigation = useNavigation();
+  const { isDarkMode } = useContext(colorContext)
+
+  const resultGroupBy = useMemo(() => {
+    return groupByCategory(dadosAPI);
+  }, [dadosAPI])
+
+  const transacoes = useMemo(() => {
+    return GroupByType(dadosAPI);
+  }, [dadosAPI])
+
+
+  const recentTransactions = dadosAPI?.sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao))
+    .slice(0, 5);
+
+
 
   const saldo = dadosContas?.reduce((acc, item) => {
     return acc + parseFloat(item.saldo)
@@ -59,16 +79,12 @@ export default function HomeScreen() {
 
   const saldoContas = saldo?.toFixed(2)
 
-  const despesas = transacoes?.despesas.toFixed(2) || 0
-  const receitas = transacoes?.receitas.toFixed(2) || 0
-  const saldoTotal = (receitas - despesas) || 0
+  const saldoTotal = (transacoes?.receitas - transacoes?.despesas) || 0
 
-  // const upCount = () => {
-  //   if (progress < 1) {
-  //     buscarTransacao(26);
-  //     setProgress(progress => Math.round((progress + 0.05) * 100) / 100);
-  //   }
-  // }
+
+  useEffect(() => {
+    console.log(resultGroupBy);
+  }, [resultGroupBy]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -80,11 +96,6 @@ export default function HomeScreen() {
     setSelectedItem(label);
   };
 
-  const arrFormatted = mensalExpense.map((
-    { id, label, value, percent }) =>
-    ({ id: id, value: value, label: label })
-  );
-  const total = arrFormatted.reduce((acc, valor) => acc + valor.value, 0).toFixed(2);
 
   // Função pra buscar a cor de uma categoria em um array de objetos
   function findColor(props) {
@@ -93,7 +104,7 @@ export default function HomeScreen() {
 
   return (
     <Container color={isDarkMode ? "rgb(26, 26, 26)" : "#c6ebe9"}>
-      <VisaoGeral saldo={(saldoTotal).toFixed(2) ?? 0} receitas={receitas ?? 0} despesas={despesas ?? 0} />
+      <VisaoGeral saldo={(saldoTotal).toFixed(2) ?? 0} receitas={transacoes?.receitas} despesas={transacoes?.despesas} />
       <Wrapper>
         <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Contas"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
           <Text onPress={() => navigation.navigate('Contas')}
@@ -169,43 +180,15 @@ export default function HomeScreen() {
           ) : (
             <>
               <Text>Voce não criou nenhuma transação</Text>
+              <TouchableOpacity style={{ backgroundColor: '#3044b8' }}>
+                <Text style={{ color: '#FFF' }}>Criar</Text>
+              </TouchableOpacity>
             </>
           )
           }
         </WidgetTeste>
-
-        <Temp>
-          <Title color={isDarkMode ? "#dbf3f2" : "rgb(26, 26, 26)"}>Categorias</Title>
-          <TextParagraph color={isDarkMode ? "#dbf3f2" : "rgb(26, 26, 26)"}>Selecione uma categoria</TextParagraph>
-          <DropDown>
-            <Picker
-              selectedValue={meses}
-              onValueChange={(itemValue) => {
-                setMeses(itemValue)
-              }}
-              style={{
-                height: 50,
-                flex: 1,
-                backgroundColor: '#FFF',
-                color: 'black'
-              }}
-            >
-              {
-                MESES.map(item =>
-
-                (<Picker.Item
-                  key={item.label}
-                  label={item.label}
-                  value={item.label}
-                />
-                ))
-              }
-            </Picker>
-          </DropDown>
-        </Temp>
-
         <WidgetView color={isDarkMode ? "#2e2e2e" : "#ffffffd5"}>
-          <PieChart height={225} width={225} data={arrFormatted} total={total} selected={selectedItem} />
+          <PieChart height={350} width={350} data={resultGroupBy} total={saldoTotal} selected={selectedItem} />
         </WidgetView>
 
         <View style={{}}>
@@ -227,19 +210,22 @@ export default function HomeScreen() {
             </ContentLoader>
           ) : (
             <FlatList
-              data={arrFormatted}
-              keyExtractor={(item) => item.id}
+              data={resultGroupBy}
+              keyExtractor={(item) => item.x}
               refreshing={refreshing}
               scrollEnabled={false}
+              initialNumToRender={10}
+              maxToRenderPerBatch={5}
+              windowSize={5}
               renderItem={({ item }) => (
                 <Card
                   // Função para buscar a cor do ITEM LABEL que está sendo renderizado na flatlist
-                  color={findColor(item.label)}
-                  title={item.label}
-                  text={(item.value).toFixed(2)}
-                  subtext={item.percent}
-                  selected={selectedItem === item.label || selectedItem === true}
-                  onPress={() => handleSelectItem(item.label)}
+                  color={findColor(item.x)}
+                  title={item.x}
+                  text={(item.y).toFixed(2)}
+                  // subtext={item.percent}
+                  selected={selectedItem === item.x || selectedItem === true}
+                  onPress={() => handleSelectItem(item.x)}
                 />
               )}
             />

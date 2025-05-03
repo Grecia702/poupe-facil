@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { Header, Widget, TextInfo, ExpenseInfo, ViewIcon, Title } from "./styles";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { MaterialIcons } from '@expo/vector-icons'
 import { colorContext } from '../../../context/colorScheme';
 
 
@@ -16,7 +16,7 @@ export default function VisaoGeral({ saldo, receitas, despesas }) {
                     <MaterialIcons name="arrow-upward" size={24} color="#61d4b0" />
                 </ViewIcon>
                 <TextInfo fontWeight={500} size={16} color={isDarkMode ? "white" : "#1E293B"}>Receitas</TextInfo>
-                <TextInfo fontWeight={700} size={20} color={isDarkMode ? "white" : "#1E293B"}>{`R$${receitas}`}</TextInfo>
+                <TextInfo fontWeight={700} size={20} color={isDarkMode ? "white" : "#1E293B"}>{`R$${Number(receitas).toFixed(2)}`}</TextInfo>
             </Widget>
             <Widget
                 color={isDarkMode ? "#2c2c2c" : "#F0FDF4"}
@@ -25,7 +25,7 @@ export default function VisaoGeral({ saldo, receitas, despesas }) {
                     <MaterialIcons name="arrow-downward" size={24} color="#F87171" />
                 </ViewIcon>
                 <TextInfo fontWeight={500} size={16} color={isDarkMode ? "white" : "#1E293B"}>Despesas</TextInfo>
-                <TextInfo fontWeight={700} size={20} color={isDarkMode ? "white" : "#1E293B"}>{`R$${despesas}`}</TextInfo>
+                <TextInfo fontWeight={700} size={20} color={isDarkMode ? "white" : "#1E293B"}>{`R$${Number(despesas).toFixed(2)}`}</TextInfo>
             </Widget>
         </Header>
     )

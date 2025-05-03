@@ -13,11 +13,9 @@ export const Container = styled.TouchableOpacity`
   border-color: ${({ selected, color }) => (selected ? color : "transparent")};
 `;
 export const Tag = styled.View`
-  width: 25px;
-  height: 25px;
-  margin-left: 16px;
+  width: 10px;
+  height: 100%;
   margin-right: 16px;
-  border-radius: 3px;
   background: ${({ color }) => color};
 `;
 export const Title = styled.Text`

@@ -57,15 +57,11 @@ const Transactions = () => {
             const start = Date.now();
             const { data } = await refetch();
             if (data) {
-                const recentTransactions = dadosAPI
-                    ?.slice()
-                    .sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao));
-
-                setDadosFiltrados([...recentTransactions]);
+                setDadosFiltrados(prev => [...prev].sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao)));
             }
             setFiltrosChips([]);
             const elapsed = Date.now() - start;
-            const delay = Math.max(0, 1000 - elapsed);
+            const delay = Math.max(0, 500 - elapsed);
             if (delay > 0) await new Promise(res => setTimeout(res, delay));
         } catch (error) {
             console.error("Erro ao carregar dados:", error);
@@ -74,11 +70,11 @@ const Transactions = () => {
         }
     };
 
-    // useFocusEffect(
-    //     useCallback(() => {
-    //         loadData();
-    //     }, [])
-    // );
+    useFocusEffect(
+        useCallback(() => {
+            loadData();
+        }, [])
+    );
 
 
     useEffect(() => {
@@ -172,21 +168,20 @@ const Transactions = () => {
 
     const renderItem = ({ item }) => {
 
-        const formattedDate = moment(item.data_transacao).format('DD/MM/YYYY')
         return (
             <View style={{ position: 'relative', paddingVertical: 10 }}>
                 <TransactionCard
-                    iconName={item.categoria}
-                    color={item.tipo === "Despesa" ? '#dd6161' : '#2563EB'}
+                    iconName={item?.categoria}
+                    color={item?.tipo === "Despesa" ? '#dd6161' : '#2563EB'}
                     state={isDarkMode}
                     loadData={loadData}
-                    category={item.categoria}
-                    date={formattedDate}
-                    value={parseFloat(item.valor).toFixed(2)}
-                    recurrence={item.recorrente}
-                    type={item.natureza}
-                    id={item.transaction_id}
-                    isVisible={dropdownVisibleId === item.transaction_id}
+                    category={item?.categoria}
+                    date={item?.data_transacao}
+                    value={item?.valor}
+                    recurrence={item?.recorrente}
+                    type={item?.natureza}
+                    id={item?.transaction_id}
+                    isVisible={dropdownVisibleId === item?.transaction_id}
                     setVisibleId={setDropdownVisibleId} />
             </View>
         );

@@ -12,11 +12,17 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "API_URL": "http://192.168.100.211:3000/api"
       }
     },
     "production": {
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "apk"
+      },
+      "env": {
+        "API_URL": "http://192.168.100.211:3000/api"
       },
       "autoIncrement": true
     }
