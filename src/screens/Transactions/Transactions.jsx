@@ -4,12 +4,10 @@ import { MaterialIcons } from '@expo/vector-icons'
 import { colorContext } from '@context/colorScheme'
 import TransactionCard from '@components/transactions';
 import ModalView from '@components/modal';
-import moment from 'moment';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
 import { useWindowDimensions } from 'react-native';
 import { useTransactionAuth } from '@context/transactionsContext';
-import { format, parseISO, compareDesc } from 'date-fns';
 
 // TODO:  refatorar e otimizar
 const Transactions = () => {
