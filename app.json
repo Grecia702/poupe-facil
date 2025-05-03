@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "PoupeFacil",
-    "slug": "PoupeFacil",
+    "name": "projeto",
+    "slug": "projeto",
     "assetBundlePatterns": [
       "**/*",
       "!backend/**/*"
