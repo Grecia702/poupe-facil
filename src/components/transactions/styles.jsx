@@ -24,7 +24,7 @@ export const CardTransaction = styled.TouchableOpacity`
     width: 100%;
     justify-content: space-between;
     align-items: center;
-    position: relative;
+
 `;
 
 export const IconCard = styled.View`
@@ -35,26 +35,23 @@ export const IconCard = styled.View`
     margin-right: 10px;
     justify-content: center; 
     align-items: center; 
-    position: relative;
 `;
 
 export const InfoView = styled.View`
  width: 220px;
- position: relative;
 `;
 
 
 export const Title = styled.Text`
     font-weight: 500;
     font-size: 14px;
+    margin-right: 5px;
     color: ${({ $state }) => ($state ? "#f1f1f1" : "#2e2e2e")};
-    position: relative;
 `;
 export const Date = styled(Title)`
     font-size: 12px;
     font-weight: 400;
     color: ${({ $state }) => ($state ? "#e9e7e7" : "#4e4e4e")};
-    position: relative;
 `;
 
 export const Value = styled(Title)`
@@ -63,5 +60,4 @@ export const Value = styled(Title)`
     width: 80px;
     text-align: right;
     color:  ${({ $state }) => ($state ? "#FFF" : "#303131")};
-    position: relative;
 `;

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Modal, FlatList } from 'react-native'
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Modal, FlatList, Switch } from 'react-native'
 import React, { useState, useEffect, useContext } from 'react'
 import { CATEGORIAS } from '../../utils/categorias';
 import { MaterialIcons } from '@expo/vector-icons'
@@ -12,22 +12,28 @@ import { useQueryClient } from '@tanstack/react-query';
 
 const CreateTransactions = () => {
     const agora = format(new Date(), 'dd/MM/yyyy');
-    const [selected, setSelected] = useState({ categoria: CATEGORIAS[0], account: null, type: 'Variavel', recurrence_period: 'Mensal' });
-    const [visible, setVisible] = useState({ categoria: false, account: false, type: false, recurring: false });
+    const [selected, setSelected] = useState({ categoria: CATEGORIAS[0], account: null, natureza: 'Variavel', type: 'Despesa', recurrence_period: 'Mensal' });
+    const [visible, setVisible] = useState({ categoria: false, account: false, natureza: false, type: false, recurring: false });
     const [fields, setFields] = useState({
         valor: '',
         valorFormatted: '',
         categoria: CATEGORIAS[0].label,
-        natureza: 'Fixa',
-        data: `${agora}`,
-        id_contabancaria: ''
+        natureza: selected.natureza,
+        data_transacao: `${agora}`,
+        id_contabancaria: '',
+        tipo: selected.type,
+        recorrente: false,
+        frequencia_recorrencia: null,
     });
+    const [isAtivado, setIsAtivado] = useState(false);
+    const toggleSwitch = () => setIsAtivado(previousState => !previousState);
     const [accountData, setAccountData] = useState([{ id: '', nome: '', icone: '' }])
 
 
     const recurrence_period = [
-        'Diária', 'Semanal', 'Quinzenal',
-        'Mensal', 'Bimestral', 'Trimestral', 'Anual'
+        'Diario', 'Semanal', 'Quinzenal',
+        'Mensal', 'Bimestral', 'Trimestral',
+        'Quadrimestral', 'Semestral', 'Anual'
     ]
 
     const navigation = useNavigation();
@@ -56,14 +62,13 @@ const CreateTransactions = () => {
         return isValid(parsed) && format(parsed, 'dd/MM/yyyy') === str;
     };
 
-
     const handleCreateTransaction = () => {
         if (fields.valor === '') {
             errorToast("Insira um valor válido")
             return
         }
 
-        if (!isDateDDMMYYYY(fields.data)) {
+        if (!isDateDDMMYYYY(fields.data_transacao)) {
             errorToast("Insira uma data válida (DD/MM/YYYY)")
             return
         }
@@ -79,14 +84,13 @@ const CreateTransactions = () => {
 
     }
 
-
     const showNotif = () => {
         toast.show('Transação criada com sucesso', {
             type: 'success',
             duration: 1500,
         })
         setTimeout(() => {
-            navigation.replace('Transactions');
+            navigation.goBack();
         }, 50)
 
     }
@@ -99,7 +103,7 @@ const CreateTransactions = () => {
     }
 
     useEffect(() => {
-        console.log(selected.type)
+        console.log(fields)
     }, [selected])
 
 
@@ -131,7 +135,7 @@ const CreateTransactions = () => {
 
         setFields(prev => ({
             ...prev,
-            data: formatted
+            data_transacao: formatted
         }));
     };
 
@@ -166,7 +170,7 @@ const CreateTransactions = () => {
                     style={{ flex: 1, color: isDarkMode ? '#DDD' : "#333" }}
                     placeholder={agora}
                     placeholderTextColor={isDarkMode ? '#DDD' : "#333"}
-                    value={fields.data} w
+                    value={fields.data_transacao}
                     onChangeText={(text) => handleDateInput(text)}
                 />
             </View>
@@ -266,14 +270,13 @@ const CreateTransactions = () => {
                 </Modal>
             </View>
             <View style={styles.separator} />
+            {/* TIPO DE TRANSAÇÃO  */}
 
-            {/* NATUREZA DA TRANSAÇÃO  */}
-
-            <View style={{ flexDirection: 'row', gap: 10, paddingVertical: 5, alignItems: 'center' }}>
-                <Text style={{ color: isDarkMode ? '#DDD' : "#333" }}>Natureza</Text>
+            <View style={styles.selectorRow}>
+                <Text style={{ width: 60, color: isDarkMode ? '#DDD' : "#333" }}>Tipo</Text>
                 <TouchableOpacity style={{ flex: 1 }} onPress={() => setVisible(prev => ({ ...prev, type: true }))}>
 
-                    <View style={{ paddingHorizontal: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View style={styles.dropdown}>
 
                         <Text style={[styles.selectorText, { color: isDarkMode ? '#DDD' : "#333" }]}>{selected?.type}</Text>
 
@@ -295,18 +298,68 @@ const CreateTransactions = () => {
                         <View style={{ gap: 5, alignItems: 'center', borderRadius: 5, padding: 20, width: 'auto', backgroundColor: isDarkMode ? '#333' : '#EEE' }}>
                             <TouchableOpacity
                                 onPress={() => {
-                                    setSelected(prev => ({ ...prev, type: 'Fixa' }))
-                                    setFields(prev => ({ ...prev, natureza: 'Fixa' }));
+                                    setSelected(prev => ({ ...prev, type: 'Despesa' }))
+                                    setFields(prev => ({ ...prev, tipo: 'Despesa' }));
                                     setVisible(prev => ({ ...prev, type: false }))
+                                }}
+                            >
+                                <Text style={{ color: isDarkMode ? '#DDD' : "#333" }}>Despesa</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setSelected(prev => ({ ...prev, type: 'Receita' }))
+                                    setFields(prev => ({ ...prev, tipo: 'Receita' }));
+                                    setVisible(prev => ({ ...prev, type: false }))
+                                }}
+                            >
+                                <Text style={{ color: isDarkMode ? '#DDD' : "#333" }}>Receita</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableOpacity>
+                </Modal>
+            </View>
+            <View style={styles.separator} />
+
+            {/* NATUREZA DA TRANSAÇÃO  */}
+
+            <View style={styles.selectorRow}>
+                <Text style={{ width: 60, color: isDarkMode ? '#DDD' : "#333" }}>Natureza</Text>
+                <TouchableOpacity style={{ flex: 1 }} onPress={() => setVisible(prev => ({ ...prev, natureza: true }))}>
+
+                    <View style={styles.dropdown}>
+
+                        <Text style={[styles.selectorText, { color: isDarkMode ? '#DDD' : "#333" }]}>{selected?.natureza}</Text>
+
+                        <View>
+                            <MaterialIcons name="arrow-drop-down" size={24} color="#666" />
+                        </View>
+                    </View>
+                </TouchableOpacity>
+
+                <Modal visible={visible.natureza} transparent animationType="fade">
+                    <TouchableOpacity style={{
+                        flex: 1,
+                        backgroundColor: '#00000066',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: 20,
+                    }}
+                        onPress={() => setVisible(prev => ({ ...prev, natureza: false }))}>
+                        <View style={{ gap: 5, alignItems: 'center', borderRadius: 5, padding: 20, width: 'auto', backgroundColor: isDarkMode ? '#333' : '#EEE' }}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setSelected(prev => ({ ...prev, natureza: 'Fixa' }))
+                                    setFields(prev => ({ ...prev, natureza: 'Fixa', recorrente: true, frequencia_recorrencia: selected.recurrence_period }));
+                                    setVisible(prev => ({ ...prev, natureza: false }))
                                 }}
                             >
                                 <Text style={{ color: isDarkMode ? '#DDD' : "#333" }}>Fixa</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => {
-                                    setSelected(prev => ({ ...prev, type: 'Varíavel' }))
-                                    setFields(prev => ({ ...prev, natureza: 'Varíavel' }));
-                                    setVisible(prev => ({ ...prev, type: false }))
+                                    setSelected(prev => ({ ...prev, natureza: 'Varíavel' }))
+                                    setFields(prev => ({ ...prev, natureza: 'Varíavel', recorrente: false, frequencia_recorrencia: null }));
+                                    setVisible(prev => ({ ...prev, natureza: false }))
                                 }}
                             >
                                 <Text style={{ color: isDarkMode ? '#DDD' : "#333" }}>Variavel</Text>
@@ -318,18 +371,19 @@ const CreateTransactions = () => {
             <View style={styles.separator} />
 
 
-            {/* TRANSAÇÃO RECORRENTE */}
 
-            {selected?.type === "Fixa" &&
+            {/* Período Recorrencia */}
+
+            {selected?.natureza === "Fixa" &&
                 (
                     <>
-                        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-                            <Text style={{ color: isDarkMode ? '#DDD' : "#333" }}>Recorrencia</Text>
+                        <View style={styles.selectorRow}>
+                            <Text style={{ width: 60, color: isDarkMode ? '#DDD' : "#333" }}>Período</Text>
 
                             <>
                                 <TouchableOpacity style={{ flex: 1 }} onPress={() => setVisible(prev => ({ ...prev, recurring: true }))}>
 
-                                    <View style={{ paddingHorizontal: 5, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <View style={styles.dropdown}>
                                         <Text style={[styles.selectorText, { color: isDarkMode ? '#DDD' : "#333" }]}>{selected?.recurrence_period}</Text>
                                         <View>
                                             <MaterialIcons name="arrow-drop-down" size={24} color="#666" />
@@ -346,18 +400,22 @@ const CreateTransactions = () => {
                                         padding: 20,
                                     }}
                                         onPress={() => setVisible(prev => ({ ...prev, recurring: false }))}>
-                                        <View style={{ gap: 10, alignItems: 'center', borderRadius: 5, padding: 20, backgroundColor: isDarkMode ? '#333' : '#EEE' }}>
+                                        <View style={{ borderRadius: 5, backgroundColor: isDarkMode ? '#333' : '#EEE' }}>
                                             {recurrence_period.map((item, index) => {
                                                 return (
                                                     <React.Fragment key={index}>
-                                                        <TouchableOpacity onPress={() => {
-                                                            setSelected(prev => ({ ...prev, recurrence_period: item }))
-                                                            setVisible(prev => ({ ...prev, recurring: false }))
-                                                        }}>
-                                                            <Text style={{ color: isDarkMode ? '#EEE' : '#222' }}>{item}</Text>
+                                                        <TouchableOpacity
+                                                            style={{ flexDirection: 'row', padding: 10 }}
+                                                            onPress={() => {
+                                                                setSelected(prev => ({ ...prev, recurrence_period: item }))
+                                                                setFields(prev => ({ ...prev, frequencia_recorrencia: item }))
+                                                                setVisible(prev => ({ ...prev, recurring: false }))
+                                                            }}>
+                                                            <Text style={{ paddingLeft: 5, paddingRight: 20, color: isDarkMode ? '#EEE' : '#222' }}>{item}</Text>
+
                                                         </TouchableOpacity>
                                                         {index !== recurrence_period.length - 1 && (
-                                                            <View style={styles.separator} />
+                                                            <View style={{ height: 2, backgroundColor: '#111' }} />
                                                         )}
                                                     </React.Fragment>
                                                 )
@@ -366,6 +424,17 @@ const CreateTransactions = () => {
                                     </TouchableOpacity>
                                 </Modal>
                             </>
+                        </View>
+                        <View style={styles.separator} />
+                        <View style={styles.switch}>
+                            <Text style={{ color: isDarkMode ? "#EEE" : "#222" }}>Recorrente</Text>
+                            <Switch
+                                trackColor={{ false: '#767577', true: '#81b0ff' }}
+                                thumbColor={isAtivado ? '#f5dd4b' : '#f4f3f4'}
+                                ios_backgroundColor="#3e3e3e"
+                                onValueChange={toggleSwitch}
+                                value={isAtivado}
+                            />
                         </View>
                         <View style={styles.separator} />
                     </>
@@ -433,5 +502,22 @@ const styles = StyleSheet.create({
         backgroundColor: '#00000066',
         justifyContent: 'center',
         padding: 20,
+    },
+    selectorRow: {
+        flexDirection: 'row',
+        gap: 10,
+        paddingVertical: 5,
+        alignItems: 'center'
+    },
+    dropdown: {
+        paddingHorizontal: 5,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+    switch: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between'
     },
 })

@@ -1,5 +1,10 @@
 
-const { CreateTransactionService, ListTransactionsService, getTransactionByID } = require('../services/transactionService');
+const {
+    CreateTransactionService,
+    ListTransactionsService,
+    RemoveTransactionService,
+    getTransactionByID }
+    = require('../services/transactionService');
 const transactionModel = require('../models/transactionModel');
 
 jest.mock('../models/transactionModel', () => ({
@@ -7,6 +12,7 @@ jest.mock('../models/transactionModel', () => ({
     CreateTransaction: jest.fn(),
     ListTransactions: jest.fn(),
     ReadTransaction: jest.fn(),
+    DeleteTransaction: jest.fn()
 }));
 
 describe('CreateTransactionService', () => {
@@ -134,5 +140,50 @@ describe('GetTransactionByID', () => {
         await expect(getTransactionByID(mockUserId, mockTransactionID))
             .rejects
             .toThrow('Nenhuma transação com essa ID foi encontrada');
+    });
+})
+
+describe('DeleteTransactionService', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+    it('deve deletar a transação se ela existir', async () => {
+        const mockUserId = 1;
+        const mockTransactionId = 10;
+        const mockTransaction = {
+            rows: [
+                { id: 10, valor: 100, categoria: 'Exemplo' }
+            ],
+        };
+
+        transactionModel.ReadTransaction.mockResolvedValue(mockTransaction);
+        await RemoveTransactionService(mockUserId, mockTransactionId);
+
+        expect(transactionModel.ReadTransaction).toHaveBeenCalledWith(mockUserId, mockTransactionId);
+        expect(transactionModel.DeleteTransaction).toHaveBeenCalledWith(mockUserId, mockTransactionId);
+    });
+
+    it('deve lançar erro se a transação não for encontrada', async () => {
+        const mockUserId = 1;
+        const mockTransactionId = 999;
+
+        transactionModel.ReadTransaction.mockResolvedValue({ rows: [] });
+
+        await expect(
+            RemoveTransactionService(mockUserId, mockTransactionId)
+        ).rejects.toThrow('Nenhuma transação com essa ID foi encontrada');
+
+        expect(transactionModel.DeleteTransaction).not.toHaveBeenCalled();
+    });
+
+    it('deve propagar erros do banco de dados', async () => {
+        const mockUserId = 1;
+        const mockTransactionId = 10;
+
+        transactionModel.ReadTransaction.mockRejectedValue(new Error('Erro no banco'));
+
+        await expect(
+            RemoveTransactionService(mockUserId, mockTransactionId)
+        ).rejects.toThrow('Erro no banco');
     });
 })

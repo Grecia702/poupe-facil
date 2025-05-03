@@ -37,6 +37,9 @@ api.interceptors.response.use(
             return Promise.reject(error.response.data.message);
         }
 
+        if (error.response?.status === 400) {
+            return Promise.reject(error.response.data.message);
+        }
 
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;

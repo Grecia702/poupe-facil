@@ -6,8 +6,7 @@ import { colorContext } from '@context/colorScheme'
 import { useContext, useState } from "react";
 import { useToast } from 'react-native-toast-notifications';
 import { useTransactionAuth } from "@context/transactionsContext";
-import { loadData } from "@shopify/react-native-skia";
-
+import { format } from 'date-fns';
 
 const ModalConfirmDelete = ({ open, setOpen, isDarkMode, transactionId, loadData }) => {
     const { refetch, deleteTransactionMutation } = useTransactionAuth();
@@ -66,7 +65,7 @@ const ModalConfirmDelete = ({ open, setOpen, isDarkMode, transactionId, loadData
 }
 
 
-export default function TransactionCard({ loadData, iconName, state, color, category, date, value, type, isVisible, setVisibleId, id }) {
+export default function TransactionCard({ loadData, iconName, state, color, category, date, value, type, recurrence, isVisible, setVisibleId, id }) {
     const navigation = useNavigation();
     const { isDarkMode } = useContext(colorContext)
     const [isOpen, setIsOpen] = useState(false)
@@ -96,11 +95,7 @@ export default function TransactionCard({ loadData, iconName, state, color, cate
                 <Pressable
                     onPress={handleClose}
                     style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
+
                         zIndex: 1,
                     }}
                 />
@@ -138,7 +133,7 @@ export default function TransactionCard({ loadData, iconName, state, color, cate
     }
 
     return (
-        <View style={{ position: 'relative' }}>
+        <View >
             {isVisible && <DropDown />}
             <CardTransaction >
                 <IconCard color={color}>
@@ -149,12 +144,22 @@ export default function TransactionCard({ loadData, iconName, state, color, cate
                     />
 
                 </IconCard>
+
                 <InfoView>
-                    <Title $state={state}>{category}</Title>
-                    <Date $state={state}>{type} - {date}</Date>
+                    <View style={{ flexDirection: 'row' }}>
+                        <Title $state={state}>{category}</Title>
+                        {recurrence && (
+                            <MaterialIcons
+                                name='repeat'
+                                color={state ? "#EEE" : "#222"}
+                                size={20}
+                            />
+                        )}
+                    </View>
+                    <Date $state={state}>{type} - {format(date, 'dd/MM/yyyy')}</Date>
                 </InfoView>
 
-                <Value $state={state}>{value}</Value>
+                <Value $state={state}>{Number(value).toFixed(2)}</Value>
                 <TouchableOpacity onPress={handleToggleDropdown}>
                     <MaterialIcons
                         name="more-vert" size={24}

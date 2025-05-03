@@ -141,7 +141,7 @@ export default function Account({ name, value, icon, color, textColor, isVisible
                     <Title color={textColor}>{name}</Title>
                 </TextContainer>
                 <InfoView>
-                    <Balance color={textColor}>{value}</Balance>
+                    <Balance color={textColor}>{Number(value).toFixed(2)}</Balance>
                     <TouchableOpacity onPress={handleToggleDropdown}>
                         <MaterialIcons
                             name="more-vert" size={24}

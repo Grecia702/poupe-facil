@@ -1,16 +1,17 @@
 import { StyleSheet, FlatList, TouchableOpacity, Modal, Text, View, Pressable } from 'react-native'
-import React, { useState, useContext, useEffect, useMemo } from 'react'
+import React, { useState, useContext, useEffect, useMemo, useCallback } from 'react'
 import { MaterialIcons } from '@expo/vector-icons'
 import { colorContext } from '@context/colorScheme'
 import TransactionCard from '@components/transactions';
 import ModalView from '@components/modal';
 import moment from 'moment';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
 import { useWindowDimensions } from 'react-native';
 import { useTransactionAuth } from '@context/transactionsContext';
+import { format, parseISO, compareDesc } from 'date-fns';
 
-// TODO: rotas de criação/edição/exclusão de transações, implementar função de SORT, refatorar e otimizar
+// TODO:  refatorar e otimizar
 const Transactions = () => {
     const navigation = useNavigation();
     const [modalVisible, setModalVisible] = useState(false);
@@ -26,6 +27,17 @@ const Transactions = () => {
         operador: null,
         data: null
     })
+    const toggleDropdown = () => setIsOpen(prev => !prev);
+
+
+    const sortOptions = [
+        { label: 'Data (Mais recentes)', value: 'date_desc' },
+        { label: 'Data (Mais antigos)', value: 'date_asc' },
+        { label: 'Valor (Maior primeiro)', value: 'value_desc' },
+        { label: 'Valor (Menor primeiro)', value: 'value_asc' },
+    ];
+    const [selected, setSelected] = useState(sortOptions[0]);
+    const [isOpen, setIsOpen] = useState(false);
 
     const { height, width } = useWindowDimensions();
     const rectHeight = 30;
@@ -34,21 +46,40 @@ const Transactions = () => {
     const priceWidth = 70;
 
     const loadData = async () => {
-        setRefreshing(true);
-        refetch();
-        setFiltrosCategorias({
-            categorias: [],
-            valor: null,
-            operador: null,
-            data: null
-        });
-        setDadosFiltrados(dadosAPI);
-        setFiltrosChips([])
-        setTimeout(() => {
-            setRefreshing(false);
-        }, 500);
+        try {
+            setRefreshing(true);
+            setFiltrosCategorias({
+                categorias: [],
+                valor: null,
+                operador: null,
+                data: null
+            });
+            const start = Date.now();
+            const { data } = await refetch();
+            if (data) {
+                const recentTransactions = dadosAPI
+                    ?.slice()
+                    .sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao));
 
+                setDadosFiltrados([...recentTransactions]);
+            }
+            setFiltrosChips([]);
+            const elapsed = Date.now() - start;
+            const delay = Math.max(0, 1000 - elapsed);
+            if (delay > 0) await new Promise(res => setTimeout(res, delay));
+        } catch (error) {
+            console.error("Erro ao carregar dados:", error);
+        } finally {
+            setRefreshing(false);
+        }
     };
+
+    // useFocusEffect(
+    //     useCallback(() => {
+    //         loadData();
+    //     }, [])
+    // );
+
 
     useEffect(() => {
         const aplicarFiltrosAtivos = () => {
@@ -104,6 +135,25 @@ const Transactions = () => {
     };
 
 
+    const orderTransactions = (order) => {
+        setSelected(order);
+        setIsOpen(false);
+        switch (order.value) {
+            case "date_asc":
+                setDadosFiltrados(prev => [...prev].sort((a, b) => new Date(a.data_transacao) - new Date(b.data_transacao)))
+                break;
+            case "date_desc":
+                setDadosFiltrados(prev => [...prev].sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao)))
+                break;
+            case "value_asc":
+                setDadosFiltrados(prev => [...prev].sort((a, b) => a.valor - b.valor))
+                break;
+            case "value_desc":
+                setDadosFiltrados(prev => [...prev].sort((a, b) => b.valor - a.valor))
+                break;
+        }
+    }
+
     const ModalTransactions = () => {
         return (
             <Modal
@@ -121,6 +171,7 @@ const Transactions = () => {
     }
 
     const renderItem = ({ item }) => {
+
         const formattedDate = moment(item.data_transacao).format('DD/MM/YYYY')
         return (
             <View style={{ position: 'relative', paddingVertical: 10 }}>
@@ -131,7 +182,8 @@ const Transactions = () => {
                     loadData={loadData}
                     category={item.categoria}
                     date={formattedDate}
-                    value={item.valor}
+                    value={parseFloat(item.valor).toFixed(2)}
+                    recurrence={item.recorrente}
                     type={item.natureza}
                     id={item.transaction_id}
                     isVisible={dropdownVisibleId === item.transaction_id}
@@ -194,9 +246,18 @@ const Transactions = () => {
                     </View>
                 </View>
             ) : (
-                <Pressable onPress={() => setDropdownVisibleId(null)} style={{ flex: 1 }}
+                <Pressable onPress={() => { setDropdownVisibleId(null); setIsOpen(false) }} style={{ flex: 1, position: 'relative' }}
                     pointerEvents="auto"
                 >
+                    {isOpen && (
+                        <View style={[styles.dropdown, { backgroundColor: isDarkMode ? '#333' : '#fff', }]}>
+                            {sortOptions.map((option, index) => (
+                                <TouchableOpacity key={index} style={styles.item} onPress={() => orderTransactions(option)}>
+                                    <Text style={{ color: isDarkMode ? '#fff' : '#333' }}>{option.label}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    )}
                     <FlatList
                         contentContainerStyle={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}
                         data={dadosFiltrados}
@@ -208,11 +269,11 @@ const Transactions = () => {
                         ListHeaderComponent={
                             <>
                                 <View style={[styles.ListHeader, { position: 'relative' }]}>
-                                    <View style={{ flexDirection: 'row', alignSelf: 'flex-end', gap: 5 }}>
+                                    <View style={styles.dropdownWrapper}>
                                         <TouchableOpacity onPress={() => setModalVisible(true)} style={{ flexDirection: 'row', padding: 5, borderColor: isDarkMode ? "#DDD" : "#111", borderWidth: 2, borderRadius: 5 }}>
                                             <MaterialIcons name="filter-alt" size={24} color={isDarkMode ? "#DDD" : "#111"} />
                                         </TouchableOpacity>
-                                        <TouchableOpacity onPress={() => console.log("sort")} style={{ flexDirection: 'row', padding: 5, borderColor: isDarkMode ? "#DDD" : "#111", borderWidth: 2, borderRadius: 5 }}>
+                                        <TouchableOpacity onPress={toggleDropdown} style={{ flexDirection: 'row', padding: 5, borderColor: isDarkMode ? "#DDD" : "#111", borderWidth: 2, borderRadius: 5 }}>
                                             <MaterialIcons name="sort" size={24} color={isDarkMode ? "#DDD" : "#111"} />
                                         </TouchableOpacity>
                                     </View>
@@ -260,11 +321,36 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 50,
         paddingHorizontal: 15,
         paddingTop: 30,
+        position: 'relative'
 
     },
     ListHeader: {
         flexDirection: 'column',
         gap: 15,
         marginBottom: 10,
-    }
+        position: 'relative'
+    },
+    dropdownWrapper: {
+        marginLeft: 20,
+        flexDirection: 'row',
+        alignSelf: 'flex-end',
+        gap: 5,
+    },
+    dropdown: {
+        position: 'absolute',
+        top: 70,
+        right: 20,
+        marginTop: 5,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        elevation: 5,
+        width: 200,
+        zIndex: 1,
+    },
+    item: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+    },
 })

@@ -50,8 +50,15 @@ const UpdateTransaction = async (id, campos) => {
     return await pool.query(query, parametros);
 };
 
-const DeleteTransaction = async (id) => {
-    await pool.query("DELETE FROM transacoes WHERE id = $1", [id])
+const DeleteTransaction = async (userId, transactionId) => {
+    const query = `
+    DELETE FROM transacoes AS t
+    USING contasBancarias AS c 
+    WHERE t.id_contabancaria = c.id
+    AND c.id_usuario = $1
+    AND t.id = $2
+    `;
+    await pool.query(query, [userId, transactionId])
 }
 
 const ListTransactions = async (id) => {

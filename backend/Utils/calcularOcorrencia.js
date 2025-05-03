@@ -2,31 +2,31 @@ const calcularProximaOcorrencia = (dataTransacao, frequenciaRecorrencia) => {
     let proxima = new Date(dataTransacao);
 
     switch (frequenciaRecorrencia) {
-        case 'diario':
+        case 'Diario':
             proxima.setDate(proxima.getDate() + 1);
             break;
-        case 'semanal':
+        case 'Semanal':
             proxima.setDate(proxima.getDate() + 7);
             break;
-        case 'quinzenal':
+        case 'Quinzenal':
             proxima.setDate(proxima.getDate() + 14);
             break;
-        case 'mensal':
+        case 'Mensal':
             proxima.setMonth(proxima.getMonth() + 1);
             break;
-        case 'bimestral':
+        case 'Bimestral':
             proxima.setMonth(proxima.getMonth() + 2);
             break;
-        case 'trimestral':
+        case 'Trimestral':
             proxima.setMonth(proxima.getMonth() + 3);
             break;
-        case 'quadrimestral':
+        case 'Quadrimestral':
             proxima.setMonth(proxima.getMonth() + 4);
             break;
-        case 'semestral':
+        case 'Semestral':
             proxima.setMonth(proxima.getMonth() + 6);
             break;
-        case 'anual':
+        case 'Anual':
             proxima.setFullYear(proxima.getFullYear() + 1);
             break;
         default:

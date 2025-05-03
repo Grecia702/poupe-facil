@@ -1,6 +1,6 @@
 
 const transactionModel = require("../models/transactionModel");
-
+const { calcularProximaOcorrencia } = require("../utils/calcularOcorrencia")
 
 const validarCamposObrigatorios = (dados) => {
     const camposObrigatorios = ['id_contabancaria', 'categoria', 'tipo', 'valor', 'natureza', 'data_transacao'];
@@ -13,7 +13,7 @@ const validarCamposObrigatorios = (dados) => {
 
 
 const validarFrequenciaRecorrencia = (frequencia) => {
-    const frequenciasValidas = ['diario', 'semanal', 'quinzenal', 'mensal', 'bimestral', 'trimestral', 'semestral', 'quadrimestral', 'anual'];
+    const frequenciasValidas = ['Diario', 'Semanal', 'Quinzenal', 'Mensal', 'Bimestral', 'Trimestral', 'Semestral', 'Quadrimestral', 'Anual'];
     if (frequenciasValidas.indexOf(frequencia) === -1) {
         throw new Error('Frequência de recorrência inválida. As opções válidas são: diário, semanal, quinzenal, mensal, anual.');
     }
@@ -62,9 +62,6 @@ const CreateTransactionService = async (dados, userId) => {
     const contaValida = await transactionModel.checkValidAccount(dados.id_contabancaria, userId);
 
     if (!contaValida) throw new Error('Conta inválida');
-
-    console.log(dados)
-
     await transactionModel.CreateTransaction(
         dados.id_contabancaria,
         dados.categoria,
@@ -78,7 +75,6 @@ const CreateTransactionService = async (dados, userId) => {
     );
 };
 
-// No service
 const getTransactionByID = async (userId, transactionId) => {
     try {
         const transacoes = await transactionModel.ReadTransaction(userId, transactionId);
@@ -92,6 +88,20 @@ const getTransactionByID = async (userId, transactionId) => {
     }
 };
 
+const RemoveTransactionService = async (userId, transactionId) => {
+    try {
+        const transacoes = await transactionModel.ReadTransaction(userId, transactionId);
+        console.log(transacoes.rows)
+        if (transacoes.rows.length === 0) {
+            throw new Error('Nenhuma transação com essa ID foi encontrada');
+        }
+        await transactionModel.DeleteTransaction(userId, transactionId)
+    }
+    catch (error) {
+        throw error;
+    }
+}
+
 
 const ListTransactionsService = async (userId) => {
     try {
@@ -102,4 +112,4 @@ const ListTransactionsService = async (userId) => {
     }
 };
 
-module.exports = { CreateTransactionService, ListTransactionsService, getTransactionByID };
+module.exports = { CreateTransactionService, ListTransactionsService, RemoveTransactionService, getTransactionByID };

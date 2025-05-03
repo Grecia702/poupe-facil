@@ -35,8 +35,12 @@ export default function HomeScreen() {
   const { isDarkMode } = useContext(colorContext)
 
   // console.log(dadosAPI)
-  const recentTransactions = dadosAPI?.sort((a, b) => compareDesc(parseISO(a.data_transacao), parseISO(b.data_transacao)))
+  const recentTransactions = dadosAPI?.sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao))
     .slice(0, 5);
+
+  // recentTransactions.map(item => {
+  //   console.log(typeof item.valor)
+  // })
 
   const transacoes = dadosAPI?.reduce((acc, item) => {
     const valor = parseFloat(item.valor)
@@ -55,8 +59,8 @@ export default function HomeScreen() {
 
   const saldoContas = saldo?.toFixed(2)
 
-  const despesas = transacoes?.despesas || 0
-  const receitas = transacoes?.receitas || 0
+  const despesas = transacoes?.despesas.toFixed(2) || 0
+  const receitas = transacoes?.receitas.toFixed(2) || 0
   const saldoTotal = (receitas - despesas) || 0
 
   // const upCount = () => {
@@ -153,12 +157,13 @@ export default function HomeScreen() {
             recentTransactions.map((item, index) => (
               <TransactionCard
                 key={index}
-                iconName={item.categoria}
+                iconName={item?.categoria}
                 color={item?.tipo === "Despesa" ? "#dd5454" : "#2563EB"}
                 state={isDarkMode}
                 category={item?.categoria}
-                type={item.natureza}
-                date={format(item?.data_transacao, 'dd/MM/yyyy')}
+                type={item?.natureza}
+                recurrence={item?.recorrente}
+                date={item?.data_transacao}
                 value={item?.valor} />
             ))
           ) : (
