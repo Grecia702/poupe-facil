@@ -1,12 +1,5 @@
 require('dotenv').config();
-const { Pool } = require('pg');
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
-});
-
-pool.connect()
-    .then(() => console.log('Conectado ao banco de dados no Railway'))
-    .catch((err) => console.error('Erro ao conectar ao banco de dados', err));
+const pool = require('../db.js')
 
 const CreateUser = async (nome, email, senha) => {
     await pool.query("INSERT INTO usuario (nome, email, senha) VALUES ($1, $2, $3)", [nome, email, senha]);
