@@ -1,18 +1,19 @@
+console.log('SERVER STARTED - CWD:', process.cwd(), 'DIRNAME:', __dirname)
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
-const authRoutes = require('./routes/authRoutes')
-const userRoutes = require('./routes/userRoutes')
-const accountRoutes = require('./routes/accountRoutes')
-const transactionRoutes = require('./routes/transactionRoutes')
-const logger = require('./utils/loggerConfig')
+const app = express();
+const userRoutes = require(path.join(__dirname, 'Routes', 'userRoutes'));
+const accountRoutes = require(path.join(__dirname, 'Routes', 'accountRoutes'));
+const authRoutes = require(path.join(__dirname, 'Routes', 'authRoutes'));
+const transactionRoutes = require(path.join(__dirname, 'Routes', 'transactionRoutes'));
+const logger = require(path.join(__dirname, 'Utils', 'loggerConfig'));
 const cookieParser = require('cookie-parser');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
-const { iniciarCron } = require('./utils/transacoesRecorrentes');
+const { iniciarCron } = require(path.join(__dirname, 'Utils', 'transacoesRecorrentes'));
 
 iniciarCron();
 
-const app = express();
 
 const rateLimiter = new RateLimiterMemory({
     points: 5,
@@ -31,13 +32,11 @@ app.use(cors({
         'http://192.168.100.211:8082',
         'http://127.0.0.1:8081',
         'http://127.0.0.1:8082'
-
     ],
     credentials: true,
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-
 
 app.use((req, res, next) => {
     rateLimiter.consume(req.ip)
@@ -56,10 +55,10 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use("/api/users", userRoutes)
-app.use("/api/auth", authRoutes)
-app.use("/api/profile/account", accountRoutes)
-app.use("/api/profile/transaction", transactionRoutes)
+app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/profile/account", accountRoutes);
+app.use("/api/profile/transaction", transactionRoutes);
 
 app.use((req, res, next) => {
     res.status(404).sendFile(path.join(__dirname, 'views', 'index.html'));

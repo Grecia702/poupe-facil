@@ -9,7 +9,7 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-const { verifyRefreshToken } = require('../utils/tokenUtils');
+const { verifyRefreshToken } = require('../Utils/tokenUtils');
 
 module.exports = async (req, res, next) => {
     const authHeader = req.headers.authorization;

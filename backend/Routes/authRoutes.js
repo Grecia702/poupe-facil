@@ -3,7 +3,6 @@ const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const verifyRefresh = require('../middleware/verifyRefreshToken');
 const authController = require('../controller/authController')
-const logger = require('../utils/loggerConfig')
 
 router.post("/login", authController.login);
 router.post("/signup", authController.signup);

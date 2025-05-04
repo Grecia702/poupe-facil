@@ -3,10 +3,10 @@ const userModel = require("../models/userModel");
 const bcrypt = require('bcrypt')
 const saltRounds = 12;
 const moment = require('moment');
-const logger = require('../utils/loggerConfig')
+const logger = require('../Utils/loggerConfig')
 const pool = require('../db.js')
 
-const { generateAccessToken, generateRefreshToken } = require('../utils/tokenUtils');
+const { generateAccessToken, generateRefreshToken } = require('../Utils/tokenUtils');
 const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
 
 // LOGIN
