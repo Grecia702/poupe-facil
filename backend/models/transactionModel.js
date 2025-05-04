@@ -1,12 +1,5 @@
 require('dotenv').config();
-const { Pool } = require('pg');
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
-});
-
-pool.connect()
-    .then(() => console.log('Conectado ao banco de dados no Railway'))
-    .catch((err) => console.error('Erro ao conectar ao banco de dados', err));
+const pool = require('../db.js')
 
 const checkValidAccount = async (accountId, userId) => {
     const query = `
@@ -61,8 +54,8 @@ const DeleteTransaction = async (userId, transactionId) => {
     await pool.query(query, [userId, transactionId])
 }
 
-const ListTransactions = async (id) => {
-    const { rows, rowCount } = await pool.query("SELECT * FROM user_transactions WHERE user_id = $1", [id]);
+const ListTransactions = async (userId, limit, offset) => {
+    const { rows, rowCount } = await pool.query("SELECT * FROM user_transactions WHERE user_id = $1 ORDER BY transaction_id DESC LIMIT $2 OFFSET $3", [userId, limit, offset]);
     return { rows, total: rowCount, firstResult: rows[0] };
 
 }

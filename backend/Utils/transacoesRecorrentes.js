@@ -1,15 +1,6 @@
 require('dotenv').config();
 const cron = require('node-cron');
-const { Pool } = require('pg');
-const moment = require('moment');
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
-});
-
-pool.connect()
-    .then(() => console.log('Conectado ao banco de dados no Railway'))
-    .catch((err) => console.error('Erro ao conectar ao banco de dados', err));
+const pool = require('../db.js')
 
 async function processarTransacoesRecorrentes() {
     const hoje = moment().format('YYYY/MM/DD HH:mm:ss');

@@ -1,6 +1,6 @@
 
 const transactionModel = require("../models/transactionModel");
-const { calcularProximaOcorrencia } = require("../utils/calcularOcorrencia")
+const { calcularProximaOcorrencia } = require("../Utils/calcularOcorrencia")
 
 const validarCamposObrigatorios = (dados) => {
     const camposObrigatorios = ['id_contabancaria', 'categoria', 'tipo', 'valor', 'natureza', 'data_transacao'];
@@ -27,28 +27,21 @@ const CreateTransactionService = async (dados, userId) => {
     if (!dados.data_transacao) {
         dados.data_transacao = new Date()
     }
-
-
     if (dados.tipo === 'Despesa' && dados.valor <= 0) {
         throw new Error('Valor da despesa tem que ser maior ou diferente de 0 ');
     }
-
     if (dados.tipo === 'Receita' && dados.valor <= 0) {
         throw new Error('Valor da receita  tem que ser maior ou diferente de 0 ');
     }
-
     if (dados.tipo === 'Despesa') {
         dados.valor = -Math.abs(dados.valor);
     }
-
-
     if (dados.natureza === 'Fixa') {
         dados.recorrente = true;
 
         if (!dados.frequencia_recorrencia) {
             throw new Error('Transações fixas devem ter frequência definida');
         }
-
         validarFrequenciaRecorrencia(dados.frequencia_recorrencia);
 
         dados.proxima_ocorrencia = calcularProximaOcorrencia(dados.data_transacao, dados.frequencia_recorrencia);
@@ -103,9 +96,9 @@ const RemoveTransactionService = async (userId, transactionId) => {
 }
 
 
-const ListTransactionsService = async (userId) => {
+const ListTransactionsService = async (userId, limit, offset) => {
     try {
-        const transacoes = await transactionModel.ListTransactions(userId);
+        const transacoes = await transactionModel.ListTransactions(userId, limit, offset);
         return transacoes.rows;
     } catch (error) {
         throw new Error('Erro ao listar transações');

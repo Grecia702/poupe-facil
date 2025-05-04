@@ -1,18 +1,10 @@
 require('dotenv').config();
 const userModel = require("../models/userModel");
-const { Pool } = require('pg');
 const bcrypt = require('bcrypt')
 const saltRounds = 12;
 const moment = require('moment');
 const logger = require('../utils/loggerConfig')
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
-});
-
-pool.connect()
-    .then(() => console.log('Conectado ao banco de dados no Railway'))
-    .catch((err) => console.error('Erro ao conectar ao banco de dados', err));
+const pool = require('../db.js')
 
 const { generateAccessToken, generateRefreshToken } = require('../utils/tokenUtils');
 const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");

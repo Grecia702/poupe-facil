@@ -86,10 +86,12 @@ describe('ListTransactionsService', () => {
                 { id: 2, categoria: 'Aluguel', tipo: 'Despesa', valor: -500 },
             ],
         };
+        const mockLimit = 10;
+        const mockOffset = 0;
         transactionModel.ListTransactions.mockResolvedValue(mockTransacoes);
 
-        const result = await ListTransactionsService(mockUserId);
-        expect(transactionModel.ListTransactions).toHaveBeenCalledWith(mockUserId);
+        const result = await ListTransactionsService(mockUserId, mockLimit, mockOffset);
+        expect(transactionModel.ListTransactions).toHaveBeenCalledWith(mockUserId, mockLimit, mockOffset);
         expect(result).toEqual(mockTransacoes.rows);
     });
 
