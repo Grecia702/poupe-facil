@@ -3,7 +3,8 @@ import * as SecureStore from 'expo-secure-store';
 import { useMutation } from '@tanstack/react-query';
 import api from './axiosInstance'
 import axios from 'axios';
-import { API_URL } from '@env'
+import Constants from 'expo-constants';
+const API_URL = Constants.expoConfig?.extra?.API_URL;
 import { jwtDecode } from "jwt-decode";
 
 export const AuthContext = createContext();

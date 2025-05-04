@@ -19,7 +19,7 @@ const CreateTransactions = () => {
         valorFormatted: '',
         categoria: CATEGORIAS[0].label,
         natureza: selected.natureza,
-        data_transacao: `${agora}`,
+        data_transacao: agora,
         id_contabancaria: '',
         tipo: selected.type,
         recorrente: false,

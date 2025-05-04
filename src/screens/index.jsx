@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { colorContext } from '@context/colorScheme';
 import { FlatList, Pressable } from 'react-native';
 import React, { useContext, useEffect, useState, useMemo } from 'react'
@@ -7,7 +7,6 @@ import { Container, Wrapper } from '../components/main/styles';
 import Card from '@components/card';
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import PieChart from '@components/pieChart';
-import { WidgetView } from '@components/transactions/styles';
 import { useNavigation } from '@react-navigation/native';
 import TransactionCard from '@components/transactions';
 import WidgetTeste from '@components/widget';
@@ -26,12 +25,12 @@ const groupByCategory = ((dadosAPI) => {
 
   return Object.values(
     dadosAPI.reduce((acc, item) => {
-      const valor = parseFloat(item.valor);
-      if (!acc[item.categoria]) {
-        acc[item.categoria] = { x: item.categoria, y: 0, z: 0 };
+      const valor = Math.abs(parseFloat(item.valor));
+      if (item?.tipo === "Despesa") {
+        acc[item.categoria] = acc[item.categoria] || { x: item.categoria, y: 0, z: 0 };
+        acc[item.categoria].y += valor;
+        acc[item.categoria].z += 1;
       }
-      acc[item.categoria].y += valor;
-      acc[item.categoria].z += 1;
       return acc;
     }, {})
   );
@@ -67,17 +66,12 @@ export default function HomeScreen() {
     return GroupByType(dadosAPI);
   }, [dadosAPI])
 
-
   const recentTransactions = dadosAPI?.sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao))
     .slice(0, 5);
-
-
 
   const saldo = dadosContas?.reduce((acc, item) => {
     return acc + parseFloat(item.saldo)
   }, 0)
-
-  const saldoContas = saldo?.toFixed(2)
 
   const saldoTotal = (transacoes?.receitas - transacoes?.despesas) || 0
 
@@ -103,7 +97,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <Container color={isDarkMode ? "rgb(26, 26, 26)" : "#c6ebe9"}>
+    <ScrollView style={{ backgroundColor: isDarkMode ? "rgb(26, 26, 26)" : "#c6ebe9" }}>
       <VisaoGeral saldo={(saldoTotal).toFixed(2) ?? 0} receitas={transacoes?.receitas} despesas={transacoes?.despesas} />
       <Wrapper>
         <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Contas"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
@@ -128,7 +122,7 @@ export default function HomeScreen() {
           }
           <Separator color={isDarkMode ? "#cccccc6f" : "#22222275"} />
           <Text style={{ fontSize: 16, color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>Saldo Total:</Text>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>R${saldoContas}</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>R${saldo?.toFixed(2)}</Text>
         </WidgetTeste>
 
 
@@ -187,9 +181,16 @@ export default function HomeScreen() {
           )
           }
         </WidgetTeste>
-        <WidgetView color={isDarkMode ? "#2e2e2e" : "#ffffffd5"}>
-          <PieChart height={350} width={350} data={resultGroupBy} total={saldoTotal} selected={selectedItem} />
-        </WidgetView>
+
+        <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Gráficos"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
+
+          <TouchableOpacity onPress={() => navigation.navigate('Gráficos')} >
+
+            <PieChart height={350} width={350} data={resultGroupBy} total={transacoes?.despesas} selected={selectedItem} />
+          </TouchableOpacity>
+
+
+        </WidgetTeste>
 
         <View style={{}}>
           {refreshing ? (
@@ -223,7 +224,6 @@ export default function HomeScreen() {
                   color={findColor(item.x)}
                   title={item.x}
                   text={(item.y).toFixed(2)}
-                  // subtext={item.percent}
                   selected={selectedItem === item.x || selectedItem === true}
                   onPress={() => handleSelectItem(item.x)}
                 />
@@ -252,6 +252,6 @@ export default function HomeScreen() {
           <Text style={{ color: isDarkMode ? '#7bf185' : '#215a26' }}>1660,00 de  40000,00</Text>
         </WidgetTeste>
       </Wrapper>
-    </Container >
+    </ScrollView >
   );
 }

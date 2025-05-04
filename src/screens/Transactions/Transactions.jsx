@@ -56,6 +56,7 @@ const Transactions = () => {
             const { data } = await refetch();
             if (data) {
                 setDadosFiltrados(prev => [...prev].sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao)));
+                // setDadosFiltrados(prev => [...prev].sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao)));
             }
             setFiltrosChips([]);
             const elapsed = Date.now() - start;
@@ -309,7 +310,7 @@ export default Transactions
 
 const styles = StyleSheet.create({
     Container: {
-        flex: 1,
+        // flex: 1,
         borderTopRightRadius: 50,
         borderTopLeftRadius: 50,
         paddingHorizontal: 15,

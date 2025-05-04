@@ -1,7 +1,8 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-// import { API_URL } from '@env'
-const API_URL = process.env.API_URL;
+import Constants from 'expo-constants';
+const API_URL = Constants.expoConfig?.extra?.API_URL;
+
 
 const api = axios.create({
     baseURL: API_URL,
@@ -40,6 +41,11 @@ api.interceptors.response.use(
 
         if (error.response?.status === 400) {
             return Promise.reject(error.response.data.message);
+        }
+
+        if (!error.response) {
+            // Se não houver uma resposta (ou seja, sem rede), exibe uma mensagem personalizada
+            return Promise.reject('Verifique sua conexão com a internet.');
         }
 
         if (error.response?.status === 401 && !originalRequest._retry) {

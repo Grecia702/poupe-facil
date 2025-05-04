@@ -37,6 +37,7 @@
       "expo-secure-store"
     ],
     "extra": {
+      "API_URL": "https://poupefacil.up.railway.app/api",
       "eas": {
         "projectId": "03f0ec6d-e9bb-47fb-a059-9f5d0f73b7e5"
       }

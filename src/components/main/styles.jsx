@@ -1,15 +1,9 @@
 import styled from 'styled-components/native';
 
-export const Container = styled.ScrollView`
-  flex: 1;
-  width: 100%;
-  flex-direction: column;
-  gap: 10px;
-  background-color:${({ color }) => color};
-`;
 
 export const Wrapper = styled.View`
   padding: 10px;
+  gap: 15px;
 `;
 
 export const Title = styled.Text`

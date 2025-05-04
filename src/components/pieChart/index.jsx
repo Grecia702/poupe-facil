@@ -24,12 +24,13 @@ export default function PieChart({ data, total, selected, height, width }) {
                 <VictoryPie
                     standalone={false}
                     data={data}
-                    x={data.x}
+                    // x={data.x}
+                    // y={data.y}
                     width={width}
                     height={height}
                     labelRadius={(150 / 2) * 1.1}
                     innerRadius={(200 / 2) * 0.8}
-                    padAngle={3}
+                    padAngle={0}
                     style={{
                         data: {
                             fillOpacity: ({ datum }) => (datum.x === selected || selected === "") ? 1 : 0.5,
@@ -53,7 +54,7 @@ export default function PieChart({ data, total, selected, height, width }) {
                     textAnchor="middle"
                     verticalAnchor="middle"
                     style={{ fontSize: 24, fill: isDarkMode ? "#ebeeee" : "#17132e", fontWeight: "bold" }}
-                    text={`Total: \nR$${Number(total).toFixed(2)}`}
+                    text={`Total: \n ${Number(total) > 0 ? 'R$' : '-R$'}${Math.abs(total).toFixed(2)}`}
                     x={width / 2}
                     y={height / 2}
                 />

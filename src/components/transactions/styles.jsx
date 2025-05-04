@@ -7,6 +7,7 @@ export const WidgetView = styled.View`
     border-radius: 10px;
     margin-top: 20px;
     margin-bottom: 20px;
+    padding: 20px;
     position: relative;
 `;
 
