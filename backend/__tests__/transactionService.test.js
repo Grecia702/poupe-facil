@@ -3,8 +3,10 @@ const {
     CreateTransactionService,
     ListTransactionsService,
     RemoveTransactionService,
-    getTransactionByID }
-    = require('../services/transactionService');
+    getTransactionByID,
+    GroupTransactionService
+} = require('../services/transactionService');
+
 const transactionModel = require('../models/transactionModel');
 
 jest.mock('../models/transactionModel', () => ({
@@ -12,7 +14,9 @@ jest.mock('../models/transactionModel', () => ({
     CreateTransaction: jest.fn(),
     ListTransactions: jest.fn(),
     ReadTransaction: jest.fn(),
-    DeleteTransaction: jest.fn()
+    DeleteTransaction: jest.fn(),
+    countTransactionsResult: jest.fn(),
+    GroupTransactionsByType: jest.fn()
 }));
 
 describe('CreateTransactionService', () => {
@@ -81,27 +85,35 @@ describe('ListTransactionsService', () => {
     it('deve retornar as transações corretamente', async () => {
         const mockUserId = 123;
         const mockTransacoes = {
-            rows: [
-                { id: 1, categoria: 'Salário', tipo: 'Receita', valor: 1000 },
-                { id: 2, categoria: 'Aluguel', tipo: 'Despesa', valor: -500 },
-            ],
+            data: undefined,
+            meta: {
+                total: undefined,
+                page: 2,
+                limit: 10,
+                hasNextPage: false
+            }
         };
         const mockLimit = 10;
-        const mockOffset = 0;
+        const mockPage = 2;
+        const mockOffset = (mockPage - 1) * mockLimit;
         transactionModel.ListTransactions.mockResolvedValue(mockTransacoes);
 
-        const result = await ListTransactionsService(mockUserId, mockLimit, mockOffset);
+        const result = await ListTransactionsService(mockUserId, mockPage, mockLimit);
         expect(transactionModel.ListTransactions).toHaveBeenCalledWith(mockUserId, mockLimit, mockOffset);
-        expect(result).toEqual(mockTransacoes.rows);
+        expect(result).toEqual(mockTransacoes);
     });
 
     it('deve lançar um erro se ocorrer um problema ao listar as transações', async () => {
         const mockUserId = 123;
-        transactionModel.ListTransactions.mockRejectedValue(new Error('Erro ao listar transações'));
+        const mockLimit = 10;
+        const mockPage = 1;
 
-        await expect(ListTransactionsService(mockUserId))
+        transactionModel.ListTransactions.mockResolvedValue({ rows: [] });
+        transactionModel.countTransactionsResult.mockResolvedValue(0);
+
+        await expect(ListTransactionsService(mockUserId, mockPage, mockLimit))
             .rejects
-            .toThrow('Erro ao listar transações');
+            .toThrow('Nenhuma transação encontrada');
     });
 });
 
@@ -188,4 +200,27 @@ describe('DeleteTransactionService', () => {
             RemoveTransactionService(mockUserId, mockTransactionId)
         ).rejects.toThrow('Erro no banco');
     });
+})
+
+describe('GroupTransactionsService', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+
+    it('Deve retornar o agrupamento de transações', async () => {
+        const mockUserId = 123;
+        const mockTransaction = {
+            rows: [
+                { tipo: 'Total', Natureza: 'Variavel', ocorrencias: 61, valor: 10000 },
+                { tipo: 'Despesa', Natureza: 'Variavel', ocorrencias: 25, valor: 1000 },
+                { tipo: 'Receita', Natureza: 'Variavel', ocorrencias: 36, valor: 1000 },
+            ],
+        };
+        transactionModel.GroupTransactionsByType.mockResolvedValue(mockTransaction);
+        const result = await GroupTransactionService(mockUserId);
+        expect(transactionModel.GroupTransactionsByType).toHaveBeenCalledWith(mockUserId);
+        expect(result).toEqual(mockTransaction.rows);
+    })
+
 })

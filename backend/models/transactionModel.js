@@ -57,6 +57,39 @@ const DeleteTransaction = async (userId, transactionId) => {
 const ListTransactions = async (userId, limit, offset) => {
     const { rows, rowCount } = await pool.query("SELECT * FROM user_transactions WHERE user_id = $1 ORDER BY transaction_id DESC LIMIT $2 OFFSET $3", [userId, limit, offset]);
     return { rows, total: rowCount, firstResult: rows[0] };
-
 }
-module.exports = { checkValidAccount, CreateTransaction, ReadTransaction, UpdateTransaction, DeleteTransaction, ListTransactions };
+
+const countTransactionsResult = async (userId) => {
+    const { rows } = await pool.query('SELECT COUNT(*) FROM user_transactions WHERE user_id = $1', [userId]);
+    return parseInt(rows[0].count)
+}
+
+const GroupTransactionsByType = async (userId) => {
+    const query = `
+    SELECT 
+    COALESCE(tipo, 'Total') AS tipo,
+    COALESCE(natureza, 'Total') AS natureza,
+    COUNT(*) AS ocorrencias,
+    SUM(valor) AS valor
+    FROM user_transactions
+    WHERE user_id = $1
+    AND tipo IN ('Receita', 'Despesa')
+    GROUP BY GROUPING SETS (
+    (tipo, natureza), 
+    (tipo),            
+    ()                 
+    )`;
+    const { rows, rowCount } = await pool.query(query, [userId]);
+    return { rows, total: rowCount, firstResult: rows[0] };
+}
+
+module.exports = {
+    checkValidAccount,
+    CreateTransaction,
+    ReadTransaction,
+    UpdateTransaction,
+    DeleteTransaction,
+    ListTransactions,
+    countTransactionsResult,
+    GroupTransactionsByType
+};

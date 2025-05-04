@@ -96,13 +96,46 @@ const RemoveTransactionService = async (userId, transactionId) => {
 }
 
 
-const ListTransactionsService = async (userId, limit, offset) => {
-    try {
-        const transacoes = await transactionModel.ListTransactions(userId, limit, offset);
-        return transacoes.rows;
-    } catch (error) {
-        throw new Error('Erro ao listar transações');
+const ListTransactionsService = async (userId, page, limit) => {
+
+    const offset = (page - 1) * limit;
+    const [transacoes, total] = await Promise.all([
+        transactionModel.ListTransactions(userId, limit, offset),
+        transactionModel.countTransactionsResult(userId)
+    ])
+    if (total === 0) {
+        throw new Error('Nenhuma transação encontrada');
     }
+    return {
+        data: transacoes.rows,
+        meta: {
+            total: total,
+            page: page,
+            limit: limit,
+            hasNextPage: offset + limit < total,
+        },
+    };
 };
 
-module.exports = { CreateTransactionService, ListTransactionsService, RemoveTransactionService, getTransactionByID };
+const GroupTransactionService = async (userId) => {
+    try {
+        const transacoes = await transactionModel.GroupTransactionsByType(userId);
+        if (transacoes.total === 0) {
+            throw new Error('Nenhuma transação com essa ID foi encontrada');
+        }
+        const data = transacoes.rows.map(row => ({
+            tipo: row.tipo,
+            natureza: row.natureza,
+            ocorrencias: Number(row.ocorrencias),
+            valor: Math.abs(parseFloat(row.valor))
+        }));
+        const totalValor = data.find(item => item.tipo === 'Total')?.valor || 0;
+        console.log(totalValor)
+        return data;
+    } catch (error) {
+        throw error;
+    }
+
+}
+
+module.exports = { CreateTransactionService, ListTransactionsService, RemoveTransactionService, getTransactionByID, GroupTransactionService };

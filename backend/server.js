@@ -16,7 +16,7 @@ iniciarCron();
 
 
 const rateLimiter = new RateLimiterMemory({
-    points: 5,
+    points: 10,
     duration: 1,
     blockDuration: 10,
 });
