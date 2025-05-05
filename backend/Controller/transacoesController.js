@@ -4,7 +4,8 @@ const {
     ListTransactionsService,
     getTransactionByID,
     RemoveTransactionService,
-    GroupTransactionService
+    GroupTransactionService,
+    GroupCategoriesService
 } = require("../services/transactionService")
 const moment = require('moment');
 
@@ -87,7 +88,7 @@ const UpdateTransaction = async (req, res) => {
     }
 }
 
-const ListarTransactions = async (req, res) => {
+const ListTransactions = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -102,7 +103,7 @@ const ListarTransactions = async (req, res) => {
     }
 };
 
-const AgruparTransacoes = async (req, res) => {
+const GroupTransactions = async (req, res) => {
     try {
         const { userId } = req.user.decoded
         const transacoes = await GroupTransactionService(userId);
@@ -114,4 +115,27 @@ const AgruparTransacoes = async (req, res) => {
         res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: error.message })
     }
 };
-module.exports = { AddTransaction, ReadTransaction, RemoveTransaction, ListarTransactions, UpdateTransaction, AgruparTransacoes };
+
+const GroupCategories = async (req, res) => {
+    try {
+        const { userId } = req.user.decoded;
+        const transacoes = await GroupCategoriesService(userId);
+        res.json(transacoes);
+    } catch (error) {
+        if (error.message === 'Nenhuma transação encontrada') {
+            return res.status(404).json({ message: error.message });
+        }
+        res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: error.message })
+    }
+};
+
+
+module.exports = {
+    AddTransaction,
+    ReadTransaction,
+    RemoveTransaction,
+    ListTransactions,
+    UpdateTransaction,
+    GroupTransactions,
+    GroupCategories
+};

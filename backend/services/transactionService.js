@@ -121,7 +121,7 @@ const GroupTransactionService = async (userId) => {
     try {
         const transacoes = await transactionModel.GroupTransactionsByType(userId);
         if (transacoes.total === 0) {
-            throw new Error('Nenhuma transação com essa ID foi encontrada');
+            throw new Error('Nenhuma transação foi encontrada');
         }
         const data = transacoes.rows.map(row => ({
             tipo: row.tipo,
@@ -129,13 +129,31 @@ const GroupTransactionService = async (userId) => {
             ocorrencias: Number(row.ocorrencias),
             valor: Math.abs(parseFloat(row.valor))
         }));
-        const totalValor = data.find(item => item.tipo === 'Total')?.valor || 0;
-        console.log(totalValor)
         return data;
     } catch (error) {
         throw error;
     }
 
-}
+};
 
-module.exports = { CreateTransactionService, ListTransactionsService, RemoveTransactionService, getTransactionByID, GroupTransactionService };
+const GroupCategoriesService = async (userId) => {
+    try {
+        const transacoes = await transactionModel.GroupTransactionsByCategories(userId);
+        if (transacoes.total === 0) {
+            throw new Error('Nenhuma transação foi encontrada');
+        }
+        const data = transacoes.rows.map(row => ({
+            ...row,
+            ocorrencias: parseInt(row.ocorrencias),
+            total: Math.abs(parseFloat(row.total))
+        }));
+        return data;
+    } catch (error) {
+        throw error;
+    };
+
+};
+
+
+
+module.exports = { CreateTransactionService, ListTransactionsService, RemoveTransactionService, getTransactionByID, GroupTransactionService, GroupCategoriesService };

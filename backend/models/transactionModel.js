@@ -83,6 +83,20 @@ const GroupTransactionsByType = async (userId) => {
     return { rows, total: rowCount, firstResult: rows[0] };
 }
 
+const GroupTransactionsByCategories = async (userId) => {
+    const query = `
+    SELECT categoria, COUNT(*) AS ocorrencias, SUM(valor) AS total
+    FROM user_transactions
+    WHERE user_id = $1
+    AND tipo = 'Despesa'
+    AND categoria IN ('Lazer', 'Carro', 'Educação', 'Alimentação', 'Internet', 'Contas', 'Compras', 'Outros')
+    GROUP BY categoria
+    ORDER BY total ASC`;
+    const { rows, rowCount } = await pool.query(query, [userId]);
+    return { rows, total: rowCount, firstResult: rows[0] };
+}
+
+
 module.exports = {
     checkValidAccount,
     CreateTransaction,
@@ -91,5 +105,6 @@ module.exports = {
     DeleteTransaction,
     ListTransactions,
     countTransactionsResult,
-    GroupTransactionsByType
+    GroupTransactionsByType,
+    GroupTransactionsByCategories,
 };
