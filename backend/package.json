@@ -23,6 +23,7 @@
     "node-cron": "^3.0.3",
     "pg": "^8.14.1",
     "rate-limiter-flexible": "^7.0.0",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "zod": "^3.24.4"
   }
 }
