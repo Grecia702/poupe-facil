@@ -4,7 +4,8 @@ const {
     ListTransactionsService,
     RemoveTransactionService,
     getTransactionByID,
-    GroupTransactionService
+    GroupTransactionService,
+    transactionQuerySchema,
 } = require('../services/transactionService');
 
 const transactionModel = require('../models/transactionModel');
@@ -223,4 +224,20 @@ describe('GroupTransactionsService', () => {
         expect(result).toEqual(mockTransaction.rows);
     })
 
+
+
 })
+describe('transactionQuerySchema', () => {
+    it('should validate correct data', () => {
+        const inputData = {
+            tipo: 'despesa',
+            natureza: 'variavel',
+            orderBy: 'valor',
+            orderDirection: 'ASC',
+            limit: 10,
+            page: 1,
+        };
+
+        expect(() => transactionQuerySchema.parse(inputData)).not.toThrow();
+    });
+});
