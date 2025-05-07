@@ -3,6 +3,8 @@ import { colorContext } from '@context/colorScheme';
 import { FlatList, Pressable } from 'react-native';
 import React, { useContext, useEffect, useState, useMemo } from 'react'
 import { CATEGORIAS } from '../utils/categorias'
+import { categoriaCores } from '../utils/categoriasCores'
+
 import { Container, Wrapper } from '../components/main/styles';
 import Card from '@components/card';
 import ContentLoader, { Rect } from 'react-content-loader/native'
@@ -16,25 +18,8 @@ import * as Progress from 'react-native-progress';
 import VisaoGeral from '@components/header';
 import { useTransactionAuth } from '@context/transactionsContext';
 import { useContasAuth } from '@context/contaContext';
+import { usePosts } from '../hooks/usePosts';
 
-
-const groupByCategory = ((dadosAPI) => {
-  if (!dadosAPI) {
-    return [];
-  }
-
-  return Object.values(
-    dadosAPI.reduce((acc, item) => {
-      const valor = Math.abs(parseFloat(item.valor));
-      if (item?.tipo === "Despesa") {
-        acc[item.categoria] = acc[item.categoria] || { x: item.categoria, y: 0, z: 0 };
-        acc[item.categoria].y += valor;
-        acc[item.categoria].z += 1;
-      }
-      return acc;
-    }, {})
-  );
-});
 
 const GroupByType = ((dadosAPI) => {
   return dadosAPI?.reduce((acc, item) => {
@@ -50,7 +35,8 @@ const GroupByType = ((dadosAPI) => {
 })
 
 export default function HomeScreen() {
-  const { dadosAPI } = useTransactionAuth();
+
+  const { dadosAPI, meta, dadosAgrupados, dadosCategorias } = useTransactionAuth();
   const { dadosContas } = useContasAuth();
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshing, setRefreshing] = useState(true);
@@ -58,13 +44,27 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const { isDarkMode } = useContext(colorContext)
 
-  const resultGroupBy = useMemo(() => {
-    return groupByCategory(dadosAPI);
-  }, [dadosAPI])
+  const { data, refetch, fetchNextPage, hasNextPage } = usePosts({
+    tipo: 'despesa',
+    natureza: 'variavel',
+    orderBy: 'valor',
+    orderDirection: 'DESC',
+  });
 
-  const transacoes = useMemo(() => {
-    return GroupByType(dadosAPI);
-  }, [dadosAPI])
+  // const allData = data?.pages?.flatMap(page => page.data.data) || [];
+  // // console.log('Pages:', data?.pages);
+  // console.log('All Data:', allData);
+
+  const totalReceita = dadosAgrupados?.find(item => item.tipo === "receita" && item.natureza === "total")?.valor || 0;
+  const totalDespesa = dadosAgrupados?.find(item => item.tipo === "despesa" && item.natureza === "total")?.valor || 0;
+  const totalTotal = dadosAgrupados?.find(item => item.tipo === "total" && item.natureza === "total")?.valor || 0;
+
+
+
+  const total = dadosCategorias?.reduce((acc, item) => {
+    acc += item.total
+    return acc
+  }, 0)
 
   const recentTransactions = dadosAPI?.sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao))
     .slice(0, 5);
@@ -73,32 +73,21 @@ export default function HomeScreen() {
     return acc + parseFloat(item.saldo)
   }, 0)
 
-  const saldoTotal = (transacoes?.receitas - transacoes?.despesas) || 0
 
-
-  useEffect(() => {
-    console.log(resultGroupBy);
-  }, [resultGroupBy]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1500);
-  }, [])
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     setRefreshing(false);
+  //   }, 1500);
+  // }, [])
 
   const handleSelectItem = (label) => {
     setSelectedItem(label);
   };
 
 
-  // Função pra buscar a cor de uma categoria em um array de objetos
-  function findColor(props) {
-    return CATEGORIAS.find(({ label }) => label === props).color
-  }
-
   return (
     <ScrollView style={{ backgroundColor: isDarkMode ? "rgb(26, 26, 26)" : "#c6ebe9" }}>
-      <VisaoGeral saldo={(saldoTotal).toFixed(2) ?? 0} receitas={transacoes?.receitas} despesas={transacoes?.despesas} />
+      <VisaoGeral saldo={totalTotal} receitas={totalReceita} despesas={totalDespesa} />
       <Wrapper>
         <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Contas"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
           <Text onPress={() => navigation.navigate('Contas')}
@@ -186,7 +175,7 @@ export default function HomeScreen() {
 
           <TouchableOpacity onPress={() => navigation.navigate('Gráficos')} >
 
-            <PieChart height={350} width={350} data={resultGroupBy} total={transacoes?.despesas} selected={selectedItem} />
+            <PieChart height={350} width={350} data={dadosCategorias} total={total} selected={selectedItem} />
           </TouchableOpacity>
 
 
@@ -211,9 +200,10 @@ export default function HomeScreen() {
             </ContentLoader>
           ) : (
             <FlatList
-              data={resultGroupBy}
+              data={dadosAPI}
               keyExtractor={(item) => item.x}
               refreshing={refreshing}
+              // onRefresh={refetch}
               scrollEnabled={false}
               initialNumToRender={10}
               maxToRenderPerBatch={5}
@@ -221,11 +211,12 @@ export default function HomeScreen() {
               renderItem={({ item }) => (
                 <Card
                   // Função para buscar a cor do ITEM LABEL que está sendo renderizado na flatlist
-                  color={findColor(item.x)}
-                  title={item.x}
-                  text={(item.y).toFixed(2)}
-                  selected={selectedItem === item.x || selectedItem === true}
-                  onPress={() => handleSelectItem(item.x)}
+                  color={categoriaCores[item.categoria]}
+                  title={item.categoria}
+                  text={(item.total)}
+                  selectedItem={selectedItem}
+                  selected={selectedItem === item.categoria ? selectedItem : 'none'}
+                  onPress={() => handleSelectItem(item.categoria)}
                 />
               )}
             />

@@ -1,118 +1,55 @@
-import { StyleSheet, View, FlatList, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, FlatList, TouchableOpacity, Text } from 'react-native';
 import React, { useContext, useMemo, useState } from 'react'
 import { colorContext } from '../../context/colorScheme';
 import PieChart from '@components/pieChart';
 import { useTransactionAuth } from '@context/transactionsContext';
-import { WidgetView } from '@components/transactions/styles';
-import { VictoryBar, VictoryLine, VictoryAxis, VictoryChart, VictoryTheme } from 'victory-native';
+import { VictoryBar, VictoryLine, VictoryAxis, VictoryChart, VictoryTheme, VictoryGroup } from 'victory-native';
 import Card from '@components/card';
 import { MaterialIcons } from '@expo/vector-icons'
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
-const groupByCategory = ((dadosAPI) => {
-    if (!dadosAPI) {
-        return [];
-    }
-
-    return Object.values(
-        dadosAPI.reduce((acc, item) => {
-            const valor = Math.abs(parseFloat(item.valor));
-            if (item?.tipo === "Despesa") {
-                acc[item.categoria] = acc[item.categoria] || { x: item.categoria, y: 0, z: 0 };
-                acc[item.categoria].y += valor;
-                acc[item.categoria].z += 1;
-            }
-            return acc;
-        }, {})
-    );
-});
-
-const GroupByType = ((dadosAPI) => {
-    return dadosAPI?.reduce((acc, item) => {
-        const valor = parseFloat(item.valor)
-        if (item.tipo === "Despesa") {
-            acc.despesas -= valor;
-        }
-        else {
-            acc.receitas += valor;
-        }
-        return acc;
-    }, { receitas: 0, despesas: 0 })
-})
-
-const BarChart = ({ data, colorScheme, color, selectedItem }) => {
-    console.log(data)
+const BarChart = ({ dataX, dataY }) => {
 
     return (
         <>
-            <VictoryChart
-                style={{
-                    parent: { alignSelf: 'center', marginLeft: 60 },
-                    axis: {
-                        stroke: color ? "#ffffff" : "#000000",
-                    },
-                    grid: {
-                        stroke: color ? "#555555" : "#e6e6e6",
-                        strokeDasharray: "4, 4",
-                    },
-                    ticks: {
-                        size: 5,
-                        stroke: color ? "#ffffff" : "#000000",
-                    },
-                    tickLabels: {
-                        fontSize: 16,
-                        fill: color ? "#ffffff" : "#000000",
-                    },
-                }}
-                domain={{ y: [0, Math.max(...data.map(item => item.y)) + 100] }}
-                domainPadding={{ x: 10 }}
-                theme={VictoryTheme.clean}
 
-            >
-                <VictoryAxis
-                    style={{
+            <VictoryChart theme={VictoryTheme.material}>
+                <VictoryAxis />
+                <VictoryAxis dependentAxis />
 
-                        tickLabels: { fontSize: 12, fontWeight: 500, fill: color ? "#ffffff" : "#000000" },
-                    }}
-                />
-                <VictoryAxis
-                    dependentAxis
-                    tickFormat={(tick) => `R$${tick}`}
-                    style={{
-                        grid: {
-                            stroke: color ? "#b0bec49f" : "#345499",
-                            strokeDasharray: "10, 5",
-                        },
-                        tickLabels: { fontSize: 16, fontWeight: 600, fill: color ? "#ffffff" : "#000000" },
-                    }}
-                />
+                <VictoryGroup offset={40}>
+                    <VictoryBar
+                        data={dataX}
+                        x="tipo"
+                        y="valor"
+                    />
+                    <VictoryBar
+                        data={dataY}
+                        x="tipo"
+                        y="valor"
 
-                <VictoryBar
-                    data={data}
-                    // animate={{ duration: 500, easing: "bounce" }}
-                    labels={({ datum }) => datum.x === selectedItem ? ` ${Math.round(datum.z)} transações` : ""}
-                    style={{
-                        data: {
-                            opacity: ({ datum }) => (datum.x === selectedItem || selectedItem === "") ? 1 : 0.5,
-                            fill: ({ datum }) => (colorScheme[datum.x] ? colorScheme[datum.x] : 'none'),
-                            strokeWidth: 3,
-                        },
+                    />
+                    {/* <VictoryBar
+                        data={dataX}
+                        x="tipo"
+                        y="valor"
+                    />
+                    <VictoryBar
+                        data={dataY}
+                        x="tipo"
+                        y="valor"
+                    /> */}
 
-                        labels: {
-                            fontWeight: 500,
-                            fontSize: 20,
-                            fill: color ? "#dbd4d4" : "#24201f"
-                        }
-
-                    }}
-                />
+                </VictoryGroup>
             </VictoryChart>
         </>
     )
 }
 
+// TODO: Event Handler que ao clicar no grafico redirecione para a pagina de transações com a categoria filtrada 
+
 export default function New() {
-    const { dadosAPI } = useTransactionAuth();
+    const { dadosAgrupados, dadosAgrupadosLoading, dadosCategorias } = useTransactionAuth();
     const { isDarkMode } = useContext(colorContext)
     const [selectedItem, setSelectedItem] = useState(null);
     const [chartVisible, setChartVisible] = useState('pie');
@@ -127,26 +64,31 @@ export default function New() {
         Outros: "rgb(83, 87, 83)",
     };
 
-    const resultGroupBy = useMemo(() => {
-        return groupByCategory(dadosAPI).sort((a, b) => (a.y) - (b.y));
-    }, [dadosAPI])
 
-    // console.log(resultGroupBy);
-    const transacoes = useMemo(() => {
-        return GroupByType(dadosAPI);
-    }, [dadosAPI])
+    const ReceitasFixas = [dadosAgrupados?.find(item => item.natureza === "fixa" && item.tipo === "despesa")]
+    const ReceitasVariadas = [dadosAgrupados?.find(item => item.natureza === "variada" && item.tipo === "despesa")]
+    const DespesasFixas = [dadosAgrupados?.find(item => item.natureza === "fixa" && item.tipo === "receita")]
+    const Despesasvariadas = [dadosAgrupados?.find(item => item.natureza === "variada" && item.tipo === "receita")]
+
+    console.log(DespesasFixas)
+    console.log(ReceitasFixas)
+    // console.log(Despesas)
+
+    // if (dadosAgrupadosLoading) {
+    //     console.log("true")
+    // }
 
     const handleSelectItem = (label) => {
-        setSelectedItem(label);
+        setSelectedItem(() => label);
     };
 
-    // const toggleChart = (chart) => {
-    //     setChartVisible(chart);
-    // }
+    const total = dadosCategorias?.reduce((acc, item) => {
+        acc += item.total
+        return acc
+    }, 0)
 
     const opacity = useSharedValue(1);
     const scale = useSharedValue(1);
-
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: withTiming(opacity.value, { duration: 300 }),
         transform: [{ scale: withTiming(scale.value, { duration: 300 }) }],
@@ -187,48 +129,58 @@ export default function New() {
 
                 <Animated.View style={[animatedStyle]}>
                     {chartVisible === 'pie' && (
-                        <PieChart
-                            height={350}
-                            width={350}
-                            data={resultGroupBy}
-                            total={transacoes?.despesas}
-                            selected={selectedItem}
-                        />
+                        <>
+                            <Text style={[styles.title, { color: isDarkMode ? 'white' : 'black' }]}>Transações por categorias</Text>
+                            <PieChart
+                                height={350}
+                                width={350}
+                                data={dadosCategorias}
+                                total={total}
+                                selected={selectedItem}
+                            />
+                        </>
                     )}
                     {chartVisible === 'bar' && (
-                        <BarChart
-                            color={isDarkMode}
-                            data={resultGroupBy}
-                            colorScheme={categoriaCores}
-                            selectedItem={selectedItem}
-                        />
+                        <>
+                            <Text style={[styles.title, { color: isDarkMode ? 'white' : 'black' }]}>Receita x Despesas</Text>
+                            <BarChart
+                                color={isDarkMode}
+                                dataX={DespesasFixas}
+                                dataY={ReceitasFixas}
+                                colorScheme={categoriaCores}
+                                selectedItem={selectedItem}
+                            />
+                        </>
                     )}
                     {chartVisible === 'line' && (
-                        <VictoryChart theme={VictoryTheme.material} domainPadding={{ x: 50 }}>
-                            <VictoryAxis
-                                style={{
-                                    tickLabels: { fontSize: 16, fill: isDarkMode ? "#ffffff" : "#000000" },
-                                }}
-                            />
-                            <VictoryAxis
-                                dependentAxis
-                                style={{
-                                    tickLabels: { fontSize: 16, fill: isDarkMode ? "#ffffff" : "#000000" },
-                                }}
-                            />
-                            <VictoryLine
-                                data={resultGroupBy}
-                                style={{
-                                    data: { stroke: isDarkMode ? "#ffffff" : "#000000", strokeWidth: 2 },
-                                }}
-                            />
-                        </VictoryChart>
+                        <>
+                            <Text style={[styles.title, { color: isDarkMode ? 'white' : 'black' }]}>Evolução das despesas</Text>
+                            <VictoryChart theme={VictoryTheme.material} domainPadding={{ x: 50 }}>
+                                <VictoryAxis
+                                    style={{
+                                        tickLabels: { fontSize: 16, fill: isDarkMode ? "#ffffff" : "#000000" },
+                                    }}
+                                />
+                                <VictoryAxis
+                                    dependentAxis
+                                    style={{
+                                        tickLabels: { fontSize: 16, fill: isDarkMode ? "#ffffff" : "#000000" },
+                                    }}
+                                />
+                                <VictoryLine
+                                    data={resultGroupBy}
+                                    style={{
+                                        data: { stroke: isDarkMode ? "#ffffff" : "#000000", strokeWidth: 2 },
+                                    }}
+                                />
+                            </VictoryChart>
+                        </>
                     )}
                 </Animated.View>
             </View>
             <FlatList
-                data={resultGroupBy}
-                keyExtractor={(item) => item.x}
+                data={dadosCategorias}
+                keyExtractor={(item) => item.categoria}
                 // refreshing={refreshing}
                 scrollEnabled={true}
                 initialNumToRender={10}
@@ -236,11 +188,12 @@ export default function New() {
                 windowSize={5}
                 renderItem={({ item }) => (
                     <Card
-                        color={categoriaCores[item.x]}
-                        title={item.x}
-                        text={(item.y).toFixed(2)}
-                        selected={selectedItem === item.x || selectedItem === true}
-                        onPress={() => handleSelectItem(item.x)}
+                        color={categoriaCores[item.categoria]}
+                        title={item.categoria}
+                        text={(item.total)}
+                        selectedItem={selectedItem}
+                        selected={selectedItem === item.categoria ? selectedItem : 'none'}
+                        onPress={() => handleSelectItem(item.categoria)}
                     />
                 )}
             />
@@ -265,6 +218,12 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 20,
         fontWeight: 600,
+    },
+    title: {
+        alignSelf: 'center',
+        fontSize: 24,
+        fontWeight: 600,
+        marginTop: 50
     },
     card: {
         borderRadius: 10,
