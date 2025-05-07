@@ -14,6 +14,14 @@ const CreateTransactions = () => {
     const agora = format(new Date(), 'dd/MM/yyyy');
     const [selected, setSelected] = useState({ categoria: CATEGORIAS[0], account: null, natureza: 'Variavel', type: 'Despesa', recurrence_period: 'Mensal' });
     const [visible, setVisible] = useState({ categoria: false, account: false, natureza: false, type: false, recurring: false });
+    const [isAtivado, setIsAtivado] = useState(false);
+    const [accountData, setAccountData] = useState([{ id: '', nome: '', icone: '' }])
+    const navigation = useNavigation();
+    const { isDarkMode } = useContext(colorContext);
+    const { createTransactionMutation, refetch } = useTransactionAuth()
+    const toast = useToast();
+    const queryClient = useQueryClient();
+    const toggleSwitch = () => setIsAtivado(previousState => !previousState);
     const [fields, setFields] = useState({
         valor: '',
         valorFormatted: '',
@@ -25,9 +33,6 @@ const CreateTransactions = () => {
         recorrente: false,
         frequencia_recorrencia: null,
     });
-    const [isAtivado, setIsAtivado] = useState(false);
-    const toggleSwitch = () => setIsAtivado(previousState => !previousState);
-    const [accountData, setAccountData] = useState([{ id: '', nome: '', icone: '' }])
 
 
     const recurrence_period = [
@@ -36,11 +41,6 @@ const CreateTransactions = () => {
         'Quadrimestral', 'Semestral', 'Anual'
     ]
 
-    const navigation = useNavigation();
-    const { isDarkMode } = useContext(colorContext);
-    const { createTransactionMutation, refetch } = useTransactionAuth()
-    const toast = useToast();
-    const queryClient = useQueryClient();
 
     const searchAccount = async () => {
         try {
