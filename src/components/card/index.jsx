@@ -1,17 +1,21 @@
+import { View } from 'react-native';
 import React, { useContext } from 'react'
 import { Container, Tag, Title, Text, SubText } from './styles'
 import { colorContext } from '@context/colorScheme';
 
 
 
-export default function Card({ color, title, text, subtext, onPress, selected }) {
+export default function Card({ color, title, text, onPress, selected, selectedItem }) {
     const { isDarkMode } = useContext(colorContext)
-
+    const isPressed = selectedItem === selected ? true : false
     return (
-        <Container color={isDarkMode ? "rgb(43, 43, 43)" : "white"} selected={selected} onPress={onPress}>
+        <Container color={color} background={isDarkMode ? "#333" : "#FFF"} onPressIn={onPress} isPressed={isPressed}>
             <Tag color={color} />
-            <Title color={isDarkMode ? "white" : "rgb(43, 43, 43)"}>{title}</Title>
-            <Text color={isDarkMode ? "white" : "rgb(43, 43, 43)"}>R${text}</Text>
+            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Title color={isDarkMode ? "white" : "rgb(43, 43, 43)"} isPressed={isPressed}>{title}</Title>
+                <Title color={isDarkMode ? "#FFF" : "rgb(43, 43, 43)"} isPressed={isPressed}>{text}</Title>
+                {/* <Text color={isDarkMode ? "white" : "rgb(43, 43, 43)"}>R${text}</Text> */}
+            </View>
         </Container>
     );
 }

@@ -8,36 +8,27 @@ export const Container = styled.TouchableOpacity`
   align-items: center;
   overflow: hidden;
   position: relative;
-  background-color:${({ color }) => color};
-  border-width: ${({ selected }) => (selected ? "4px" : "0px")};
-  border-color: ${({ selected, color }) => (selected ? color : "transparent")};
+  background-color: ${({ isPressed, color, background }) => (isPressed ? color : background)};
+  border-width: ${({ isPressed }) => (isPressed ? "4px" : "0px")};
+  border-color: ${({ isPressed, color }) => (isPressed ? color : 'color')};
 `;
 export const Tag = styled.View`
   width: 10px;
   height: 100%;
   margin-right: 16px;
-  background: ${({ color }) => color};
+  background-color: ${({ color }) => color};
 `;
 export const Title = styled.Text`
-  flex: 1;
   font-size: 18px;
   font-weight: bold;
-  color: ${({ color }) => color};
+  color: ${({ color, isPressed }) => (isPressed ? '#FFF' : color)};
+  margin-right: 15px;
 `;
 
-export const Text = styled.Text`
-  margin-right: 20px;
-  font-size: 18px;
-  font-weight: 600;
-  color: ${({ color }) => color};
-`;
+// export const Text = styled.Text`
+//   margin-right: 20px;
+//   font-size: 18px;
+//   font-weight: 600;
+//   color: ${({ color }) => color};
+// `;
 
-export const SubText = styled.Text`
-  position: absolute;
-  margin-right: 20px;
-  font-size: 14px;
-  font-weight: 500;
-  top: 65%;
-  right: 0;
-  color:' ${({ color }) => color}';
-`;

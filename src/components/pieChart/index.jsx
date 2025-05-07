@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { View } from "react-native";
 import { colorContext } from '@context/colorScheme';
 import Svg from "react-native-svg";
-import { VictoryPie, VictoryLabel, VictoryTooltip } from "victory-native";
+import { VictoryPie, VictoryLabel, VictoryTooltip, Flyout, flyoutComponent } from "victory-native";
 
 export default function PieChart({ data, total, selected, height, width }) {
     const { isDarkMode } = useContext(colorContext)
@@ -24,22 +24,35 @@ export default function PieChart({ data, total, selected, height, width }) {
                 <VictoryPie
                     standalone={false}
                     data={data}
-                    // x={data.x}
-                    // y={data.y}
+                    x="categoria"
+                    y="total"
                     width={width}
                     height={height}
                     labelRadius={(150 / 2) * 1.1}
                     innerRadius={(200 / 2) * 0.8}
+                    labelComponent={
+                        <VictoryTooltip renderInPortal={false}
+                            active={({ datum }) => datum.categoria === selected ? true : false}
+                            flyoutPadding={{ top: 5, bottom: 5, left: 10, right: 10 }}
+                            flyoutStyle={{
+                                fill: isDarkMode ? '#3b3a3a' : '#ddd',
+                                stroke: isDarkMode ? "#c7c5c5" : '#3f3f3f'
+                            }}
+                            flyoutComponent={
+                                <Flyout cornerRadius={10} pointerLength={2}
+                                />}
+                            style={{ fill: isDarkMode ? "#c7c5c5" : '#3f3f3f', fontSize: 20 }}
+                        />
+                    }
                     padAngle={0}
                     style={{
                         data: {
-                            fillOpacity: ({ datum }) => (datum.x === selected || selected === "") ? 1 : 0.5,
-                            stroke: ({ datum }) => datum.x === selected ? categoriaCores[datum.x] : 'none',
+                            fillOpacity: ({ datum }) => (datum.categoria === selected || selected === "") ? 1 : 0.5,
+                            stroke: ({ datum }) => datum.categoria === selected ? categoriaCores[datum.categoria] : 'none',
                             strokeOpacity: 0.5,
                             strokeWidth: 10
                         },
                         labels: {
-                            display: ({ datum }) => datum.x === selected ? 'inline' : 'none',
                             padding: 20,
                             fontSize: 18,
                             fill: isDarkMode ? '#cccecb' : "black",
@@ -47,8 +60,8 @@ export default function PieChart({ data, total, selected, height, width }) {
                         }
                     }}
                     animate={{ duration: 500 }}
-                    labels={({ datum }) => `Quantidade: ${Math.round(datum.z)} `}
-                    colorScale={data.map((item) => categoriaCores[item.x])}
+                    labels={({ datum }) => `Total: ${Math.round(datum.ocorrencias)} `}
+                    colorScale={data?.map((item) => categoriaCores[item.categoria])}
                 />
                 <VictoryLabel
                     textAnchor="middle"

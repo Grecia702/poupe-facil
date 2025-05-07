@@ -2,7 +2,6 @@ import styled from "styled-components";
 
 
 export const WidgetViewTeste = styled.View`
-    width: 100%;
     height: auto;
     flex-direction:  ${({ direction = 'row' }) => direction};
     background-color: ${({ color }) => color};
@@ -13,7 +12,6 @@ export const WidgetViewTeste = styled.View`
     align-items: center;
     flex-wrap: wrap;
     gap: ${({ gap = '15px' }) => gap};
-    position: relative;
 `;
 
 export const SectionTitle = styled.Text`

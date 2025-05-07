@@ -133,7 +133,7 @@ export default function TransactionCard({ loadData, iconName, state, color, cate
     }
 
     return (
-        <View >
+        <View style={{ marginTop: 10, paddingBottom: 10, borderBottomWidth: 1, borderColor: isDarkMode ? '#dddddd8f' : '#7a7a7a8f' }}>
             {isVisible && <DropDown />}
             <CardTransaction >
                 <IconCard color={color}>
