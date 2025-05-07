@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import Constants from 'expo-constants';
 const API_URL = Constants.expoConfig?.extra?.API_URL;
 
+console.log(API_URL)
 
 const api = axios.create({
     baseURL: API_URL,
@@ -34,6 +35,11 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+
+        if (error.code === 'ECONNABORTED') {
+            console.log("A requisição excedeu o tempo limite.");
+            return Promise.reject("A requisição excedeu o tempo limite. Tente novamente mais tarde.");
+        }
 
         if (error.response?.data.message === 'E-mail e/ou senha incorretos!') {
             return Promise.reject(error.response.data.message);
@@ -76,6 +82,11 @@ api.interceptors.response.use(
 
                 return api(originalRequest);
             } catch (refreshError) {
+                if (refreshError.response?.status === 429) {
+                    console.log("Limite de requisições atingido. Aguarde antes de tentar novamente.");
+                    return Promise.reject(refreshError);
+                }
+
                 console.log("Falha ao renovar token:", refreshError);
                 await SecureStore.deleteItemAsync('accessToken');
                 await SecureStore.deleteItemAsync('refreshToken');

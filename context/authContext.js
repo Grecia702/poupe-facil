@@ -37,12 +37,12 @@ export const AuthProvider = ({ children }) => {
             await SecureStore.setItemAsync('accessToken', data.accessToken);
             await SecureStore.setItemAsync('refreshToken', data.refreshToken);
             setIsAuthenticated(true);
-            // console.log('Login bem-sucedido', data);
+            console.log('Login bem-sucedido', data);
         },
 
-        // onError: (error) => {
-        //     console.error('Erro ao fazer login', error);
-        // },
+        onError: (error) => {
+            console.error('Erro ao fazer login', error);
+        },
     });
 
     const signUpMutation = useMutation({
