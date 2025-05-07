@@ -47,13 +47,20 @@ app.use((req, res, next) => {
 });
 
 app.use((req, res, next) => {
-    res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Keep-Alive', 'timeout=5, max=50');
     next();
 });
+
+app.use("/api/auth", (req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    next()
+});
+
+
 
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
