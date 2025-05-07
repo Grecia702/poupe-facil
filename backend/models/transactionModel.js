@@ -54,13 +54,32 @@ const DeleteTransaction = async (userId, transactionId) => {
     await pool.query(query, [userId, transactionId])
 }
 
-const ListTransactions = async (userId, limit, offset) => {
-    const { rows, rowCount } = await pool.query("SELECT * FROM user_transactions WHERE user_id = $1 ORDER BY transaction_id DESC LIMIT $2 OFFSET $3", [userId, limit, offset]);
+const ListTransactions = async (userId, queryParams) => {
+    const { tipo, natureza, limit, offset, orderBy, orderDirection } = queryParams
+    const query = `
+    SELECT transaction_id, tipo, natureza, categoria, valor, 
+    data_transacao, recorrente, frequencia_recorrencia, proxima_ocorrencia
+    FROM user_transactions 
+    WHERE user_id = $1
+      AND ($2::text IS NULL OR tipo = $2::text)
+      AND ($3::text IS NULL OR natureza = $3::text)
+    ORDER BY ${orderBy} ${orderDirection}
+    LIMIT $4
+    OFFSET $5
+  `;
+    const { rows, rowCount } = await pool.query(query, [userId, tipo, natureza, limit, offset]);
     return { rows, total: rowCount, firstResult: rows[0] };
 }
 
-const countTransactionsResult = async (userId) => {
-    const { rows } = await pool.query('SELECT COUNT(*) FROM user_transactions WHERE user_id = $1', [userId]);
+const countTransactionsResult = async (userId, queryParams) => {
+    const { tipo, natureza } = queryParams
+    const query = `
+    SELECT COUNT(*) FROM user_transactions 
+    WHERE user_id = $1
+      AND ($2::text IS NULL OR tipo = $2::text)
+      AND ($3::text IS NULL OR natureza = $3::text)
+    `;
+    const { rows } = await pool.query(query, [userId, tipo, natureza]);
     return parseInt(rows[0].count)
 }
 

@@ -1,6 +1,28 @@
 
 const transactionModel = require("../models/transactionModel");
 const { calcularProximaOcorrencia } = require("../Utils/calcularOcorrencia")
+const { z } = require('zod');
+
+
+const transactionQuerySchema = z.object({
+    tipo: z.string().optional().nullable()
+        .transform(val => val?.toLowerCase())
+        .refine(val => !val || ['despesa', 'receita'].includes(val), {
+            message: "tipo inválido"
+        }),
+    natureza: z.string().optional().nullable()
+        .transform(val => val?.toLowerCase())
+        .refine(val => !val || ['fixa', 'variavel'].includes(val), {
+            message: "natureza inválida"
+        }),
+    orderBy: z.enum(['valor', 'data_transacao', 'tipo', 'natureza', 'transaction_id']).default('transaction_id'),
+    orderDirection: z.enum(['ASC', 'DESC']).default('DESC'),
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+    page: z.coerce.number().int().min(0).default(1),
+});
+
+
+
 
 const validarCamposObrigatorios = (dados) => {
     const camposObrigatorios = ['id_contabancaria', 'categoria', 'tipo', 'valor', 'natureza', 'data_transacao'];
@@ -96,12 +118,14 @@ const RemoveTransactionService = async (userId, transactionId) => {
 }
 
 
-const ListTransactionsService = async (userId, page, limit) => {
+const ListTransactionsService = async (userId, query) => {
 
+    const { page, limit, ...rest } = transactionQuerySchema.parse(query);
     const offset = (page - 1) * limit;
+    const queryParams = { ...rest, page, limit, offset };
     const [transacoes, total] = await Promise.all([
-        transactionModel.ListTransactions(userId, limit, offset),
-        transactionModel.countTransactionsResult(userId)
+        transactionModel.ListTransactions(userId, queryParams),
+        transactionModel.countTransactionsResult(userId, queryParams)
     ])
     if (total === 0) {
         throw new Error('Nenhuma transação encontrada');
@@ -156,4 +180,12 @@ const GroupCategoriesService = async (userId) => {
 
 
 
-module.exports = { CreateTransactionService, ListTransactionsService, RemoveTransactionService, getTransactionByID, GroupTransactionService, GroupCategoriesService };
+module.exports = {
+    CreateTransactionService,
+    ListTransactionsService,
+    RemoveTransactionService,
+    getTransactionByID,
+    GroupTransactionService,
+    GroupCategoriesService,
+    transactionQuerySchema
+};
