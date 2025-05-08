@@ -20,13 +20,11 @@ const getTransacoes = async ({ pageParams = 1 }) => {
     }
 };
 
-const getGroupTransactions = async () => {
+const getTransactionSummary = async (period) => {
     try {
-        const response = await api.get(`/profile/transaction/group`);
-        // console.log(response.data)
+        const response = await api.get(`/profile/transaction/summary?period${period}`);
         return response.data;
     } catch (error) {
-        // console.log('Erro ao fazer a requisição:', error);
         throw error;
     }
 };
@@ -36,7 +34,6 @@ const getCategoriesTransactions = async () => {
         const response = await api.get(`/profile/transaction/categories`);
         return response.data;
     } catch (error) {
-        // console.log('Erro ao fazer a requisição:', error);
         throw error;
     }
 };
@@ -46,7 +43,6 @@ const createTransaction = async (transactionData) => {
         await api.post('/profile/transaction/', transactionData);
         return
     } catch (error) {
-        // console.log('Erro ao fazer a requisição:', error);
         throw error
     }
 };
@@ -56,7 +52,6 @@ const deleteTransaction = async (id) => {
         await api.delete(`/profile/transaction/${id}`);
         return
     } catch (error) {
-        // console.log('Erro ao fazer a requisição:', error);
         throw error
     }
 };
@@ -89,7 +84,7 @@ export const TransactionProvider = ({ children }) => {
 
     const { data: dadosAgrupados, isLoading: dadosAgrupadosLoading } = useQuery({
         queryKey: ['transaction_grouped'],
-        queryFn: getGroupTransactions,
+        queryFn: getTransactionSummary,
         enabled: isAuthenticated,
         onSuccess: (response) => {
             console.log('Dados agrupados no onSuccess:', response.data);

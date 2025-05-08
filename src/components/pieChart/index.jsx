@@ -4,7 +4,7 @@ import { colorContext } from '@context/colorScheme';
 import Svg from "react-native-svg";
 import { VictoryPie, VictoryLabel, VictoryTooltip, Flyout, flyoutComponent } from "victory-native";
 
-export default function PieChart({ data, total, selected, height, width }) {
+export default function PieChart({ data, total, selected, height, width, padAngle }) {
     const { isDarkMode } = useContext(colorContext)
 
     const categoriaCores = {
@@ -44,7 +44,7 @@ export default function PieChart({ data, total, selected, height, width }) {
                             style={{ fill: isDarkMode ? "#c7c5c5" : '#3f3f3f', fontSize: 20 }}
                         />
                     }
-                    padAngle={0}
+                    padAngle={padAngle}
                     style={{
                         data: {
                             fillOpacity: ({ datum }) => (datum.categoria === selected || selected === "") ? 1 : 0.5,

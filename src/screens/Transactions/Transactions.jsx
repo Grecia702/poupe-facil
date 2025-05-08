@@ -1,5 +1,5 @@
 import { StyleSheet, FlatList, TouchableOpacity, Modal, Text, View, Pressable, ActivityIndicator, useWindowDimensions } from 'react-native'
-import React, { useState, useContext, useEffect, useMemo, useCallback, useRef } from 'react'
+import React, { useState, useContext, useMemo, useLayoutEffect } from 'react'
 import { MaterialIcons } from '@expo/vector-icons'
 import { colorContext } from '@context/colorScheme'
 import TransactionCard from '@components/transactions';
@@ -11,43 +11,46 @@ import { useQueryClient } from '@tanstack/react-query';
 
 // TODO:  refatorar e otimizar
 const Transactions = () => {
-    const [filters, setFilters] = useState({ orderBy: 'valor', orderDirection: 'DESC' })
+    const route = useRoute();
+    const { params } = route.params || '';
+    const tipo = params
+    const [filters, setFilters] = useState({ tipo: tipo, orderBy: 'valor', orderDirection: 'DESC' })
     const { data, refetch, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } = usePosts({
+        tipo: filters.tipo,
         orderBy: filters.orderBy,
         orderDirection: filters.orderDirection,
     });
     const { height, width } = useWindowDimensions();
     const queryClient = useQueryClient();
     const navigation = useNavigation();
-    const onRefresh = useCallback(async () => {
+    const onRefresh = async () => {
         await queryClient.resetQueries(['posts', {
-            tipo: 'despesa',
+            tipo: tipo,
             natureza: 'variavel',
             orderBy: 'valor',
             orderDirection: 'DESC',
         }]);
         await refetch();
-    }, [queryClient, refetch]);
+    };
 
-    console.log({ ...filters })
-    const route = useRoute();
     const sortOptions = [
         { label: 'Data (Mais recentes)', value: 'date_desc' },
         { label: 'Data (Mais antigos)', value: 'date_asc' },
         { label: 'Valor (Maior primeiro)', value: 'value_desc' },
         { label: 'Valor (Menor primeiro)', value: 'value_asc' },
     ];
-    const [modalVisible, setModalVisible] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [dropdownVisibleId, setDropdownVisibleId] = useState(null);
     const [selected, setSelected] = useState(sortOptions[0]);
     const [isOpen, setIsOpen] = useState(false);
     const { isDarkMode } = useContext(colorContext);
     const [filtrosChips, setFiltrosChips] = useState([]);
-    const [filtrosCategorias, setFiltrosCategorias] = useState({ categorias: [], valor: null, operador: null, data: null })
-    const { tipo } = route.params || [];
     const allData = useMemo(() => data?.pages?.flatMap(page => page.data) || [], [data]);
     const toggleDropdown = () => setIsOpen(prev => !prev);
+    const rectHeight = 30;
+    const rectWidth = 100;
+    const radius = 18;
+    const priceWidth = 70;
 
 
     const handleLoadMore = () => {
@@ -55,10 +58,37 @@ const Transactions = () => {
             fetchNextPage();
         }
     };
-    const rectHeight = 30;
-    const rectWidth = 100;
-    const radius = 18;
-    const priceWidth = 70;
+
+    useLayoutEffect(() => {
+        let title;
+
+        switch (tipo) {
+            case 'despesa':
+                title = 'Despesa Detalhada';
+                break;
+            case 'receita':
+                title = 'Receita Detalhada';
+                break;
+            case 'investimento':
+                title = 'Investimento';
+                break;
+            case 'cartao':
+                title = 'Cartão de Crédito';
+                break;
+            default:
+                title = 'Detalhes';
+        }
+
+        navigation.setOptions({
+            title,
+            headerStyle: {
+                backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E',
+            },
+            headerTintColor: isDarkMode ? 'white' : 'black',
+        });
+    }, [navigation, tipo, isDarkMode]);
+
+
 
     if (isLoading) {
         return (
@@ -160,21 +190,21 @@ const Transactions = () => {
         }
     }
 
-    const ModalTransactions = () => {
-        return (
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <ModalView setModalVisible={setModalVisible}
-                    setFiltrosAtivos={setFiltrosChips}
-                    setTesteFiltros={setFiltrosCategorias}
-                />
-            </Modal>
-        );
-    }
+    // const ModalTransactions = () => {
+    //     return (
+    //         <Modal
+    //             animationType="slide"
+    //             transparent={true}
+    //             visible={modalVisible}
+    //             onRequestClose={() => setModalVisible(false)}
+    //         >
+    //             <ModalView setModalVisible={setModalVisible}
+    //                 setFiltrosAtivos={setFiltrosChips}
+    //                 setTesteFiltros={setFiltrosCategorias}
+    //             />
+    //         </Modal>
+    //     );
+    // }
 
 
 
@@ -219,9 +249,9 @@ const Transactions = () => {
                     onEndReached={handleLoadMore}
                     onEndReachedThreshold={0.8}
                     initialNumToRender={12}
-                    windowSize={10}
+                    windowSize={5}
                     maxToRenderPerBatch={10}
-                    updateCellsBatchingPeriod={90}
+                    updateCellsBatchingPeriod={60}
                     ListFooterComponent={() => (
                         isFetchingNextPage ? (
                             <View>
@@ -234,11 +264,17 @@ const Transactions = () => {
                         <>
                             <View style={[styles.ListHeader, { position: 'relative' }]}>
                                 <View style={styles.dropdownWrapper}>
-                                    <TouchableOpacity onPress={() => setModalVisible(true)} style={{ flexDirection: 'row', padding: 5, borderColor: isDarkMode ? "#DDD" : "#111", borderWidth: 2, borderRadius: 5 }}>
+                                    <TouchableOpacity style={
+                                        [styles.optionsButton, { borderColor: isDarkMode ? "#DDD" : "#111", }]
+                                    }>
                                         <MaterialIcons name="filter-alt" size={24} color={isDarkMode ? "#DDD" : "#111"} />
+                                        <Text style={{ fontWeight: 500, color: isDarkMode ? "#DDD" : "#111" }}>Filtrar por</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity onPressIn={toggleDropdown} style={{ flexDirection: 'row', padding: 5, borderColor: isDarkMode ? "#DDD" : "#111", borderWidth: 2, borderRadius: 5 }}>
+                                    <TouchableOpacity onPressIn={toggleDropdown} style={
+                                        [styles.optionsButton, { borderColor: isDarkMode ? "#DDD" : "#111", }]
+                                    }>
                                         <MaterialIcons name="sort" size={24} color={isDarkMode ? "#DDD" : "#111"} />
+                                        <Text style={{ fontWeight: 500, color: isDarkMode ? "#DDD" : "#111" }}>Ordenar por</Text>
                                     </TouchableOpacity>
                                 </View>
                                 {
@@ -260,7 +296,7 @@ const Transactions = () => {
                                         : null
                                 }
                             </View>
-                            <ModalTransactions />
+
                         </>
                     }
                 />
@@ -318,4 +354,12 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
     },
+    optionsButton: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        padding: 5,
+        gap: 5,
+        borderWidth: 2,
+        borderRadius: 5
+    }
 })

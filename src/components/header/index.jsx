@@ -11,7 +11,7 @@ export default function VisaoGeral({ saldo, receitas, despesas }) {
         <Header color={isDarkMode ? "#2c2c2c" : "#22C55E"}>
             <Title>Saldo total: R${saldo}</Title>
             <Widget
-                onPress={() => navigation.navigate('Transactions', { tipo: "Receita" })}
+                onPress={() => navigation.navigate('Transactions', { params: "receita" })}
                 color={isDarkMode ? "#2c2c2c" : "#F0FDF4"}
                 border={isDarkMode ? "#e9dfdf" : "#F0FDF4"}>
                 <ViewIcon color={"#61d4b0"}>
@@ -21,7 +21,7 @@ export default function VisaoGeral({ saldo, receitas, despesas }) {
                 <TextInfo fontWeight={700} size={20} color={isDarkMode ? "white" : "#1E293B"}>{`R$${Number(receitas).toFixed(2)}`}</TextInfo>
             </Widget>
             <Widget
-                onPress={() => navigation.navigate('Transactions', { tipo: "Despesa" })}
+                onPress={() => navigation.navigate('Transactions', { params: "despesa" })}
                 color={isDarkMode ? "#2c2c2c" : "#F0FDF4"}
                 border={isDarkMode ? "#e9dfdf" : "#F0FDF4"}>
                 <ViewIcon color={"#F87171"} >

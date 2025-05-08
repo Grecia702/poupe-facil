@@ -10,6 +10,7 @@ const api = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
+    timeout: 5000,
 });
 
 const refreshAxios = axios.create({
@@ -38,7 +39,7 @@ api.interceptors.response.use(
 
         if (error.code === 'ECONNABORTED') {
             console.log("A requisição excedeu o tempo limite.");
-            return Promise.reject("A requisição excedeu o tempo limite. Tente novamente mais tarde.");
+            return Promise.reject(error.code);
         }
 
         if (error.response?.data.message === 'E-mail e/ou senha incorretos!') {

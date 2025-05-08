@@ -7,25 +7,26 @@ import { VictoryBar, VictoryLine, VictoryAxis, VictoryChart, VictoryTheme, Victo
 import Card from '@components/card';
 import { MaterialIcons } from '@expo/vector-icons'
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { useTransactionSummary } from '@hooks/useTransactionSummary';
 
 const BarChart = ({ dataX, dataY }) => {
 
     return (
         <>
 
-            <VictoryChart theme={VictoryTheme.material}>
+            <VictoryChart theme={VictoryTheme.grayscale}>
                 <VictoryAxis />
                 <VictoryAxis dependentAxis />
 
-                <VictoryGroup offset={40}>
+                <VictoryGroup offset={100}>
                     <VictoryBar
                         data={dataX}
-                        x="tipo"
+                        x="time_group"
                         y="valor"
                     />
                     <VictoryBar
                         data={dataY}
-                        x="tipo"
+                        x="time_group"
                         y="valor"
 
                     />
@@ -50,6 +51,11 @@ const BarChart = ({ dataX, dataY }) => {
 
 export default function New() {
     const { dadosAgrupados, dadosAgrupadosLoading, dadosCategorias } = useTransactionAuth();
+    const { data, refetch, isLoading, error } = useTransactionSummary({
+        period: 'mensal'
+    });
+
+    // console.log(data)
     const { isDarkMode } = useContext(colorContext)
     const [selectedItem, setSelectedItem] = useState(null);
     const [chartVisible, setChartVisible] = useState('pie');
@@ -65,13 +71,15 @@ export default function New() {
     };
 
 
-    const ReceitasFixas = [dadosAgrupados?.find(item => item.natureza === "fixa" && item.tipo === "despesa")]
-    const ReceitasVariadas = [dadosAgrupados?.find(item => item.natureza === "variada" && item.tipo === "despesa")]
-    const DespesasFixas = [dadosAgrupados?.find(item => item.natureza === "fixa" && item.tipo === "receita")]
-    const Despesasvariadas = [dadosAgrupados?.find(item => item.natureza === "variada" && item.tipo === "receita")]
+    const ReceitasFixas = [data?.find(item => item.natureza === "fixa" && item.tipo === "despesa")]
+    const ReceitasVariadas = [data?.find(item => item.natureza === "variavel" && item.tipo === "despesa")]
+    const DespesasFixas = [data?.find(item => item.natureza === "fixa" && item.tipo === "receita")]
+    const DespesasVariadas = [data?.find(item => item.natureza === "variavel" && item.tipo === "receita")]
 
-    console.log(DespesasFixas)
-    console.log(ReceitasFixas)
+    console.log('Despesas Fixas', DespesasFixas)
+    console.log('Receitas Fixas', ReceitasFixas)
+    console.log('Despesas Variadas', DespesasVariadas)
+    console.log('Receitas Variadas', ReceitasVariadas)
     // console.log(Despesas)
 
     // if (dadosAgrupadosLoading) {
@@ -134,6 +142,7 @@ export default function New() {
                             <PieChart
                                 height={350}
                                 width={350}
+                                padAngle={3}
                                 data={dadosCategorias}
                                 total={total}
                                 selected={selectedItem}

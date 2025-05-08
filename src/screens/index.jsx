@@ -55,9 +55,9 @@ export default function HomeScreen() {
   // // console.log('Pages:', data?.pages);
   // console.log('All Data:', allData);
 
-  const totalReceita = dadosAgrupados?.find(item => item.tipo === "receita" && item.natureza === "total")?.valor || 0;
-  const totalDespesa = dadosAgrupados?.find(item => item.tipo === "despesa" && item.natureza === "total")?.valor || 0;
-  const totalTotal = dadosAgrupados?.find(item => item.tipo === "total" && item.natureza === "total")?.valor || 0;
+  const totalReceita = dadosAgrupados?.find(item => item.tipo === "receita" && item.natureza === "Total")?.valor || 0;
+  const totalDespesa = dadosAgrupados?.find(item => item.tipo === "despesa" && item.natureza === "Total")?.valor || 0;
+  const totalTotal = dadosAgrupados?.find(item => item.tipo === "Total" && item.natureza === "Total")?.valor || 0;
 
 
 

@@ -92,7 +92,7 @@ const GroupTransactionsByType = async (userId) => {
     SUM(valor) AS valor
     FROM user_transactions
     WHERE user_id = $1
-    AND tipo IN ('Receita', 'Despesa')
+    AND tipo IN ('receita', 'despesa')
     GROUP BY GROUPING SETS (
     (tipo, natureza), 
     (tipo),            
@@ -107,12 +107,55 @@ const GroupTransactionsByCategories = async (userId) => {
     SELECT categoria, COUNT(*) AS ocorrencias, SUM(valor) AS total
     FROM user_transactions
     WHERE user_id = $1
-    AND tipo = 'Despesa'
+    AND tipo = 'despesa'
     AND categoria IN ('Lazer', 'Carro', 'Educação', 'Alimentação', 'Internet', 'Contas', 'Compras', 'Outros')
     GROUP BY categoria
     ORDER BY total ASC`;
     const { rows, rowCount } = await pool.query(query, [userId]);
     return { rows, total: rowCount, firstResult: rows[0] };
+}
+
+const transactionSummary = async (date_start, date_end, interval, name_interval, userId) => {
+    const query = `
+    WITH meses AS (  
+        SELECT generate_series($1::date, $2::date, $3::interval) AS date_interval 
+    ),  
+    tipos AS (  
+        SELECT 'receita' AS tipo UNION SELECT 'despesa'  
+    ),  
+    naturezas AS (  
+        SELECT 'fixa' AS natureza UNION SELECT 'variavel'  
+    )  
+    SELECT   
+        TO_CHAR(m.date_interval, $4) AS time_group,  
+        t.tipo,  
+        n.natureza,  
+        COUNT(ut.user_id) AS ocorrencias,  
+        COALESCE(SUM(ut.valor), 0) AS valor  
+    FROM meses m  
+    CROSS JOIN tipos t  
+    CROSS JOIN naturezas n  
+    LEFT JOIN user_transactions ut   
+        ON DATE_TRUNC('month', ut.data_transacao) = m.date_interval  
+        AND ut.user_id = $5  
+        AND ut.tipo = t.tipo  
+        AND ut.natureza = n.natureza  
+    GROUP BY m.date_interval, t.tipo, n.natureza, time_group
+    ORDER BY m.date_interval, t.tipo, n.natureza`;
+    const { rows, rowCount } = await pool.query(query, [date_start, date_end, interval, name_interval, userId]);
+    return { rows, total: rowCount, firstResult: rows[0] };
+}
+
+const getFirstTransaction = async (userId) => {
+    const query = `
+    SELECT data_transacao 
+    FROM user_transactions 
+    WHERE user_id = $1 
+    ORDER BY data_transacao ASC
+    LIMIT 1
+    `;
+    const { rows, rowCount } = await pool.query(query, [userId]);
+    return { rows, total: rowCount, result: rows[0] };
 }
 
 
@@ -126,4 +169,6 @@ module.exports = {
     countTransactionsResult,
     GroupTransactionsByType,
     GroupTransactionsByCategories,
+    transactionSummary,
+    getFirstTransaction,
 };

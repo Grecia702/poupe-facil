@@ -42,7 +42,7 @@ const LoginScreen = () => {
             duration: 1500,
         });
         setTimeout(() => {
-            navigation.navigate('home');
+            navigation.replace('home');
         }, 50);
     }
 

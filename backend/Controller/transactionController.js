@@ -5,11 +5,12 @@ const {
     getTransactionByID,
     RemoveTransactionService,
     GroupTransactionService,
-    GroupCategoriesService
+    GroupCategoriesService,
+    transactionSummaryService
 } = require("../services/transactionService")
 
 
-const AddTransaction = async (req, res) => {
+const addTransaction = async (req, res) => {
     try {
         const { userId } = req.user.decoded
         const dados = req.body
@@ -42,12 +43,12 @@ const AddTransaction = async (req, res) => {
     }
 }
 
-const ReadTransaction = async (req, res) => {
+const readTransaction = async (req, res) => {
     try {
         const { id } = req.params
         const { userId } = req.user.decoded
         const transacoes = await getTransactionByID(userId, id);
-        res.json(transacoes);
+        res.status(200).json(transacoes);
     }
     catch (error) {
         // console.error('Erro ao listar transação:', error.message);
@@ -58,7 +59,7 @@ const ReadTransaction = async (req, res) => {
     }
 }
 
-const RemoveTransaction = async (req, res) => {
+const removeTransaction = async (req, res) => {
     try {
         const { id } = req.params
         const { userId } = req.user.decoded
@@ -72,7 +73,7 @@ const RemoveTransaction = async (req, res) => {
         res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: error.message })
     }
 }
-const UpdateTransaction = async (req, res) => {
+const updateTransaction = async (req, res) => {
     const { id } = req.params;
     const campos = req.body;
     try {
@@ -87,12 +88,12 @@ const UpdateTransaction = async (req, res) => {
     }
 }
 
-const ListTransactions = async (req, res) => {
+const listTransactions = async (req, res) => {
     try {
         const { userId } = req.user.decoded
         const query = req.query;
         const transacoes = await ListTransactionsService(userId, query);
-        res.json(transacoes);
+        res.status(200).json(transacoes);
     } catch (error) {
         if (error.message === 'Nenhuma transação encontrada') {
             return res.status(404).json({ message: error.message });
@@ -101,11 +102,11 @@ const ListTransactions = async (req, res) => {
     }
 };
 
-const GroupTransactions = async (req, res) => {
+const groupTransactions = async (req, res) => {
     try {
         const { userId } = req.user.decoded
         const transacoes = await GroupTransactionService(userId);
-        res.json(transacoes);
+        res.status(200).json(transacoes);
     } catch (error) {
         if (error.message === 'Nenhuma transação encontrada') {
             return res.status(404).json({ message: error.message });
@@ -114,11 +115,26 @@ const GroupTransactions = async (req, res) => {
     }
 };
 
-const GroupCategories = async (req, res) => {
+const groupCategories = async (req, res) => {
     try {
         const { userId } = req.user.decoded;
-        const transacoes = await GroupCategoriesService(userId);
-        res.json(transacoes);
+        const query = req.query
+        const transacoes = await GroupCategoriesService(userId, query);
+        res.status(200).json(transacoes);
+    } catch (error) {
+        if (error.message === 'Nenhuma transação encontrada') {
+            return res.status(404).json({ message: error.message });
+        }
+        res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: error.message })
+    }
+};
+
+const transactionSummary = async (req, res) => {
+    try {
+        const { userId } = req.user.decoded;
+        const query = req.query
+        const transacoes = await transactionSummaryService(userId, query);
+        res.status(200).json(transacoes);
     } catch (error) {
         if (error.message === 'Nenhuma transação encontrada') {
             return res.status(404).json({ message: error.message });
@@ -129,11 +145,12 @@ const GroupCategories = async (req, res) => {
 
 
 module.exports = {
-    AddTransaction,
-    ReadTransaction,
-    RemoveTransaction,
-    ListTransactions,
-    UpdateTransaction,
-    GroupTransactions,
-    GroupCategories
+    addTransaction,
+    readTransaction,
+    removeTransaction,
+    listTransactions,
+    updateTransaction,
+    groupTransactions,
+    groupCategories,
+    transactionSummary
 };

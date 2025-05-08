@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }) => {
                     {},
                     {
                         headers: { Authorization: `Bearer ${refreshToken}` },
-                        timeout: 3000,
+                        timeout: 5000,
                         validateStatus: () => true,
                     }
                 );
@@ -118,6 +118,10 @@ export const AuthProvider = ({ children }) => {
                 }
             } catch (error) {
                 console.log("Erro final:", error.message);
+
+                if (error.message === "A requisição excedeu o tempo limite. Tente novamente mais tarde.") {
+                    console.log('Não foi possivel conectar-se a internet', error.code)
+                }
                 await SecureStore.deleteItemAsync('accessToken');
                 await SecureStore.deleteItemAsync('refreshToken');
                 setIsAuthenticated(false);

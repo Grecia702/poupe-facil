@@ -7,7 +7,7 @@ const fetchPosts = async ({ pageParam = 1, queryKey }) => {
         const response = await api.get('/profile/transaction', {
             params: {
                 ...(natureza && { natureza }),
-                ...(tipo && { tipo }),
+                tipo,
                 orderBy,
                 orderDirection,
                 page: pageParam,

@@ -41,7 +41,8 @@ export default function StackRoutes() {
                 name="Transactions"
                 component={Transactions}
                 options={{
-                    title: '', headerShown: true,
+                    title: '',
+                    headerShown: true,
                     headerStyle: {
                         backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E',
                     },
