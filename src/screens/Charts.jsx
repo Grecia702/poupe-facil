@@ -14,33 +14,43 @@ const BarChart = ({ dataX, dataY }) => {
     return (
         <>
 
-            <VictoryChart theme={VictoryTheme.grayscale}>
-                <VictoryAxis />
-                <VictoryAxis dependentAxis />
+            <VictoryChart theme={VictoryTheme.grayscale} width={370}
+            >
+                <VictoryAxis
+                    style={{
+                        tickLabels: { fontSize: 16, fill: "#000000" },
+                    }}
+                // domain={{ y: [0, 600] }}
+                // tickValues={[0, 100, 200, 300, 400, 500, 600]}
+                />
+                <VictoryAxis
+                    dependentAxis
+                    style={{
+                        tickLabels: { fontSize: 16, fill: "#000000" },
+                    }}
+                />
 
-                <VictoryGroup offset={100}>
+                <VictoryGroup offset={50} colorScale={["#a73a3a", "#32a136"]}>
                     <VictoryBar
                         data={dataX}
-                        x="time_group"
-                        y="valor"
+                        x="week"
+                        y="despesa"
+                        // labels={({ datum }) => `R$${datum.despesa}`}
+                        style={{
+                            data: { fill: "#c21414" },
+                            labels: { fontSize: 12, fill: "#000000" },
+                        }}
                     />
                     <VictoryBar
-                        data={dataY}
-                        x="time_group"
-                        y="valor"
-
-                    />
-                    {/* <VictoryBar
                         data={dataX}
-                        x="tipo"
-                        y="valor"
+                        x="week"
+                        y="receita"
+                        // labels={({ datum }) => `R$${datum.receita}`}
+                        style={{
+                            data: { fill: "#4486db" },
+                            labels: { fontSize: 12, fill: "#000000" },
+                        }}
                     />
-                    <VictoryBar
-                        data={dataY}
-                        x="tipo"
-                        y="valor"
-                    /> */}
-
                 </VictoryGroup>
             </VictoryChart>
         </>
@@ -51,8 +61,8 @@ const BarChart = ({ dataX, dataY }) => {
 
 export default function New() {
     const { dadosAgrupados, dadosAgrupadosLoading, dadosCategorias } = useTransactionAuth();
+    // const today = new Date()
     const { data, refetch, isLoading, error } = useTransactionSummary({
-        period: 'mensal'
     });
 
     // console.log(data)
@@ -71,20 +81,29 @@ export default function New() {
     };
 
 
-    const ReceitasFixas = [data?.find(item => item.natureza === "fixa" && item.tipo === "despesa")]
-    const ReceitasVariadas = [data?.find(item => item.natureza === "variavel" && item.tipo === "despesa")]
-    const DespesasFixas = [data?.find(item => item.natureza === "fixa" && item.tipo === "receita")]
-    const DespesasVariadas = [data?.find(item => item.natureza === "variavel" && item.tipo === "receita")]
+    const groupedData = data?.reduce((acc, item) => {
+        const week = `S${item.name_interval}`;
+        const tipo = item.tipo;
+        const valor = parseFloat(item.valor);
+        if (!acc[week]) {
+            acc[week] = { despesa: 0, receita: 0 };
+        }
+        acc[week][tipo] += valor;
 
-    console.log('Despesas Fixas', DespesasFixas)
-    console.log('Receitas Fixas', ReceitasFixas)
-    console.log('Despesas Variadas', DespesasVariadas)
-    console.log('Receitas Variadas', ReceitasVariadas)
-    // console.log(Despesas)
+        return acc;
+    }, {});
 
-    // if (dadosAgrupadosLoading) {
-    //     console.log("true")
-    // }
+    const chartData = groupedData
+        ? Object.entries(groupedData).map(([week, values]) => ({
+            week,
+            despesa: values.despesa,
+            receita: values.receita,
+        }))
+        : [];
+    console.log('Dados não agrupados:', groupedData);
+    console.log('Dados para o gráfico:', chartData);
+
+
 
     const handleSelectItem = (label) => {
         setSelectedItem(() => label);
@@ -154,8 +173,8 @@ export default function New() {
                             <Text style={[styles.title, { color: isDarkMode ? 'white' : 'black' }]}>Receita x Despesas</Text>
                             <BarChart
                                 color={isDarkMode}
-                                dataX={DespesasFixas}
-                                dataY={ReceitasFixas}
+                                dataX={chartData}
+                                // dataY={second_week}
                                 colorScheme={categoriaCores}
                                 selectedItem={selectedItem}
                             />
@@ -177,7 +196,7 @@ export default function New() {
                                     }}
                                 />
                                 <VictoryLine
-                                    data={resultGroupBy}
+                                    data={chartData}
                                     style={{
                                         data: { stroke: isDarkMode ? "#ffffff" : "#000000", strokeWidth: 2 },
                                     }}
