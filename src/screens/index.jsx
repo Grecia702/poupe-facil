@@ -2,9 +2,7 @@ import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { colorContext } from '@context/colorScheme';
 import { FlatList, Pressable } from 'react-native';
 import React, { useContext, useEffect, useState, useMemo } from 'react'
-import { CATEGORIAS } from '../utils/categorias'
 import { categoriaCores } from '../utils/categoriasCores'
-
 import { Container, Wrapper } from '../components/main/styles';
 import Card from '@components/card';
 import ContentLoader, { Rect } from 'react-content-loader/native'
@@ -18,21 +16,7 @@ import * as Progress from 'react-native-progress';
 import VisaoGeral from '@components/header';
 import { useTransactionAuth } from '@context/transactionsContext';
 import { useContasAuth } from '@context/contaContext';
-import { usePosts } from '../hooks/usePosts';
-
-
-const GroupByType = ((dadosAPI) => {
-  return dadosAPI?.reduce((acc, item) => {
-    const valor = parseFloat(item.valor)
-    if (item.tipo === "Despesa") {
-      acc.despesas -= valor;
-    }
-    else {
-      acc.receitas += valor;
-    }
-    return acc;
-  }, { receitas: 0, despesas: 0 })
-})
+import { useTransactionSummary } from '@hooks/useTransactionSummary';
 
 export default function HomeScreen() {
 
@@ -43,23 +27,15 @@ export default function HomeScreen() {
   const [progress, setProgress] = useState(0.00);
   const navigation = useNavigation();
   const { isDarkMode } = useContext(colorContext)
-
-  const { data, refetch, fetchNextPage, hasNextPage } = usePosts({
-    tipo: 'despesa',
-    natureza: 'variavel',
-    orderBy: 'valor',
-    orderDirection: 'DESC',
+  const { data } = useTransactionSummary({
+    all: true
   });
-
-  // const allData = data?.pages?.flatMap(page => page.data.data) || [];
-  // // console.log('Pages:', data?.pages);
-  // console.log('All Data:', allData);
-
-  const totalReceita = dadosAgrupados?.find(item => item.tipo === "receita" && item.natureza === "Total")?.valor || 0;
-  const totalDespesa = dadosAgrupados?.find(item => item.tipo === "despesa" && item.natureza === "Total")?.valor || 0;
-  const totalTotal = dadosAgrupados?.find(item => item.tipo === "Total" && item.natureza === "Total")?.valor || 0;
+  const overallBalance = data?.find(item => item.tipo === "Total").total || 0;
+  const expenses = data?.find(item => item.tipo === "despesa").total || 0;
+  const incomes = data?.find(item => item.tipo === "receita").total || 0;
 
 
+  console.log(expenses)
 
   const total = dadosCategorias?.reduce((acc, item) => {
     acc += item.total
@@ -87,7 +63,7 @@ export default function HomeScreen() {
 
   return (
     <ScrollView style={{ backgroundColor: isDarkMode ? "rgb(26, 26, 26)" : "#c6ebe9" }}>
-      <VisaoGeral saldo={totalTotal} receitas={totalReceita} despesas={totalDespesa} />
+      <VisaoGeral saldo={overallBalance} receitas={incomes} despesas={expenses} />
       <Wrapper>
         <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Contas"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
           <Text onPress={() => navigation.navigate('Contas')}

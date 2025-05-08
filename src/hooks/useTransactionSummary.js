@@ -2,11 +2,12 @@ import { useQuery } from '@tanstack/react-query'
 import api from '@context/axiosInstance'
 
 const fetchPosts = async ({ queryKey }) => {
-    const [, { period = 'mensal' }] = queryKey
+    const today = new Date()
+    const [, { date = today, all }] = queryKey
 
     try {
         const response = await api.get('/profile/transaction/summary', {
-            params: { period },
+            params: { date, all },
         })
 
         // console.log('response.data:', response.data)

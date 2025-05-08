@@ -7,6 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 export default function VisaoGeral({ saldo, receitas, despesas }) {
     const navigation = useNavigation();
     const { isDarkMode } = useContext(colorContext)
+
     return (
         <Header color={isDarkMode ? "#2c2c2c" : "#22C55E"}>
             <Title>Saldo total: R${saldo}</Title>

@@ -12,10 +12,8 @@ const getTransacoes = async ({ pageParams = 1 }) => {
     try {
         console.log('Iniciando requisição para transações...');
         const { data } = await api.get(`/profile/transaction?page=${pageParams}&limit=${PAGE_SIZE}`);
-        // console.log(data)
         return data;
     } catch (error) {
-        // console.log('Erro ao fazer a requisição:', error);
         throw error;
     }
 };
