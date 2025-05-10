@@ -1,9 +1,9 @@
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { colorContext } from '@context/colorScheme';
 import { FlatList, Pressable } from 'react-native';
-import React, { useContext, useEffect, useState, useMemo } from 'react'
+import React, { useContext, useState, useMemo } from 'react'
 import { categoriaCores } from '../utils/categoriasCores'
-import { Container, Wrapper } from '../components/main/styles';
+import { Wrapper } from '../components/main/styles';
 import Card from '@components/card';
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import PieChart from '@components/pieChart';
@@ -20,7 +20,7 @@ import { useTransactionSummary } from '@hooks/useTransactionSummary';
 
 export default function HomeScreen() {
 
-  const { dadosAPI, meta, dadosAgrupados, dadosCategorias } = useTransactionAuth();
+  const { dadosAPI, isLoading, dadosCategorias, isCategoriesLoading } = useTransactionAuth();
   const { dadosContas } = useContasAuth();
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshing, setRefreshing] = useState(true);
@@ -35,8 +35,6 @@ export default function HomeScreen() {
   const incomes = data?.find(item => item.tipo === "receita").total || 0;
 
 
-  console.log(expenses)
-
   const total = dadosCategorias?.reduce((acc, item) => {
     acc += item.total
     return acc
@@ -50,11 +48,6 @@ export default function HomeScreen() {
   }, 0)
 
 
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     setRefreshing(false);
-  //   }, 1500);
-  // }, [])
 
   const handleSelectItem = (label) => {
     setSelectedItem(label);
@@ -150,15 +143,14 @@ export default function HomeScreen() {
         <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Gráficos"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
 
           <TouchableOpacity onPress={() => navigation.navigate('Gráficos')} >
-
-            <PieChart height={350} width={350} data={dadosCategorias} total={total} selected={selectedItem} />
+            {!isCategoriesLoading && <PieChart height={350} width={350} data={dadosCategorias} total={total} padAngle={3} selected={selectedItem} />}
           </TouchableOpacity>
 
 
         </WidgetTeste>
 
         <View style={{}}>
-          {refreshing ? (
+          {isLoading ? (
 
             <ContentLoader
               speed={1}
@@ -176,17 +168,15 @@ export default function HomeScreen() {
             </ContentLoader>
           ) : (
             <FlatList
-              data={dadosAPI}
-              keyExtractor={(item) => item.x}
+              data={dadosCategorias}
+              keyExtractor={(item) => item.categoria}
               refreshing={refreshing}
-              // onRefresh={refetch}
               scrollEnabled={false}
               initialNumToRender={10}
               maxToRenderPerBatch={5}
               windowSize={5}
               renderItem={({ item }) => (
                 <Card
-                  // Função para buscar a cor do ITEM LABEL que está sendo renderizado na flatlist
                   color={categoriaCores[item.categoria]}
                   title={item.categoria}
                   text={(item.total)}

@@ -1,4 +1,4 @@
-import { StyleSheet, View, FlatList, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, View, FlatList, TouchableOpacity, Text, ScrollView } from 'react-native';
 import React, { useContext, useMemo, useState } from 'react'
 import { colorContext } from '../../context/colorScheme';
 import PieChart from '@components/pieChart';
@@ -8,8 +8,9 @@ import Card from '@components/card';
 import { MaterialIcons } from '@expo/vector-icons'
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useTransactionSummary } from '@hooks/useTransactionSummary';
+import { categoriaCores } from '../utils/categoriasCores';
 
-const BarChart = ({ dataX, dataY }) => {
+const BarChart = ({ data, color }) => {
 
     return (
         <>
@@ -18,7 +19,11 @@ const BarChart = ({ dataX, dataY }) => {
             >
                 <VictoryAxis
                     style={{
-                        tickLabels: { fontSize: 16, fill: "#000000" },
+                        tickLabels: { fontSize: 16, fill: color ? "#d1d1d1" : "#000000" },
+                        axis: {
+                            stroke: color ? "#c5c5c5" : "#000000",
+                            strokeWidth: 2,
+                        },
                     }}
                 // domain={{ y: [0, 600] }}
                 // tickValues={[0, 100, 200, 300, 400, 500, 600]}
@@ -26,13 +31,17 @@ const BarChart = ({ dataX, dataY }) => {
                 <VictoryAxis
                     dependentAxis
                     style={{
-                        tickLabels: { fontSize: 16, fill: "#000000" },
+                        tickLabels: { fontSize: 16, fill: color ? "#d1d1d1" : "#000000" },
+                        axis: {
+                            stroke: color ? "#d1d1d1" : "#000000",
+                            strokeWidth: 2,
+                        },
                     }}
                 />
 
                 <VictoryGroup offset={50} colorScale={["#a73a3a", "#32a136"]}>
                     <VictoryBar
-                        data={dataX}
+                        data={data}
                         x="week"
                         y="despesa"
                         // labels={({ datum }) => `R$${datum.despesa}`}
@@ -42,7 +51,7 @@ const BarChart = ({ dataX, dataY }) => {
                         }}
                     />
                     <VictoryBar
-                        data={dataX}
+                        data={data}
                         x="week"
                         y="receita"
                         // labels={({ datum }) => `R$${datum.receita}`}
@@ -60,27 +69,17 @@ const BarChart = ({ dataX, dataY }) => {
 // TODO: Event Handler que ao clicar no grafico redirecione para a pagina de transações com a categoria filtrada 
 
 export default function New() {
-    const { dadosAgrupados, dadosAgrupadosLoading, dadosCategorias } = useTransactionAuth();
-    // const today = new Date()
-    const { data, refetch, isLoading, error } = useTransactionSummary({
+    const { dadosCategorias } = useTransactionAuth();
+    const { data, refetch, isLoading, error } = useTransactionSummary({});
+    const { data: lineChartData } = useTransactionSummary({
+        period: 'day'
     });
+    const expenseEvolution = lineChartData?.filter(item => item.tipo === 'despesa' && item.natureza === 'variavel')
+    const incomeEvolution = lineChartData?.filter(item => item.tipo === 'receita' && item.natureza === 'variavel')
 
-    // console.log(data)
     const { isDarkMode } = useContext(colorContext)
     const [selectedItem, setSelectedItem] = useState(null);
     const [chartVisible, setChartVisible] = useState('pie');
-    const categoriaCores = {
-        Contas: "rgb(160, 48, 44)",
-        Alimentação: "rgb(204, 118, 38)",
-        Carro: "rgb(57, 184, 74)",
-        Internet: "rgb(64, 155, 230)",
-        Lazer: "rgb(114, 13, 109)",
-        Educação: "rgb(68, 59, 90)",
-        Compras: "rgb(148, 137, 37)",
-        Outros: "rgb(83, 87, 83)",
-    };
-
-
     const groupedData = data?.reduce((acc, item) => {
         const week = `S${item.name_interval}`;
         const tipo = item.tipo;
@@ -93,6 +92,7 @@ export default function New() {
         return acc;
     }, {});
 
+
     const chartData = groupedData
         ? Object.entries(groupedData).map(([week, values]) => ({
             week,
@@ -100,10 +100,6 @@ export default function New() {
             receita: values.receita,
         }))
         : [];
-    console.log('Dados não agrupados:', groupedData);
-    console.log('Dados para o gráfico:', chartData);
-
-
 
     const handleSelectItem = (label) => {
         setSelectedItem(() => label);
@@ -127,7 +123,7 @@ export default function New() {
         }
 
         opacity.value = 0;
-        scale.value = 0.9;
+        scale.value = 0.95;
         setTimeout(() => {
             setChartVisible(chart);
             opacity.value = 1;
@@ -138,102 +134,126 @@ export default function New() {
 
 
     return (
-        <View style={[styles.container, { backgroundColor: isDarkMode ? 'rgb(30, 30, 30)' : 'rgb(199, 235, 214)' }]}>
-            <View style={[styles.card, { backgroundColor: isDarkMode ? '#333' : '#ffffffd5' }]}>
-                <View style={[styles.navbar, { borderColor: isDarkMode ? "#c2c2c2d4" : "#333", backgroundColor: isDarkMode ? "#333" : "#ffffffd5" }]}>
-                    <TouchableOpacity style={styles.navbarItem} onPress={() => toggleChart('pie')}>
-                        <MaterialIcons name="pie-chart" size={24} color={isDarkMode ? "#ffffff" : "#000000"} />
-                    </TouchableOpacity >
-                    <View style={{ width: 1, backgroundColor: isDarkMode ? "#c2c2c2d4" : "#333" }} />
-                    <TouchableOpacity style={styles.navbarItem} onPress={() => toggleChart('bar')}>
-                        <MaterialIcons name="bar-chart" size={24} color={isDarkMode ? "#ffffff" : "#000000"} />
-                    </TouchableOpacity>
-                    <View style={{ width: 1, backgroundColor: isDarkMode ? "#c2c2c2d4" : "#333" }} />
-                    <TouchableOpacity style={styles.navbarItem} onPress={() => toggleChart('line')}>
-                        <MaterialIcons name="show-chart" size={24} color={isDarkMode ? "#ffffff" : "#000000"} />
-                    </TouchableOpacity>
-                </View>
-
-                <Animated.View style={[animatedStyle]}>
-                    {chartVisible === 'pie' && (
-                        <>
-                            <Text style={[styles.title, { color: isDarkMode ? 'white' : 'black' }]}>Transações por categorias</Text>
-                            <PieChart
-                                height={350}
-                                width={350}
-                                padAngle={3}
-                                data={dadosCategorias}
-                                total={total}
-                                selected={selectedItem}
-                            />
-                        </>
-                    )}
-                    {chartVisible === 'bar' && (
-                        <>
-                            <Text style={[styles.title, { color: isDarkMode ? 'white' : 'black' }]}>Receita x Despesas</Text>
-                            <BarChart
-                                color={isDarkMode}
-                                dataX={chartData}
-                                // dataY={second_week}
-                                colorScheme={categoriaCores}
-                                selectedItem={selectedItem}
-                            />
-                        </>
-                    )}
-                    {chartVisible === 'line' && (
-                        <>
-                            <Text style={[styles.title, { color: isDarkMode ? 'white' : 'black' }]}>Evolução das despesas</Text>
-                            <VictoryChart theme={VictoryTheme.material} domainPadding={{ x: 50 }}>
-                                <VictoryAxis
-                                    style={{
-                                        tickLabels: { fontSize: 16, fill: isDarkMode ? "#ffffff" : "#000000" },
-                                    }}
-                                />
-                                <VictoryAxis
-                                    dependentAxis
-                                    style={{
-                                        tickLabels: { fontSize: 16, fill: isDarkMode ? "#ffffff" : "#000000" },
-                                    }}
-                                />
-                                <VictoryLine
-                                    data={chartData}
-                                    style={{
-                                        data: { stroke: isDarkMode ? "#ffffff" : "#000000", strokeWidth: 2 },
-                                    }}
-                                />
-                            </VictoryChart>
-                        </>
-                    )}
-                </Animated.View>
+        <ScrollView contentContainerStyle={{ alignItems: 'center' }} style={[styles.card, { backgroundColor: isDarkMode ? 'rgb(26, 26, 26)' : '#dfdfdfd4' }]}>
+            <View style={[styles.navbar, { borderColor: isDarkMode ? "#c2c2c2d4" : "#333", backgroundColor: isDarkMode ? "#333" : "#ffffffd5" }]}>
+                <TouchableOpacity style={styles.navbarItem} onPress={() => toggleChart('pie')}>
+                    <MaterialIcons name="pie-chart" size={24} color={isDarkMode ? "#ffffff" : "#000000"} />
+                </TouchableOpacity >
+                <View style={{ width: 1, backgroundColor: isDarkMode ? "#c2c2c2d4" : "#333" }} />
+                <TouchableOpacity style={styles.navbarItem} onPress={() => toggleChart('bar')}>
+                    <MaterialIcons name="bar-chart" size={24} color={isDarkMode ? "#ffffff" : "#000000"} />
+                </TouchableOpacity>
+                <View style={{ width: 1, backgroundColor: isDarkMode ? "#c2c2c2d4" : "#333" }} />
+                <TouchableOpacity style={styles.navbarItem} onPress={() => toggleChart('line')}>
+                    <MaterialIcons name="show-chart" size={24} color={isDarkMode ? "#ffffff" : "#000000"} />
+                </TouchableOpacity>
             </View>
-            <FlatList
-                data={dadosCategorias}
-                keyExtractor={(item) => item.categoria}
-                // refreshing={refreshing}
-                scrollEnabled={true}
-                initialNumToRender={10}
-                maxToRenderPerBatch={5}
-                windowSize={5}
-                renderItem={({ item }) => (
-                    <Card
-                        color={categoriaCores[item.categoria]}
-                        title={item.categoria}
-                        text={(item.total)}
-                        selectedItem={selectedItem}
-                        selected={selectedItem === item.categoria ? selectedItem : 'none'}
-                        onPress={() => handleSelectItem(item.categoria)}
-                    />
+
+            <Animated.View style={[animatedStyle, { marginBottom: 20 }]}>
+                {chartVisible === 'pie' && (
+                    <>
+                        <Text style={[styles.title, { color: isDarkMode ? 'white' : 'black' }]}>Transações por categorias</Text>
+                        <PieChart
+                            height={350}
+                            width={350}
+                            padAngle={3}
+                            data={dadosCategorias}
+                            total={total}
+                            selected={selectedItem}
+                        />
+                        <FlatList
+                            data={dadosCategorias}
+                            keyExtractor={(item) => item.categoria}
+                            scrollEnabled={false}
+                            initialNumToRender={10}
+                            maxToRenderPerBatch={5}
+                            windowSize={5}
+                            renderItem={({ item }) => (
+                                <Card
+                                    color={categoriaCores[item.categoria]}
+                                    title={item.categoria}
+                                    text={(item.total)}
+                                    selectedItem={selectedItem}
+                                    selected={selectedItem === item.categoria ? selectedItem : 'none'}
+                                    onPress={() => handleSelectItem(item.categoria)}
+                                />
+                            )}
+                        />
+                    </>
                 )}
-            />
-        </View >
+                {chartVisible === 'bar' && (
+                    <>
+                        <Text style={[styles.title, { color: isDarkMode ? 'white' : 'black' }]}>Receita x Despesas</Text>
+                        <BarChart
+
+                            color={isDarkMode}
+                            data={chartData}
+                            colorScheme={categoriaCores}
+                            selectedItem={selectedItem}
+                        />
+                    </>
+                )}
+                {chartVisible === 'line' && (
+                    <>
+                        <Text style={[styles.title, { color: isDarkMode ? 'white' : 'black' }]}>Evolução das despesas</Text>
+                        <VictoryChart theme={VictoryTheme.material}
+                            padding={{ left: 65, right: 40, bottom: 50, top: 50 }}
+                            domain={{ y: [0, Math.max(...data.map(item => item.valor)) + 50] }}
+                            domainPadding={{ x: [0, 0], y: [0, 0] }}>
+                            <VictoryAxis
+                                style={{
+                                    tickLabels: { fontSize: 16, fill: isDarkMode ? "#c0c0c0" : "#000000" },
+                                    grid: { stroke: '#686faa6a' },
+                                    axis: {
+                                        stroke: isDarkMode ? "#c0c0c0" : "#000000",
+                                        strokeWidth: 3
+                                    },
+                                }}
+                            />
+                            <VictoryAxis
+                                tickValues={
+                                    Array.from(
+                                        { length: data.length },
+                                        (_, i) => i * (Math.max(...data.map(item => item.valor)) / data.length)
+                                    )
+                                }
+                                dependentAxis
+                                style={{
+                                    tickLabels: { fontSize: 14, fill: isDarkMode ? "#c0c0c0" : "#000000" },
+                                    grid: { stroke: '#686faa6a' },
+                                    axis: {
+                                        stroke: isDarkMode ? "#c0c0c0" : "#000000",
+                                        strokeWidth: 3
+                                    },
+                                }}
+                            />
+                            <VictoryLine
+                                data={expenseEvolution}
+                                interpolation={'monotoneX'}
+                                x="name_interval"
+                                y="valor"
+                                style={{
+                                    data: { stroke: "#be372e", strokeWidth: 5 },
+                                }}
+                            />
+                            <VictoryLine
+                                data={incomeEvolution}
+                                interpolation={'monotoneX'}
+                                x="name_interval"
+                                y="valor"
+                                style={{
+                                    data: { stroke: "#382ebe", strokeWidth: 5 },
+                                }}
+                            />
+                        </VictoryChart>
+                    </>
+                )}
+            </Animated.View>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        padding: 15,
-        flex: 1,
-    },
     button: {
         width: 100,
         height: 40,
@@ -254,12 +274,8 @@ const styles = StyleSheet.create({
         marginTop: 50
     },
     card: {
-        borderRadius: 10,
-        marginTop: 20,
-        marginBottom: 20,
         flexDirection: 'column',
         padding: 20,
-
     },
     navbar: {
         justifyContent: 'space-between',
