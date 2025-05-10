@@ -19,7 +19,8 @@ const transactionQuerySchema = z.object({
     orderDirection: z.enum(['ASC', 'DESC']).default('DESC'),
     limit: z.coerce.number().int().min(1).max(100).default(15),
     page: z.coerce.number().int().min(0).default(1),
-    all: z.string().optional().transform((val) => val === "true").default("false").transform((val) => val === true)
+    all: z.string().optional().transform((val) => val === "true").default("false").transform((val) => val === true),
+    period: z.enum(['week', 'month', 'day', 'year']).default('week')
 });
 
 
@@ -125,7 +126,7 @@ const ListTransactionsService = async (userId, query) => {
         return transactions.rows
     }
     const offset = (page - 1) * limit;
-    const queryParams = { ...rest, page, limit };
+    const queryParams = { ...rest, page, limit, offset };
     const [transacoes, total] = await Promise.all([
         transactionModel.ListTransactions(userId, queryParams),
         transactionModel.countTransactionsResult(userId, queryParams)
@@ -133,15 +134,15 @@ const ListTransactionsService = async (userId, query) => {
     if (total === 0) {
         throw new Error('Nenhuma transação encontrada');
     }
-    const data = transacoes.rows.map(row => {
-        const valor = Math.abs(row.valor)
-        return {
-            ...row,
-            valor: valor
-        }
-    });
+    // const data = transacoes.rows.map(row => {
+    //     const valor = Math.abs(row.valor)
+    //     return {
+    //         ...row,
+    //         valor: valor
+    //     }
+    // });
     return {
-        data: data,
+        data: transacoes.rows,
         meta: {
             total: total,
             page: page,
@@ -179,7 +180,7 @@ const GroupCategoriesService = async (userId) => {
         const data = transacoes.rows.map(row => ({
             ...row,
             ocorrencias: parseInt(row.ocorrencias),
-            total: Math.abs(parseFloat(row.total))
+            total: Math.abs(row.total)
         }));
         return data;
     } catch (error) {
@@ -190,7 +191,7 @@ const GroupCategoriesService = async (userId) => {
 
 
 const transactionSummaryService = async (userId, query) => {
-    const { all } = transactionQuerySchema.parse(query);
+    const { all, period } = transactionQuerySchema.parse(query);
     const { date } = query
     if (all) {
         const transactions = await transactionModel.listSumTransactions(userId,)
@@ -201,9 +202,10 @@ const transactionSummaryService = async (userId, query) => {
                 total: valor
             }
         });
-
         return data
     }
+
+
     const first_day = startOfMonth(date).toISOString();
     const last_day = date
     // let name_interval;
@@ -242,8 +244,7 @@ const transactionSummaryService = async (userId, query) => {
     //     default:
     //         break;
     // }
-
-    const transactions = await transactionModel.transactionSummary(first_day, last_day, userId)
+    const transactions = await transactionModel.transactionSummary(first_day, last_day, period, userId)
     if (transactions.total === 0) {
         throw new Error('Nenhuma transação encontrada');
     }
