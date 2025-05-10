@@ -1,26 +1,65 @@
-import { StyleSheet, Text, View, SafeAreaView, TextInput, TouchableOpacity, Pressable } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, TextInput, TouchableOpacity, Pressable, Image } from 'react-native';
 import Fontisto from '@expo/vector-icons/Fontisto';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
 import { useAuth } from '@context/authContext';
 import { useNavigation } from '@react-navigation/native'
 import { useToast } from 'react-native-toast-notifications';
+import { GoogleSignin, isSuccessResponse } from '@react-native-google-signin/google-signin';
 
+
+GoogleSignin.configure({
+    iosClientId: '159358840833-asm7tcmu7b119g66b833qj5kf8f2gngu.apps.googleusercontent.com',
+    webClientId: '159358840833-f1fglng1p7cj0ov37gsadijp70hlvc7p.apps.googleusercontent.com',
+    offlineAccess: true,
+})
 
 const LoginScreen = () => {
     const toast = useToast();
     const navigation = useNavigation();
-    const [credentials, setCredentials] = useState({ email: '', senha: '' });
+    const [credentials, setCredentials] = useState({ email: '', password: '' });
     const [message, setMessage] = useState('');
     const [visible, setVisible] = useState(true);
-    const { loginMutation } = useAuth()
+    const { loginMutation, googleMutation } = useAuth()
+
+
+    const handleGoogleSignIn = async () => {
+        try {
+            await GoogleSignin.hasPlayServices()
+            const response = await GoogleSignin.signIn()
+
+            if (isSuccessResponse(response)) {
+                const { idToken } = response.data
+                googleMutation.mutate({ idToken }, {
+                    onSuccess: () => toastSuccess(),
+                    onError: (error) => {
+                        if (error.response && error.response.data) {
+                            console.log('Erro da API:', error.response.data);
+                            toastError(error.response.data.message || 'Erro ao fazer login.');
+                        } else if (error.message) {
+                            console.log('Erro:', error.message);
+                            toastError(error.message);
+                        } else {
+                            console.log('Erro desconhecido:', error);
+                            toastError('Erro desconhecido.');
+                        }
+                    },
+                });
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
 
     const toggleShowPassword = () => {
         setVisible(!visible);
     };
 
     const handleLogin = async () => {
-        if (!credentials.email || !credentials.senha) {
+        console.log(credentials)
+        if (!credentials.email || !credentials.password) {
             toastError('Preencha todos os campos.');
             return;
         }
@@ -65,6 +104,8 @@ const LoginScreen = () => {
                 </View>
 
                 <TextInput
+                    autoCapitalize="none"
+                    autoCorrect={false}
                     style={styles.input}
                     placeholder="Insira Seu Email"
                     value={credentials.email}
@@ -82,11 +123,10 @@ const LoginScreen = () => {
                     <TextInput
                         style={[styles.input, { flex: 1 }]}
                         placeholder="Insira Sua Senha"
-                        value={credentials.senha}
+                        value={credentials.password}
                         autoCapitalize="none"
-                        onChangeText={(text) => setCredentials({ ...credentials, senha: text })}
+                        onChangeText={(text) => setCredentials({ ...credentials, password: text })}
                         secureTextEntry={visible}
-                        required
                     />
 
                     <Feather
@@ -107,8 +147,17 @@ const LoginScreen = () => {
                     Esqueci a minha senha
                 </Link> */}
 
-                <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                <TouchableOpacity style={[styles.button, { marginTop: 30 }]} onPress={handleLogin}>
                     <Text style={styles.buttonText}>Login</Text>
+                </TouchableOpacity>
+                <Text style={{ alignSelf: 'center' }}>Ou</Text>
+                <TouchableOpacity style={[styles.button, { backgroundColor: '#f3f3f3', padding: 15, borderColor: '#555555', gap: 15 }]} onPress={handleGoogleSignIn}>
+                    <Image
+                        style={{ width: 24, height: 24 }}
+                        source={require('../assets/Android/Google__G__logo.png')}
+                    />
+
+                    <Text style={{ alignSelf: 'center', fontSize: 16, fontWeight: 400, color: '#3C4043' }}>Continue com o Google</Text>
                 </TouchableOpacity>
 
                 <Text style={[styles.message, { color: loginMutation.isError ? 'red' : 'green' }]}>
@@ -125,7 +174,7 @@ const LoginScreen = () => {
 
 const styles = StyleSheet.create({
     safeArea: {
-        backgroundColor: '#e0ebf3',
+        backgroundColor: '#e6eeeb',
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'center',
@@ -152,19 +201,19 @@ const styles = StyleSheet.create({
     },
     input: {
         borderWidth: 1,
-        borderRadius: 10,
+        borderRadius: 5,
         padding: 20,
         backgroundColor: 'white',
         maxHeight: 60
     },
     button: {
+        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         height: 64,
-        marginTop: 32,
         backgroundColor: '#3a9e58',
         borderWidth: 1,
-        borderRadius: 10,
+        borderRadius: 35,
         borderColor: 'black',
     },
     buttonText: {

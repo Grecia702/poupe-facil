@@ -6,22 +6,13 @@ import { useAuth } from '@context/authContext';
 export const TransactionContext = createContext();
 
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 15;
 
 const getTransacoes = async ({ pageParams = 1 }) => {
     try {
         console.log('Iniciando requisição para transações...');
         const { data } = await api.get(`/profile/transaction?page=${pageParams}&limit=${PAGE_SIZE}`);
         return data;
-    } catch (error) {
-        throw error;
-    }
-};
-
-const getTransactionSummary = async (period) => {
-    try {
-        const response = await api.get(`/profile/transaction/summary?period${period}`);
-        return response.data;
     } catch (error) {
         throw error;
     }
@@ -80,19 +71,8 @@ export const TransactionProvider = ({ children }) => {
         }
     });
 
-    const { data: dadosAgrupados, isLoading: dadosAgrupadosLoading } = useQuery({
-        queryKey: ['transaction_grouped'],
-        queryFn: getTransactionSummary,
-        enabled: isAuthenticated,
-        onSuccess: (response) => {
-            console.log('Dados agrupados no onSuccess:', response.data);
-        },
-        onError: (error) => {
-            console.log('Erro na requisição de dados agrupados:', error);
-        }
-    });
 
-    const { data: dadosCategorias } = useQuery({
+    const { data: dadosCategorias, isLoading: isCategoriesLoading } = useQuery({
         queryKey: ['transaction_categories'],
         queryFn: getCategoriesTransactions,
         enabled: isAuthenticated,
@@ -146,9 +126,8 @@ export const TransactionProvider = ({ children }) => {
             dadosAPI, meta, isLoading, error, refetch,
             createTransactionMutation,
             deleteTransactionMutation,
-            dadosAgrupados,
-            dadosAgrupadosLoading,
             dadosCategorias,
+            isCategoriesLoading,
             infiniteTransactions: allTransactions,
             fetchNextPage,
             hasNextPage,

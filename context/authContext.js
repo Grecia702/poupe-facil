@@ -9,9 +9,15 @@ import { jwtDecode } from "jwt-decode";
 
 export const AuthContext = createContext();
 const postLogin = async (loginData) => {
-    const res = await api.post('/auth/login', loginData);
+    const res = await api.post('/auth/login', loginData)
     return res.data;
 };
+
+const postGoogleLogin = async (loginData) => {
+    const res = await api.post('/auth/google', loginData);
+    return res.data;
+};
+
 
 const postSignUp = async (signUpData) => {
     const res = await api.post('/auth/signup', signUpData);
@@ -44,6 +50,21 @@ export const AuthProvider = ({ children }) => {
             console.error('Erro ao fazer login', error);
         },
     });
+
+    const googleMutation = useMutation({
+        mutationFn: postGoogleLogin,
+        onSuccess: async (data) => {
+            await SecureStore.setItemAsync('accessToken', data.accessToken);
+            await SecureStore.setItemAsync('refreshToken', data.refreshToken);
+            setIsAuthenticated(true);
+            console.log('Login bem-sucedido', data);
+        },
+
+        onError: (error) => {
+            console.error('Erro ao fazer login', error);
+        },
+    });
+
 
     const signUpMutation = useMutation({
         mutationFn: postSignUp,
@@ -136,7 +157,7 @@ export const AuthProvider = ({ children }) => {
 
 
     return (
-        <AuthContext.Provider value={{ loginMutation, logoutMutation, signUpMutation, isAuthenticated, isLoading }}>
+        <AuthContext.Provider value={{ loginMutation, logoutMutation, googleMutation, signUpMutation, isAuthenticated, isLoading }}>
             {children}
         </AuthContext.Provider>
     );
