@@ -131,14 +131,14 @@ const GroupTransactionsByCategories = async (userId) => {
   return { rows, total: rowCount, firstResult: rows[0] };
 }
 
-const transactionSummary = async (first_day, last_day, userId) => {
+const transactionSummary = async (first_day, last_day, interval, userId) => {
   const query = `
 WITH semanas AS (
   SELECT 
     generate_series(
-      date_trunc('week', $1::date), 
-      date_trunc('week', $2::date), 
-      interval '1 week'
+      date_trunc($3::text, $1::date), 
+      date_trunc($3::text, $2::date), 
+    ('1 ' || $3)::interval
     ) AS date_interval
 ),
 semanas_numeradas AS (
@@ -160,14 +160,14 @@ FROM semanas_numeradas s
 CROSS JOIN tipos t
 CROSS JOIN naturezas n
 LEFT JOIN user_transactions ut 
-  ON DATE_TRUNC('week', ut.data_transacao) = s.date_interval
-  AND ut.user_id = $3
+  ON DATE_TRUNC($3::text, ut.data_transacao) = s.date_interval
+  AND ut.user_id = $4
   AND ut.tipo = t.tipo
   AND ut.natureza = n.natureza
 GROUP BY s.semana_num, t.tipo, n.natureza
 ORDER BY s.semana_num, t.tipo, n.natureza;
 `;
-  const { rows, rowCount } = await pool.query(query, [first_day, last_day, userId]);
+  const { rows, rowCount } = await pool.query(query, [first_day, last_day, interval, userId]);
   return { rows, total: rowCount, firstResult: rows[0] };
 }
 
