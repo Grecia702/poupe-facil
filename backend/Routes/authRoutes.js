@@ -5,6 +5,7 @@ const verifyRefresh = require('../middleware/verifyRefreshToken');
 const authController = require('../Controller/authController')
 
 router.post("/login", authController.login);
+router.post("/google", authController.googleLogin);
 router.post("/signup", authController.signup);
 router.post('/logout', verifyRefresh, authController.logout);
 router.post('/refresh', verifyRefresh, authController.refresh);

@@ -1,111 +1,79 @@
 require('dotenv').config();
-const userModel = require("../models/userModel");
-const bcrypt = require('bcrypt')
-const saltRounds = 12;
 const moment = require('moment');
 const logger = require('../Utils/loggerConfig')
-const pool = require('../db.js')
-
-const { generateAccessToken, generateRefreshToken } = require('../Utils/tokenUtils');
+const { generateAccessToken } = require('../Utils/tokenUtils');
+const { loginService, googleService, signupService, logoutService } = require('../services/authService.js');
 const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
+
 
 // LOGIN
 const login = async (req, res) => {
-
-    const { email, senha } = req.body;
-    const agent = req.get('User-Agent')
     try {
-        const usuarios = await userModel.FindUser(email);
-        const usuario = usuarios.total > 0 ? usuarios.firstResult : null
-        const senhaValida = await bcrypt.compare(senha, usuario.senha)
-
-        if (!usuario) {
-            return res.status(401).json({ message: 'E-mail e/ou senha incorretos!' });
-        }
-        if (senhaValida && usuario.email == email) {
-            console.log("login feito pelo usuario ", usuario.email, "durante as", timestamp, "horas")
-            const payload = {
-                userId: usuario.id,
-            };
-            const { userId } = payload
-            const accessToken = generateAccessToken(payload);
-            const refreshToken = generateRefreshToken(payload);
-            const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-            await pool.query('INSERT INTO refresh_tokens (usuario_id, token, user_agent, expires_at) VALUES ($1, $2, $3, $4)', [userId, refreshToken, agent, expiresAt]);
-            logger.info(`Login feito pelo usuário de ID ${userId} as ${timestamp}. IP: ${req.ip}, User Agent: ${agent}`)
-            return res.status(200).json({
-                accessToken,
-                refreshToken,
-                message: 'Login bem-sucedido!'
-            });
-
-        } else {
-            return res.status(401).json({ message: 'E-mail e/ou senha incorretos!' });
-        }
+        const agent = req.get('User-Agent')
+        const userIp = req.ip
+        const query = req.body
+        const authToken = await loginService(query, agent, userIp)
+        return res.status(200).json(authToken);
     }
     catch (err) {
+        if (err.message === 'E-mail e/ou senha incorretos!') {
+            return res.status(400).json({ message: err.message });
+        }
         return res.status(500).json({ message: 'Erro ao processar a requisição', error: err.message });
     }
 };
 
 
+const googleLogin = async (req, res) => {
+    try {
+        const { idToken } = req.body
+        const userAgent = req.get('User-Agent')
+        const userIp = req.ip
+        const authToken = await googleService(idToken, userAgent, userIp)
+        return res.status(200).json(authToken);
+    } catch (error) {
+        console.log(error.message)
+        return res.status(500).json({ message: 'Erro ao processar a requisição', error: error.message });
+
+    }
+}
+
+
 const refresh = async (req, res) => {
     const { userId } = req.user.decoded;
-    const agent = req.get('User-Agent')
+    const userAgent = req.get('User-Agent')
+    const ipAddress = req.ip
     const payload = {
         userId: userId,
     };
     const newAccessToken = generateAccessToken(payload);
     console.log("Token renovado com sucesso às", timestamp);
-    logger.info(`Renovação de token feita pelo usuario ${userId} durante as ${timestamp}. IP: ${req.ip}, User-Agent: ${agent}`);
+    logger.info(`Renovação de token feita pelo usuario ${userId} durante as ${timestamp}. IP: ${ipAddress}, User-Agent: ${userAgent}`);
     return res.status(200).json({ message: 'Token renovado com sucesso', newAccessToken });
 };
 
 const signup = async (req, res) => {
-    const { nome, email, senha } = req.body;
     try {
-        const searchUser = await userModel.FindUser(email);
-        const uniqueEmail = searchUser.total === 0
-
-        if (nome && email && senha) {
-            if (!uniqueEmail) {
-                console.log("email ja existe")
-                return res.status(409).json({ message: 'Esse e-mail já está em uso!' });
-            }
-            const passwordHash = await bcrypt.hash(senha, saltRounds);
-            userModel.CreateUser(nome, email, passwordHash)
-            return res.status(201).json({ message: 'Usuário criado com sucesso!' });
-        }
-        else {
-            console.log("Campos em branco");
-            return res.status(400).json({ message: 'Campo(s) em branco' });
-        }
+        const query = req.body;
+        await signupService(query)
+        return res.status(204)
     }
     catch (err) {
-        console.error('Erro ao cadastrar usuário:', err);
+        if (err.message === "Já existe uma conta com este e-mail") {
+            return res.status(400).json({ message: err.message });
+        }
         return res.status(500).json({ message: 'Erro ao cadastrar usuário', error: err.message });
     }
 }
 
 const logout = async (req, res) => {
-    const refreshToken = req.headers.authorization.split(' ')[1];
-    const { userId } = req.user.decoded;
-    const agent = req.get('User-Agent')
-
-    if (!refreshToken) {
-        return res.status(401).json({ message: 'Token ausente na requisição' });
-    }
     try {
-        const { rowCount } = await pool.query('SELECT * FROM refresh_tokens WHERE token = $1', [refreshToken])
-        if (rowCount === 0) {
-            return res.status(404).json({ message: 'Token não encontrado' });
-        }
-        else {
-            await pool.query('DELETE FROM refresh_tokens WHERE token = $1', [refreshToken])
-            console.log('Logout feito pelo usuário', userId)
-            logger.info(`Logout feito pelo usuário de ID ${userId} as ${timestamp}. IP: ${req.ip}, User Agent: ${agent}`)
-            return res.status(200).json({ message: 'Token apagado com sucesso' });
-        }
+        const refreshToken = req.headers.authorization.split(' ')[1];
+        const { userId } = req.user.decoded;
+        const ipAddress = req.ip
+        const userAgent = req.get('User-Agent')
+        await logoutService(refreshToken, userId, userAgent, ipAddress)
+        return res.status(200).json({ message: 'Logout realizado com sucesso' });
     } catch (err) {
         return res.status(500).json({ message: 'Erro inesperado ao fazer logout', error: err.message });
     }
@@ -113,6 +81,7 @@ const logout = async (req, res) => {
 
 module.exports = {
     login,
+    googleLogin,
     logout,
     refresh,
     signup
