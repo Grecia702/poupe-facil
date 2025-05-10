@@ -14,7 +14,6 @@ export default function Card({ color, title, text, onPress, selected, selectedIt
             <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Title color={isDarkMode ? "white" : "rgb(43, 43, 43)"} isPressed={isPressed}>{title}</Title>
                 <Title color={isDarkMode ? "#FFF" : "rgb(43, 43, 43)"} isPressed={isPressed}>{text}</Title>
-                {/* <Text color={isDarkMode ? "white" : "rgb(43, 43, 43)"}>R${text}</Text> */}
             </View>
         </Container>
     );

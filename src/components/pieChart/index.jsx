@@ -1,8 +1,8 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { View } from "react-native";
 import { colorContext } from '@context/colorScheme';
 import Svg from "react-native-svg";
-import { VictoryPie, VictoryLabel, VictoryTooltip, Flyout, flyoutComponent } from "victory-native";
+import { VictoryPie, VictoryLabel, VictoryTooltip, Flyout } from "victory-native";
 
 export default function PieChart({ data, total, selected, height, width, padAngle }) {
     const { isDarkMode } = useContext(colorContext)
@@ -34,14 +34,18 @@ export default function PieChart({ data, total, selected, height, width, padAngl
                         <VictoryTooltip renderInPortal={false}
                             active={({ datum }) => datum.categoria === selected ? true : false}
                             flyoutPadding={{ top: 5, bottom: 5, left: 10, right: 10 }}
+                            centerOffset={({ datum }) => ({
+                                x: -50,
+                                y: -20,
+                            })}
                             flyoutStyle={{
-                                fill: isDarkMode ? '#3b3a3a' : '#ddd',
-                                stroke: isDarkMode ? "#c7c5c5" : '#3f3f3f'
+                                fill: isDarkMode ? '#3b3a3a' : '#4d84cc',
+                                stroke: isDarkMode ? "#c7c5c5" : '#3f3f3f',
                             }}
                             flyoutComponent={
                                 <Flyout cornerRadius={10} pointerLength={2}
                                 />}
-                            style={{ fill: isDarkMode ? "#c7c5c5" : '#3f3f3f', fontSize: 20 }}
+                            style={{ fill: isDarkMode ? "#c5c6c7" : '#f5f5f5', fontSize: 20, fontWeight: 500 }}
                         />
                     }
                     padAngle={padAngle}

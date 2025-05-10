@@ -2,9 +2,9 @@ import styled from 'styled-components/native';
 
 export const Container = styled.TouchableOpacity`
   width: 100%;
-  height: 50px;
+  height: 40px;
   flex-direction: row;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   align-items: center;
   overflow: hidden;
   position: relative;
