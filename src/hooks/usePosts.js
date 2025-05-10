@@ -11,7 +11,7 @@ const fetchPosts = async ({ pageParam = 1, queryKey }) => {
                 orderBy,
                 orderDirection,
                 page: pageParam,
-                limit: 12
+                limit: 15
             },
         })
 

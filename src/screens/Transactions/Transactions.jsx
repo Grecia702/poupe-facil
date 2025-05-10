@@ -1,9 +1,8 @@
 import { StyleSheet, FlatList, TouchableOpacity, Modal, Text, View, Pressable, ActivityIndicator, useWindowDimensions } from 'react-native'
-import React, { useState, useContext, useMemo, useLayoutEffect } from 'react'
+import { useState, useContext, useMemo, useLayoutEffect } from 'react'
 import { MaterialIcons } from '@expo/vector-icons'
 import { colorContext } from '@context/colorScheme'
 import TransactionCard from '@components/transactions';
-import ModalView from '@components/modal';
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
 import { usePosts } from '@hooks/usePosts';
@@ -14,7 +13,8 @@ const Transactions = () => {
     const route = useRoute();
     const { params } = route.params || '';
     const tipo = params
-    const [filters, setFilters] = useState({ tipo: tipo, orderBy: 'valor', orderDirection: 'DESC' })
+    console.log('tipo: ', tipo)
+    const [filters, setFilters] = useState({ tipo: tipo, orderBy: 'transaction_id', orderDirection: 'DESC' })
     const { data, refetch, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } = usePosts({
         tipo: filters.tipo,
         orderBy: filters.orderBy,
@@ -26,8 +26,8 @@ const Transactions = () => {
     const onRefresh = async () => {
         await queryClient.resetQueries(['posts', {
             tipo: tipo,
-            natureza: 'variavel',
-            orderBy: 'valor',
+            // natureza: 'variavel',
+            orderBy: 'transaction_id',
             orderDirection: 'DESC',
         }]);
         await refetch();
@@ -58,7 +58,7 @@ const Transactions = () => {
             fetchNextPage();
         }
     };
-
+    console.log('IDs das transações:', allData.map(item => item.transaction_id));
     useLayoutEffect(() => {
         let title;
 
@@ -206,9 +206,6 @@ const Transactions = () => {
     //     );
     // }
 
-
-
-
     const renderItem = ({ item }) => {
         return (
             <TransactionCard
@@ -226,7 +223,6 @@ const Transactions = () => {
                 setVisibleId={setDropdownVisibleId} />
         );
     };
-
     return (
         <>
             <>
@@ -248,7 +244,7 @@ const Transactions = () => {
                     onRefresh={onRefresh}
                     onEndReached={handleLoadMore}
                     onEndReachedThreshold={0.8}
-                    initialNumToRender={12}
+                    initialNumToRender={15}
                     windowSize={5}
                     maxToRenderPerBatch={10}
                     updateCellsBatchingPeriod={60}
