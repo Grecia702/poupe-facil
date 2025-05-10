@@ -8,6 +8,8 @@ const accountRoutes = require(path.join(__dirname, 'Routes', 'accountRoutes'));
 const authRoutes = require(path.join(__dirname, 'Routes', 'authRoutes'));
 const transactionRoutes = require(path.join(__dirname, 'Routes', 'transactionRoutes'));
 const logger = require(path.join(__dirname, 'Utils', 'loggerConfig'));
+const requestTimeLogger = require(path.join(__dirname, 'Utils', 'requestTime'));
+app.use(requestTimeLogger);
 const cookieParser = require('cookie-parser');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
 const { iniciarCron } = require(path.join(__dirname, 'Utils', 'transacoesRecorrentes'));
