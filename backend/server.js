@@ -7,6 +7,7 @@ const userRoutes = require(path.join(__dirname, 'Routes', 'userRoutes'));
 const accountRoutes = require(path.join(__dirname, 'Routes', 'accountRoutes'));
 const authRoutes = require(path.join(__dirname, 'Routes', 'authRoutes'));
 const transactionRoutes = require(path.join(__dirname, 'Routes', 'transactionRoutes'));
+const budgetRoutes = require(path.join(__dirname, 'Routes', 'budgetRoutes'));
 const logger = require(path.join(__dirname, 'Utils', 'loggerConfig'));
 const requestTimeLogger = require(path.join(__dirname, 'Utils', 'requestTime'));
 app.use(requestTimeLogger);
@@ -68,6 +69,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/profile/account", accountRoutes);
 app.use("/api/profile/transaction", transactionRoutes);
+app.use("/api/budget", budgetRoutes);
 
 app.use((req, res, next) => {
     res.status(404).sendFile(path.join(__dirname, 'views', 'index.html'));
