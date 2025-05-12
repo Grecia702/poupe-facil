@@ -20,13 +20,34 @@ const getBudgets = async (userId) => {
     return { exists: rowCount > 0, result: rows[0] }
 }
 
-const getBudgetById = async (userId, budgetId) => {
+const getBudgetById = async (budgetId, userId) => {
     const query = `
-    SELECT * FROM planejamento
-    WHERE id_usuario = $1
-    AND id = $2
-    `;
-    const { rows, rowCount } = await pool.query(query, [userId, budgetId])
+    SELECT 
+        b.id,
+        b.id_usuario,
+        b.nome,
+        b.quantia_limite AS limite, 
+        COALESCE(tg.total_gasto, 0) AS quantia_gasta, 
+        b.limites_categorias, 
+        COALESCE(jsonb_object_agg(tc.categoria, tc.total_valor) FILTER (WHERE tc.categoria IS NOT NULL),'{}'::jsonb) AS quantia_gasta_categorias,
+        b.data_inicio, 
+        b.data_termino,
+        b.ativo
+        FROM planejamento AS b
+    LEFT JOIN (
+        SELECT budget_id, categoria, SUM(valor) AS total_valor
+        FROM transacoes
+        WHERE categoria IS NOT NULL
+        GROUP BY budget_id, categoria
+    ) tc ON tc.budget_id = b.id
+    LEFT JOIN (
+        SELECT budget_id, SUM(valor) AS total_gasto
+        FROM transacoes
+        GROUP BY budget_id
+    ) tg ON tg.budget_id = b.id
+    WHERE b.id = $1 AND b.id_usuario = $2   
+    GROUP BY b.id, b.id_usuario, b.nome, b.quantia_limite, b.data_inicio, b.data_termino, b.limites_categorias, b.ativo, tg.total_gasto`;
+    const { rows, rowCount } = await pool.query(query, [budgetId, userId])
     return { exists: rowCount > 0, result: rows[0] }
 }
 
@@ -57,15 +78,15 @@ const deleteBudget = async (budgetId, userId) => {
 
 const checkValidDate = async (date, userId) => {
     const query = `
-    SELECT EXISTS(
-        SELECT 1 FROM planejamento
-        WHERE $1::date
+        SELECT * FROM planejamento
+        WHERE $1::timestamp
         BETWEEN data_inicio 
         AND data_termino
         AND id_usuario = $2
-    )`;
-    const { rows } = await pool.query(query, [date, userId])
-    return rows[0]
+        AND ativo = true
+    `;
+    const { rows, rowCount } = await pool.query(query, [date, userId])
+    return { result: rows[0], exists: rowCount > 0 }
 }
 
 const checkExisting = async (budgetId, userId) => {
@@ -74,6 +95,7 @@ const checkExisting = async (budgetId, userId) => {
         SELECT 1 FROM planejamento
         WHERE id = $1
         AND id_usuario = $2
+        AND ativo = true
     )`;
     const { rows } = await pool.query(query, [budgetId, userId])
     return rows[0]

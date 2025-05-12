@@ -58,7 +58,7 @@ const getBudgetService = async (userId) => {
 }
 
 const getBudgetByIdService = async (userId, budgetId) => {
-    const budget = await budgetModel.getBudgetById(userId, budgetId)
+    const budget = await budgetModel.getBudgetById(budgetId, userId)
     if (!budget.exists) {
         throw new Error('Nenhum orçamento com esse ID foi encontrado')
     }

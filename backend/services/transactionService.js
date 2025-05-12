@@ -1,5 +1,6 @@
 
 const transactionModel = require("../models/transactionModel");
+const budgetModel = require("../models/budgetModel");
 const { calcularProximaOcorrencia } = require("../Utils/calcularOcorrencia")
 const { z } = require('zod');
 const { startOfMonth, endOfMonth } = require('date-fns');
@@ -78,6 +79,14 @@ const CreateTransactionService = async (dados, userId) => {
     const contaValida = await transactionModel.checkValidAccount(dados.id_contabancaria, userId);
 
     if (!contaValida) throw new Error('Conta inválida');
+
+    const { result, exists } = await budgetModel.checkValidDate(dados.data_transacao, userId)
+
+    let budget_id = null;
+    if (exists) {
+        budget_id = result.id
+    }
+
     await transactionModel.CreateTransaction(
         dados.id_contabancaria,
         dados.categoria,
@@ -87,35 +96,28 @@ const CreateTransactionService = async (dados, userId) => {
         dados.natureza,
         dados.recorrente,
         dados.frequencia_recorrencia,
-        dados.proxima_ocorrencia
+        dados.proxima_ocorrencia,
+        budget_id
     );
 };
 
 const getTransactionByID = async (userId, transactionId) => {
-    try {
-        const transacoes = await transactionModel.ReadTransaction(userId, transactionId);
-        if (transacoes.rows.length === 0) {
-            throw new Error('Nenhuma transação com essa ID foi encontrada');
-        }
-
-        return transacoes.rows;
-    } catch (error) {
-        throw error;
+    const transacoes = await transactionModel.ReadTransaction(userId, transactionId);
+    if (transacoes.rows.length === 0) {
+        throw new Error('Nenhuma transação com essa ID foi encontrada');
     }
+
+    return transacoes.rows;
 };
 
 const RemoveTransactionService = async (userId, transactionId) => {
-    try {
-        const transacoes = await transactionModel.ReadTransaction(userId, transactionId);
-        console.log(transacoes.rows)
-        if (transacoes.rows.length === 0) {
-            throw new Error('Nenhuma transação com essa ID foi encontrada');
-        }
-        await transactionModel.DeleteTransaction(userId, transactionId)
+    const transactions = await transactionModel.ReadTransaction(userId, transactionId);
+
+    if (!transactions.exists) {
+        throw new Error('Transação não encontrada');
     }
-    catch (error) {
-        throw error;
-    }
+
+    await transactionModel.DeleteTransaction(userId, transactionId)
 }
 
 
@@ -269,6 +271,5 @@ module.exports = {
     getTransactionByID,
     GroupTransactionService,
     GroupCategoriesService,
-    transactionSummaryService,
-    transactionQuerySchema
+    transactionSummaryService
 };

@@ -64,15 +64,16 @@ const removeTransaction = async (req, res) => {
         const { id } = req.params
         const { userId } = req.user.decoded
         await RemoveTransactionService(userId, id)
-        return res.sendStatus(204);
+        return res.status(200).json({ message: 'Transação excluída com sucesso' });
     }
     catch (error) {
-        if (error.message === 'Nenhuma transação com essa ID foi encontrada') {
-            return res.status(400).json({ message: error.message });
+        if (error.message === 'Transação não encontrada') {
+            return res.status(404).json({ message: error.message });
         }
         res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: error.message })
     }
 }
+
 const updateTransaction = async (req, res) => {
     const { id } = req.params;
     const campos = req.body;

@@ -12,8 +12,11 @@ const createBudget = async (req, res) => {
         const { userId } = req.user.decoded
         const query = req.body
         await createBudgetService(userId, query)
-        res.status(200).json({ message: 'Orçamento criado com sucesso' })
+        res.status(201).json({ message: 'Orçamento criado com sucesso' })
     } catch (error) {
+        if (error.message === 'Já existe um orçamento para este período') {
+            return res.status(400).json({ message: error.message })
+        }
         res.status(500).json({ message: 'Erro ao fazer a requisição: ', error: error.message })
     }
 }
@@ -35,6 +38,9 @@ const getBudgetById = async (req, res) => {
         const budget = await getBudgetByIdService(userId, id)
         res.status(200).json(budget)
     } catch (error) {
+        if (error.message === 'Nenhum orçamento com esse ID foi encontrado') {
+            return res.status(404).json({ message: error.message })
+        }
         res.status(500).json({ message: 'Erro ao fazer a requisição: ', error: error.message })
     }
 }
