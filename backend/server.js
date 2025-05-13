@@ -8,9 +8,10 @@ const accountRoutes = require(path.join(__dirname, 'Routes', 'accountRoutes'));
 const authRoutes = require(path.join(__dirname, 'Routes', 'authRoutes'));
 const transactionRoutes = require(path.join(__dirname, 'Routes', 'transactionRoutes'));
 const budgetRoutes = require(path.join(__dirname, 'Routes', 'budgetRoutes'));
+const goalsRoutes = require(path.join(__dirname, 'Routes', 'goalsRoutes'));
 const logger = require(path.join(__dirname, 'Utils', 'loggerConfig'));
 const requestTimeLogger = require(path.join(__dirname, 'Utils', 'requestTime'));
-app.use(requestTimeLogger);
+
 const cookieParser = require('cookie-parser');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
 const { iniciarCron } = require(path.join(__dirname, 'Utils', 'transacoesRecorrentes'));
@@ -23,7 +24,7 @@ const rateLimiter = new RateLimiterMemory({
     duration: 1,
     blockDuration: 10,
 });
-
+app.use(requestTimeLogger);
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'views')));
@@ -70,6 +71,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/profile/account", accountRoutes);
 app.use("/api/profile/transaction", transactionRoutes);
 app.use("/api/budget", budgetRoutes);
+app.use("/api/goals", goalsRoutes);
 
 app.use((req, res, next) => {
     res.status(404).sendFile(path.join(__dirname, 'views', 'index.html'));

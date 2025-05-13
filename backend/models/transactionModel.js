@@ -11,11 +11,12 @@ const checkValidAccount = async (accountId, userId) => {
   return rowCount > 0;
 }
 
-const CreateTransaction = async (id_contabancaria, categoria, tipo, valor, data_transacao, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id) => {
+const CreateTransaction = async (id_contabancaria, categoria, tipo, valor, data_transacao, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id) => {
   const query = `
-    INSERT INTO transacoes (id_contabancaria, categoria, tipo, valor, data_transacao, natureza , recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id) 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
-  await pool.query(query, [id_contabancaria, categoria, tipo, valor, data_transacao, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id]);
+    INSERT INTO transacoes 
+    (id_contabancaria, categoria, tipo, valor, data_transacao, natureza , recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
+  await pool.query(query, [id_contabancaria, categoria, tipo, valor, data_transacao, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id]);
 }
 
 const ReadTransaction = async (userId, transactionId) => {
