@@ -102,12 +102,6 @@ const CreateTransactions = () => {
         })
     }
 
-    useEffect(() => {
-        console.log(fields)
-    }, [selected])
-
-
-
     // Regex demoniaco pra conversão de numero em valor moeda
     const handleCurrencyInput = (text) => {
         const numeric = text.replace(/\D/g, '');

@@ -9,7 +9,8 @@ import CreateTransaction from '../screens/Transactions/CreateTransactions';
 import BankAccount from '../screens/Accounts';
 import EditAccount from '../screens/Accounts/EditAccount';
 import CreateAccount from '../screens/Accounts/CreateAccount';
-
+import EditBudget from '../screens/Budgets/EditBudget';
+import CreateBudget from '../screens/Budgets/CreateBudget';
 import { colorContext } from '@context/colorScheme';
 import AuthLoadingScreen from '@context/authLoadingScreen';
 
@@ -98,6 +99,28 @@ export default function StackRoutes() {
                 component={EditAccount}
                 options={{
                     title: 'Editar Conta', headerShown: true,
+                    headerStyle: {
+                        backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E',
+                    },
+                    headerTintColor: isDarkMode ? "white" : 'black'
+                }}
+            />
+            <Stack.Screen
+                name="CreateBudget"
+                component={CreateBudget}
+                options={{
+                    title: 'Criar Orçamento', headerShown: true,
+                    headerStyle: {
+                        backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E',
+                    },
+                    headerTintColor: isDarkMode ? "white" : 'black'
+                }}
+            />
+            <Stack.Screen
+                name="Edit Budget"
+                component={EditBudget}
+                options={{
+                    title: 'Editar Orçamento', headerShown: true,
                     headerStyle: {
                         backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E',
                     },

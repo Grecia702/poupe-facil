@@ -1,7 +1,6 @@
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, FlatList } from 'react-native';
 import { colorContext } from '@context/colorScheme';
-import { FlatList, Pressable } from 'react-native';
-import React, { useContext, useState, useMemo } from 'react'
+import { useContext, useState, useMemo } from 'react'
 import { categoriaCores } from '../utils/categoriasCores'
 import { Wrapper } from '../components/main/styles';
 import Card from '@components/card';
@@ -17,14 +16,16 @@ import VisaoGeral from '@components/header';
 import { useTransactionAuth } from '@context/transactionsContext';
 import { useContasAuth } from '@context/contaContext';
 import { useTransactionSummary } from '@hooks/useTransactionSummary';
+import CalendarEmpty from '../assets/calendar-empty.svg';
+
 
 export default function HomeScreen() {
 
-  const { dadosAPI, isLoading, dadosCategorias, isCategoriesLoading } = useTransactionAuth();
+  const { dadosAPI, isLoading, dadosCategorias, isCategoriesLoading, budgetData } = useTransactionAuth();
   const { dadosContas } = useContasAuth();
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshing, setRefreshing] = useState(true);
-  const [progress, setProgress] = useState(0.00);
+  const [progress, setProgress] = useState(0.2);
   const navigation = useNavigation();
   const { isDarkMode } = useContext(colorContext)
   const { data } = useTransactionSummary({
@@ -37,6 +38,7 @@ export default function HomeScreen() {
 
   const total = dadosCategorias?.reduce((acc, item) => {
     acc += item.total
+
     return acc
   }, 0)
 
@@ -47,7 +49,7 @@ export default function HomeScreen() {
     return acc + parseFloat(item.saldo)
   }, 0)
 
-
+  console.log(budgetData)
 
   const handleSelectItem = (label) => {
     setSelectedItem(label);
@@ -85,23 +87,55 @@ export default function HomeScreen() {
 
 
         <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Orçamento"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
-          <Pressable onPress={() => upCount()} style={{ backgroundColor: 'red', width: 60, height: 30, justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: 600 }} >{progress}</Text>
-          </Pressable>
-          <Pressable onPress={() => setProgress(0)} style={{ backgroundColor: 'green', width: 60, height: 30, justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: 600 }} >{progress}</Text>
-          </Pressable>
-          <Progress.Circle
-            borderWidth={4}
-            borderColor={"white"}
-            strokeCap={'square'}
-            size={150}
-            thickness={15}
-            direction={'counter-clockwise'}
-            color={(progress < 0.8) ? '#03c21d' : "#f3a006"}
-            progress={progress}
-            animated={true}
-            showsText={true} />
+          {budgetData ? (
+            <Progress.Circle
+              borderWidth={4}
+              borderColor={"white"}
+              strokeCap={'square'}
+              size={150}
+              thickness={15}
+              direction={'counter-clockwise'}
+              color={(progress < 0.8) ? '#03c21d' : "#f3a006"}
+              progress={progress}
+              animated={true}
+              showsText={true} />
+          ) : (
+            <>
+              <Text style={{ color: isDarkMode ? "#AAA" : "#000000" }}>Ver mais</Text>
+              <View style={{
+                marginTop: 50,
+                width: '100%',
+                alignSelf: 'center',
+                gap: 10,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+                <CalendarEmpty color={isDarkMode ? "#AAA" : "#000000"} width={96} height={96} />
+                <Text style={{
+                  color: isDarkMode ? '#DDD' : 'black',
+                  fontSize: 16
+                }}
+                >Nenhum orçamento encontrado</Text>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#7842b6',
+                    borderRadius: 5,
+                    padding: 10
+
+                  }}
+                  onPress={() => navigation.navigate('CreateBudget')}
+                >
+                  <Text
+                    style={{
+                      fontWeight: 'bold',
+                      color: isDarkMode ? '#DDD' : 'black'
+                    }}
+                  >Criar orçamento</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )
+          }
         </WidgetTeste>
 
 
