@@ -1,7 +1,6 @@
-import React from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 
-const ActionButtons = ({ onCancel, onCreate, cancelLabel = "Cancelar", createLabel = "Criar", cancelColor = '#888888' }) => {
+const ActionButtons = ({ onCancel, onCreate, cancelLabel = "Cancelar", createLabel = "Criar", cancelColor = '#888888', createColor = '#0099cc' }) => {
     return (
         <View style={styles.buttonSection}>
             <TouchableOpacity
@@ -10,7 +9,9 @@ const ActionButtons = ({ onCancel, onCreate, cancelLabel = "Cancelar", createLab
             >
                 <Text style={styles.buttonText}>{cancelLabel}</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={onCreate} style={styles.button}>
+            <TouchableOpacity onPress={onCreate}
+                style={[styles.button, { backgroundColor: createColor }]}
+            >
                 <Text style={styles.buttonText}>{createLabel}</Text>
             </TouchableOpacity>
         </View>
@@ -26,7 +27,6 @@ const styles = {
         marginTop: 25,
     },
     button: {
-        backgroundColor: '#0099cc',
         alignSelf: 'flex-start',
         paddingVertical: 8,
         paddingHorizontal: 16,

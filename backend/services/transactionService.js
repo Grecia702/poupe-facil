@@ -58,9 +58,6 @@ const CreateTransactionService = async (dados, userId) => {
     if (dados.tipo === 'Receita' && dados.valor <= 0) {
         throw new Error('Valor da receita  tem que ser maior ou diferente de 0 ');
     }
-    if (dados.tipo === 'Despesa') {
-        dados.valor = -Math.abs(dados.valor);
-    }
     if (dados.natureza === 'Fixa') {
         dados.recorrente = true;
 
@@ -77,6 +74,7 @@ const CreateTransactionService = async (dados, userId) => {
         dados.proxima_ocorrencia = null
     }
 
+
     const contaValida = await transactionModel.checkValidAccount(dados.id_contabancaria, userId);
 
     if (!contaValida) throw new Error('Conta inválida');
@@ -91,9 +89,6 @@ const CreateTransactionService = async (dados, userId) => {
     const goals = await goalsModel.checkActiveGoal(userId)
 
     let goals_id = null;
-
-    console.log(goals.result.id)
-
     if (goals.exists) {
         goals_id = goals.result.id
     }

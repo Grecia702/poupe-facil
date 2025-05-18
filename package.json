@@ -42,7 +42,8 @@
     "react-native-svg-transformer": "^1.5.1",
     "react-native-toast-notifications": "^3.4.0",
     "styled-components": "^6.1.16",
-    "victory-native": "^37.3.6"
+    "victory-native": "^37.3.6",
+    "expo-font": "~13.0.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

@@ -64,7 +64,7 @@ const ListTransactions = async (userId, queryParams) => {
     WHERE user_id = $1
       AND ($2::text IS NULL OR tipo = $2::text)
       AND ($3::text IS NULL OR natureza = $3::text)
-    ORDER BY ${orderBy} ${orderDirection}
+    ORDER BY ${orderBy} ${orderDirection}, transaction_id ASC
     LIMIT $4
     OFFSET $5
   `;

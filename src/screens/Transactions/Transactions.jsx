@@ -13,7 +13,7 @@ const Transactions = () => {
     const route = useRoute();
     const { params } = route.params || '';
     const tipo = params
-    console.log('tipo: ', tipo)
+    // console.log('tipo: ', tipo)
     const [filters, setFilters] = useState({ tipo: tipo, orderBy: 'transaction_id', orderDirection: 'DESC' })
     const { data, refetch, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } = usePosts({
         tipo: filters.tipo,
@@ -58,7 +58,8 @@ const Transactions = () => {
             fetchNextPage();
         }
     };
-    console.log('IDs das transações:', allData.map(item => item.transaction_id));
+
+    // console.log('IDs das transações:', allData.map(item => item.transaction_id));
     useLayoutEffect(() => {
         let title;
 

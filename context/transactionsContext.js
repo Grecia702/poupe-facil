@@ -45,27 +45,6 @@ const deleteTransaction = async (id) => {
     }
 };
 
-const getBudgets = async (id) => {
-    try {
-        const response = await api.get(`/budget/list`);
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
-};
-
-
-
-const createBudget = async (budgetData) => {
-    try {
-        await api.post('/budget', budgetData);
-        return
-    } catch (error) {
-        throw error
-    }
-};
-
-
 export const useTransacoes = () =>
     useInfiniteQuery({
         queryKey: ['transacoes'],
@@ -105,19 +84,6 @@ export const TransactionProvider = ({ children }) => {
     });
 
 
-    const { data: budgetData, isLoading: isBudgetLoading } = useQuery({
-        queryKey: ['budget_id'],
-        queryFn: getBudgets,
-        enabled: isAuthenticated,
-        onSuccess: (response) => {
-            console.log('Dados do orçamento no onSuccess:', response.data);
-        },
-        onError: (error) => {
-            console.log('Erro na requisição de orçamentos:', error);
-        }
-    });
-
-
     const { data: dadosAPI, meta } = response || { data: [], meta: {} };
 
     const {
@@ -152,10 +118,6 @@ export const TransactionProvider = ({ children }) => {
         },
     });
 
-    const createBudgetMutation = useMutation({
-        mutationFn: createBudget,
-    });
-
     const allTransactions = infiniteData?.pages.flatMap(page => page.data) || [];
 
 
@@ -164,9 +126,6 @@ export const TransactionProvider = ({ children }) => {
             dadosAPI, meta, isLoading, error, refetch,
             createTransactionMutation,
             deleteTransactionMutation,
-            budgetData,
-            isBudgetLoading,
-            createBudgetMutation,
             dadosCategorias,
             isCategoriesLoading,
             infiniteTransactions: allTransactions,

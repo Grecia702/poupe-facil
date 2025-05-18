@@ -3,6 +3,7 @@ const {
     createBudgetService,
     getBudgetService,
     getBudgetByIdService,
+    getActiveService,
     updateBudgetService,
     deleteBudgetService
 } = require('../services/budgetServices')
@@ -45,6 +46,20 @@ const getBudgetById = async (req, res) => {
     }
 }
 
+const getActiveBudget = async (req, res) => {
+    try {
+        const { userId } = req.user.decoded
+        const budget = await getActiveService(userId)
+        res.status(200).json(budget)
+    } catch (error) {
+        // if (error.message === "Nenhum orçamento ativo encontrado") {
+        //     return res.status(404).json({ message: error.message })
+        // }
+        res.status(500).json({ message: 'Erro ao fazer a requisição: ', error: error.message })
+    }
+}
+
+
 const updateBudget = async (req, res) => {
     try {
         const { userId } = req.user.decoded
@@ -68,4 +83,11 @@ const deleteBudget = async (req, res) => {
     }
 }
 
-module.exports = { createBudget, getBudgets, getBudgetById, updateBudget, deleteBudget }
+module.exports = {
+    createBudget,
+    getBudgets,
+    getBudgetById,
+    updateBudget,
+    deleteBudget,
+    getActiveBudget,
+}

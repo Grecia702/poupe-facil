@@ -1,14 +1,14 @@
 const pool = require('../db.js')
 
 const createBudget = async (userId, queryParams) => {
-    const { nome, quantia_limite, data_inicio, data_termino, validCategories } = queryParams
+    const { desc_budget, quantia_limite, data_inicio, data_termino, validCategories } = queryParams
     const query = `
     INSERT INTO planejamento
-    (id_usuario, nome, quantia_limite, data_inicio, data_termino, limites_categorias)
+    (id_usuario, desc_budget, quantia_limite, data_inicio, data_termino, limites_categorias)
     VALUES
     ($1, $2, $3, $4, $5, $6)
     `;
-    await pool.query(query, [userId, nome, quantia_limite, data_inicio, data_termino, validCategories])
+    await pool.query(query, [userId, desc_budget, quantia_limite, data_inicio, data_termino, validCategories])
 }
 
 const getBudgets = async (userId) => {
@@ -23,34 +23,45 @@ const getBudgets = async (userId) => {
 const getBudgetById = async (budgetId, userId) => {
     const query = `
     SELECT 
-        b.id,
-        b.id_usuario,
-        b.nome,
-        b.quantia_limite AS limite, 
-        COALESCE(tg.total_gasto, 0) AS quantia_gasta, 
-        b.limites_categorias, 
-        COALESCE(jsonb_object_agg(tc.categoria, tc.total_valor) FILTER (WHERE tc.categoria IS NOT NULL),'{}'::jsonb) AS quantia_gasta_categorias,
-        b.data_inicio, 
-        b.data_termino,
-        b.ativo
-        FROM planejamento AS b
-    LEFT JOIN (
-        SELECT budget_id, categoria, SUM(valor) AS total_valor
-        FROM transacoes
-        WHERE categoria IS NOT NULL
-        GROUP BY budget_id, categoria
-    ) tc ON tc.budget_id = b.id
-    LEFT JOIN (
-        SELECT budget_id, SUM(valor) AS total_gasto
-        FROM transacoes
-        GROUP BY budget_id
-    ) tg ON tg.budget_id = b.id
-    WHERE b.id = $1 AND b.id_usuario = $2   
-    GROUP BY b.id, b.id_usuario, b.nome, b.quantia_limite, b.data_inicio, b.data_termino, b.limites_categorias, b.ativo, tg.total_gasto`;
+  b.id,
+  b.id_usuario,
+  b.desc_budget,
+  b.quantia_limite AS limite,
+  COALESCE(SUM(t.valor), 0) AS quantia_gasta,
+  b.limites_categorias,
+  cat_agg.quantia_gasta_categorias,
+  b.data_inicio,
+  b.data_termino,
+  b.ativo
+FROM planejamento b
+LEFT JOIN transacoes t ON t.budget_id = b.id
+LEFT JOIN LATERAL (
+  SELECT jsonb_object_agg(key, COALESCE(soma.valor, 0)) AS quantia_gasta_categorias
+  FROM jsonb_object_keys(b.limites_categorias) AS key
+  LEFT JOIN LATERAL (
+    SELECT SUM(t2.valor) AS valor
+    FROM transacoes t2
+    WHERE t2.budget_id = b.id AND t2.categoria = key
+  ) soma ON true
+) cat_agg ON true
+WHERE  b.id = $1 AND b.id_usuario = $2
+GROUP BY 
+  b.id, b.id_usuario, b.desc_budget, b.quantia_limite,
+  b.limites_categorias, b.data_inicio, b.data_termino, b.ativo,
+  cat_agg.quantia_gasta_categorias`;
     const { rows, rowCount } = await pool.query(query, [budgetId, userId])
-    return { exists: rowCount > 0, result: rows[0] }
+    return { exists: rowCount > 0, result: rows }
 }
 
+const getActiveBudget = async (userId) => {
+    const query = `
+    SELECT id FROM planejamento
+    WHERE id_usuario = $1
+    AND ativo = true
+    `;
+    const { rows, rowCount } = await pool.query(query, [userId])
+    return { exists: rowCount > 0, result: rows[0] }
+}
 
 const updateBudget = async (userId, budgetId, queryParams) => {
     const keys = Object.keys(queryParams);
@@ -101,4 +112,4 @@ const checkExisting = async (budgetId, userId) => {
     return rows[0]
 }
 
-module.exports = { createBudget, getBudgets, getBudgetById, updateBudget, deleteBudget, checkValidDate, checkExisting };
+module.exports = { createBudget, getBudgets, getBudgetById, getActiveBudget, updateBudget, deleteBudget, checkValidDate, checkExisting };

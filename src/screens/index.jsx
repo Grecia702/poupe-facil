@@ -11,26 +11,27 @@ import TransactionCard from '@components/transactions';
 import WidgetTeste from '@components/widget';
 import Account from '@components/accounts';
 import { Separator } from '@components/accounts/styles';
-import * as Progress from 'react-native-progress';
+import { Bar } from 'react-native-progress';
 import VisaoGeral from '@components/header';
 import { useTransactionAuth } from '@context/transactionsContext';
+import { useBudgetAuth } from '@context/budgetsContext';
 import { useContasAuth } from '@context/contaContext';
 import { useTransactionSummary } from '@hooks/useTransactionSummary';
 import CalendarEmpty from '../assets/calendar-empty.svg';
-
+import Budget from '@components/budgetBars';
+import CreateItem from '../components/createItem';
 
 export default function HomeScreen() {
 
-  const { dadosAPI, isLoading, dadosCategorias, isCategoriesLoading, budgetData } = useTransactionAuth();
+  const { dadosAPI, isLoading, dadosCategorias, isCategoriesLoading } = useTransactionAuth();
   const { dadosContas } = useContasAuth();
+  const { budgetData } = useBudgetAuth()
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshing, setRefreshing] = useState(true);
   const [progress, setProgress] = useState(0.2);
   const navigation = useNavigation();
   const { isDarkMode } = useContext(colorContext)
-  const { data } = useTransactionSummary({
-    all: true
-  });
+  const { data } = useTransactionSummary({ all: true });
   const overallBalance = data?.find(item => item.tipo === "Total").total || 0;
   const expenses = data?.find(item => item.tipo === "despesa").total || 0;
   const incomes = data?.find(item => item.tipo === "receita").total || 0;
@@ -38,9 +39,9 @@ export default function HomeScreen() {
 
   const total = dadosCategorias?.reduce((acc, item) => {
     acc += item.total
-
     return acc
   }, 0)
+
 
   const recentTransactions = dadosAPI?.sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao))
     .slice(0, 5);
@@ -49,25 +50,19 @@ export default function HomeScreen() {
     return acc + parseFloat(item.saldo)
   }, 0)
 
-  console.log(budgetData)
-
   const handleSelectItem = (label) => {
     setSelectedItem(label);
   };
-
 
   return (
     <ScrollView style={{ backgroundColor: isDarkMode ? "rgb(26, 26, 26)" : "#c6ebe9" }}>
       <VisaoGeral saldo={overallBalance} receitas={incomes} despesas={expenses} />
       <Wrapper>
-        <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Contas"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
-          <Text onPress={() => navigation.navigate('Contas')}
-            style={{
-              textDecorationLine: 'underline',
-              color: isDarkMode ? "#e9e9e9" : "#202020",
-              fontSize: 12,
-              alignSelf: 'flex-end',
-            }}>Ver mais</Text>
+        <WidgetTeste
+          Color={isDarkMode ? "#2e2e2e" : "#ffffff"}
+          Title={"Contas"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"}
+          onPressDetails={() => navigation.navigate('Accounts')}
+        >
           {
             dadosContas?.map(item => (
               (<Account
@@ -81,75 +76,43 @@ export default function HomeScreen() {
             ))
           }
           <Separator color={isDarkMode ? "#cccccc6f" : "#22222275"} />
-          <Text style={{ fontSize: 16, color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>Saldo Total:</Text>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>R${saldo?.toFixed(2)}</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={{ fontSize: 16, fontWeight: '600', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>Saldo Total:</Text>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>R${saldo?.toFixed(2)}</Text>
+          </View>
         </WidgetTeste>
 
-
-        <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Orçamento"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
-          {budgetData ? (
-            <Progress.Circle
-              borderWidth={4}
-              borderColor={"white"}
-              strokeCap={'square'}
-              size={150}
-              thickness={15}
-              direction={'counter-clockwise'}
-              color={(progress < 0.8) ? '#03c21d' : "#f3a006"}
-              progress={progress}
-              animated={true}
-              showsText={true} />
+        <WidgetTeste
+          Color={isDarkMode ? "#2e2e2e" : "#fff"}
+          Title={"Orçamento"}
+          TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"}
+          onPressDetails={() => navigation.navigate('CreateBudget')}
+        >
+          {budgetData?.length > 0 ? (
+            <>
+              <Budget data={budgetData[0]} />
+            </>
           ) : (
             <>
-              <Text style={{ color: isDarkMode ? "#AAA" : "#000000" }}>Ver mais</Text>
-              <View style={{
-                marginTop: 50,
-                width: '100%',
-                alignSelf: 'center',
-                gap: 10,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-                <CalendarEmpty color={isDarkMode ? "#AAA" : "#000000"} width={96} height={96} />
-                <Text style={{
-                  color: isDarkMode ? '#DDD' : 'black',
-                  fontSize: 16
-                }}
-                >Nenhum orçamento encontrado</Text>
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: '#7842b6',
-                    borderRadius: 5,
-                    padding: 10
-
-                  }}
-                  onPress={() => navigation.navigate('CreateBudget')}
-                >
-                  <Text
-                    style={{
-                      fontWeight: 'bold',
-                      color: isDarkMode ? '#DDD' : 'black'
-                    }}
-                  >Criar orçamento</Text>
-                </TouchableOpacity>
-              </View>
+              <CreateItem
+                text={'Nenhum orçamento encontrado'}
+                buttonText={'Criar agora'}
+                screen={'CreateBudget'}
+                icon={
+                  <CalendarEmpty color={isDarkMode ? "#AAA" : "#000000"} width={96} height={96} />
+                }
+              />
             </>
-          )
-          }
+          )}
         </WidgetTeste>
 
 
-        <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Transações"}
+        <WidgetTeste
+          Color={isDarkMode ? "#2e2e2e" : "#ffffff"}
+          Title={"Transações"}
           TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"}
+          onPressDetails={() => navigation.navigate('Transações')}
         >
-          <Text onPress={() => navigation.navigate('Transações')}
-            style={{
-              textDecorationLine: 'underline',
-              color: isDarkMode ? "#e9e9e9" : "#202020",
-              fontSize: 12,
-              alignSelf: 'flex-end',
-            }}>Ver mais</Text>
-
           {Array.isArray(recentTransactions) ? (
             recentTransactions.map((item, index) => (
               <TransactionCard
@@ -174,7 +137,7 @@ export default function HomeScreen() {
           }
         </WidgetTeste>
 
-        <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Gráficos"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
+        <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffff"} Title={"Gráficos"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
 
           <TouchableOpacity onPress={() => navigation.navigate('Gráficos')} >
             {!isCategoriesLoading && <PieChart height={350} width={350} data={dadosCategorias} total={total} padAngle={3} selected={selectedItem} />}
@@ -224,9 +187,9 @@ export default function HomeScreen() {
           }
         </View>
 
-        <WidgetTeste direction={'column'} gap={5} Color={isDarkMode ? "#2e2e2e" : "#ffffffd5"} Text={"Metas"} TextColor={isDarkMode ? "#c4c4c4" : "#3a3a3a"} >
+        <WidgetTeste direction={'column'} gap={5} Color={isDarkMode ? "#2e2e2e" : "#ffffff"} Title={"Metas"} TextColor={isDarkMode ? "#c4c4c4" : "#3a3a3a"} >
           <Text style={{ alignSelf: 'center', color: isDarkMode ? "#FFF" : "#132217", fontSize: 18, fontWeight: '600', marginTop: 10 }}>Comprar um PC</Text>
-          <Progress.Bar
+          <Bar
             height={20}
             width={320}
             color={"#4CAF50"}
@@ -239,7 +202,7 @@ export default function HomeScreen() {
             <Text style={{ position: 'absolute', color: '#1B5E20', marginLeft: '87.5%', fontWeight: 'bold' }}>
               {Math.round(progress * 100)}%
             </Text>
-          </Progress.Bar>
+          </Bar>
           <Text style={{ color: isDarkMode ? '#7bf185' : '#215a26' }}>1660,00 de  40000,00</Text>
         </WidgetTeste>
       </Wrapper>

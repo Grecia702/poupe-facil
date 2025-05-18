@@ -14,7 +14,7 @@ const budgetQuerySchema = z.object({
             message: "data_termino deve ser uma data válida",
         }),
     quantia_limite: z.number().min(0.01, { message: "quantia_limite deve ser maior que zero" }),
-    nome: z.string().optional(),
+    desc_budget: z.string().optional(),
     ativo: z.boolean().optional().default(true),
     limites_categorias: z.record(z.string(), z.number().min(0.01)).nullable(),
 });
@@ -65,6 +65,22 @@ const getBudgetByIdService = async (userId, budgetId) => {
     return budget.result
 }
 
+const getActiveService = async (userId) => {
+    const { result, exists } = await budgetModel.getActiveBudget(userId)
+    // console.log(budget)
+    if (!exists) {
+        return []
+    }
+    // console.log(result.id)
+    const budget = await budgetModel.getBudgetById(result.id, userId)
+    // if (!budget.exists) {
+    //     throw new Error('Nenhum orçamento com esse ID foi encontrado')
+    // }
+    // console.log(budget)
+    console.log(budget.result)
+    return budget.result
+}
+
 const updateBudgetService = async (userId, budgetId, queryParams) => {
     const { quantia_limite, limites_categorias, data_inicio, data_termino } = queryParams
     const checkBudget = await budgetModel.checkExisting(budgetId, userId)
@@ -103,4 +119,11 @@ const deleteBudgetService = async (budgetId, userId) => {
     await budgetModel.deleteBudget(budgetId, userId)
 }
 
-module.exports = { createBudgetService, getBudgetService, getBudgetByIdService, updateBudgetService, deleteBudgetService }
+module.exports = {
+    createBudgetService,
+    getBudgetService,
+    getBudgetByIdService,
+    getActiveService,
+    updateBudgetService,
+    deleteBudgetService
+}

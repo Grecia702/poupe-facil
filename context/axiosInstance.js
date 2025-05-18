@@ -50,6 +50,10 @@ api.interceptors.response.use(
             return Promise.reject(error.response.data.message);
         }
 
+        if (error.response?.status === 404) {
+            return Promise.reject(error.response.data.message);
+        }
+
         if (!error.response) {
             // Se não houver uma resposta (ou seja, sem rede), exibe uma mensagem personalizada
             return Promise.reject('Verifique sua conexão com a internet.');
