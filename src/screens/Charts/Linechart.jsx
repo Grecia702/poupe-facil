@@ -1,10 +1,11 @@
 import { StyleSheet, View, Text, ScrollView } from 'react-native';
 import React, { useContext, useMemo, useState } from 'react'
 import { colorContext } from '@context/colorScheme';
-import { VictoryLine, VictoryLabel, VictoryAxis, VictoryChart, VictoryTheme, VictoryTooltip } from 'victory-native';
+import { VictoryLine, VictoryLabel, VictoryAxis, VictoryChart, VictoryTheme, VictoryTooltip, VictoryScatter } from 'victory-native';
 import { useTransactionSummary } from '@hooks/useTransactionSummary';
 import { subDays, startOfDay, addDays } from 'date-fns/'
 import DateButtonNavigation from '@components/dateButtonNavigation';
+import { Dimensions } from 'react-native';
 
 export default function Linechart() {
     const { isDarkMode } = useContext(colorContext)
@@ -55,6 +56,7 @@ export default function Linechart() {
     const maiorValor = valores.reduce((acc, item) => item.valor > acc.valor ? item : acc, { valor: 0 });
     const mediaSemanal = maiorValor.valor / 7
 
+    const screenWidth = Dimensions.get('window').width;
     const handleDate = (label) => {
         if (label === 'prev') {
             setFirstDate(prev => subDays(prev, 6))
@@ -90,22 +92,27 @@ export default function Linechart() {
             <View style={[styles.chart, { backgroundColor: isDarkMode ? '#222' : '#fffefe' }]}>
                 <Text style={[styles.title, { color: isDarkMode ? '#ccc' : '#091228' }]}>Evolução das despesas</Text>
                 {totalExpensesByDay.length > 0 && (
-                    <VictoryChart theme={VictoryTheme.material}
+                    <VictoryChart
+                        theme={VictoryTheme.material}
                         height={350}
-                        padding={{ left: 65, right: 60, bottom: 80, top: 30 }}
-                        domain={{
-                            y: [0, maiorValor.valor + 100]
-                        }}
+                        width={screenWidth}
+                        padding={{ left: 65, right: 65, bottom: 90, top: 30 }}
+                        domain={{ y: [0, maiorValor.valor + 100] }}
 
                     >
+                        <VictoryLine
+                            data={totalExpensesByDay}
+                            interpolation="monotoneX"
+                            x="date_interval"
+                            y="valor"
+                            style={{
+                                data: { stroke: "#be372e", strokeWidth: 5 },
+                            }}
+                        />
                         <VictoryAxis
-                            tickLabelComponent={
-                                <VictoryLabel
-                                    dy={10} //
-                                    textAnchor="middle"
-                                />
-                            }
-                            tickValues={totalExpensesByDay.map(item => new Date(item.date_interval))}
+                            fixLabelOverlap
+                            tickLabelComponent={<VictoryLabel dy={10} textAnchor="middle" />}
+                            tickValues={totalExpensesByDay.map((item) => new Date(item.date_interval).getTime())}
                             tickFormat={(t) => {
                                 const date = new Date(t);
                                 const day = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', timeZone: 'UTC' }).format(date);
@@ -113,34 +120,49 @@ export default function Linechart() {
                                 const month = new Intl.DateTimeFormat('pt-BR', { month: 'short', timeZone: 'UTC' }).format(date);
                                 return `${day}\n${weekday}\n${month}`;
                             }}
-
                             style={{
-                                tickLabels: { fontSize: 16, fill: isDarkMode ? "#c0c0c0" : "#1d1d1d" },
+                                tickLabels: { fontSize: 16, fill: isDarkMode ? '#c0c0c0' : '#1d1d1d' },
                                 grid: { stroke: '#686faa6a', strokeDasharray: '0', strokeWidth: 0.5 },
-                                axis: { stroke: "#686faa6a", strokeWidth: 3 },
+                                axis: { stroke: '#686faa6a', strokeWidth: 3 },
                             }}
                         />
                         <VictoryAxis
-                            tickFormat={(t) => `R$ ${t.toLocaleString('pt-BR')}`}
                             dependentAxis
+                            tickFormat={(t) => `R$ ${t.toLocaleString('pt-BR')}`}
                             style={{
-                                tickLabels: { fontSize: 14, fill: isDarkMode ? "#c0c0c0" : "#000000" },
+                                tickLabels: { fontSize: 14, fill: isDarkMode ? '#c0c0c0' : '#000000' },
                                 grid: { stroke: '#686faa6a', strokeDasharray: '0', strokeWidth: 0.5 },
-                                axis: { stroke: "transparent" },
+                                axis: { stroke: 'transparent' },
                             }}
                         />
-                        <VictoryLine
-                            data={totalExpensesByDay}
-                            interpolation={'monotoneX'}
-                            x="date_interval"
-                            y="valor"
 
-                            style={{
-                                data: { stroke: "#be372e", strokeWidth: 5 },
-                            }}
-                        // animate={{ duration: 1000, easing: 'linear' }}
+                        <VictoryScatter
+                            data={totalExpensesByDay}
+                            x={(d) => new Date(d.date_interval).getTime()}
+                            y="valor"
+                            size={7}
+                            style={{ data: { fill: "#be372e" } }}
+                            labels={({ datum }) => `Valor: R$${datum.valor}\n Ocorrencias: ${datum.ocorrencias}`}
+                            labelComponent={
+                                <VictoryTooltip
+                                    flyoutStyle={{
+                                        fill: isDarkMode ? '#252525' : "#fff",
+                                        stroke: "#9e9b9b",
+                                        strokeWidth: 1,
+                                        shadowColor: "#000",
+                                    }}
+                                    style={{
+                                        fill: isDarkMode ? "#b1b0b0" : '#333',
+                                        fontSize: 16,
+                                        fontWeight: "500",
+                                    }}
+                                    cornerRadius={6}
+                                    flyoutPadding={{ top: 10, bottom: 10, left: 15, right: 15 }}
+                                />
+                            }
                         />
                     </VictoryChart>
+
                 )}
             </View>
 
@@ -196,6 +218,6 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         borderWidth: 1,
         borderColor: '#ccc',
-        minHeight: 430,
+        height: 420
     },
 });
