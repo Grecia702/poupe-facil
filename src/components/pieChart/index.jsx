@@ -18,12 +18,20 @@ export default function PieChart({ data, total, selected, height, width, padAngl
         Outros: "rgb(83, 87, 83)",
     };
 
+    const dadosFormatados = data?.length > 0
+        ? data
+        : [{ categoria: 'Sem dados', total: 1 }]
+
+    const cores = data?.length > 0
+        ? data.map(item => categoriaCores[item.categoria] || 'gray')
+        : ['#ccc']
+
     return (
         <View style={{ justifyContent: 'center', alignItems: 'center' }}>
             <Svg width={width} height={height} viewBox={`-20 -20 ${width + 40} ${height + 40}`} >
                 <VictoryPie
                     standalone={false}
-                    data={data}
+                    data={dadosFormatados}
                     x="categoria"
                     y="total"
                     width={width}
@@ -63,15 +71,15 @@ export default function PieChart({ data, total, selected, height, width, padAngl
                             fontWeight: "600",
                         }
                     }}
-                    animate={{ duration: 500 }}
-                    labels={({ datum }) => `Total: ${Math.round(datum.ocorrencias)} `}
-                    colorScale={data?.map((item) => categoriaCores[item.categoria])}
+                    // animate={{ duration: 500 }}
+                    labels={({ datum }) => `Total: ${datum.ocorrencias} `}
+                    colorScale={cores}
                 />
                 <VictoryLabel
                     textAnchor="middle"
                     verticalAnchor="middle"
                     style={{ fontSize: 24, fill: isDarkMode ? "#ebeeee" : "#17132e", fontWeight: "bold" }}
-                    text={`Total: \n ${Number(total) > 0 ? 'R$' : '-R$'}${Math.abs(total).toFixed(2)}`}
+                    text={`Total: \n${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
                     x={width / 2}
                     y={height / 2}
                 />

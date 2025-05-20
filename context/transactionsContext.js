@@ -2,6 +2,7 @@ import React, { createContext, useContext } from 'react';
 import api from './axiosInstance';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useAuth } from '@context/authContext';
+import { subMonths, addMonths, startOfDay, startOfMonth } from 'date-fns'
 
 export const TransactionContext = createContext();
 
@@ -13,15 +14,6 @@ const getTransacoes = async ({ pageParams = 1 }) => {
         console.log('Iniciando requisição para transações...');
         const { data } = await api.get(`/profile/transaction?page=${pageParams}&limit=${PAGE_SIZE}`);
         return data;
-    } catch (error) {
-        throw error;
-    }
-};
-
-const getCategoriesTransactions = async () => {
-    try {
-        const response = await api.get(`/profile/transaction/categories`);
-        return response.data;
     } catch (error) {
         throw error;
     }
@@ -70,20 +62,6 @@ export const TransactionProvider = ({ children }) => {
         }
     });
 
-
-    const { data: dadosCategorias, isLoading: isCategoriesLoading } = useQuery({
-        queryKey: ['transaction_categories'],
-        queryFn: getCategoriesTransactions,
-        enabled: isAuthenticated,
-        onSuccess: (response) => {
-            console.log('Dados agrupados no onSuccess:', response.data);
-        },
-        onError: (error) => {
-            console.log('Erro na requisição de dados agrupados:', error);
-        }
-    });
-
-
     const { data: dadosAPI, meta } = response || { data: [], meta: {} };
 
     const {
@@ -126,8 +104,6 @@ export const TransactionProvider = ({ children }) => {
             dadosAPI, meta, isLoading, error, refetch,
             createTransactionMutation,
             deleteTransactionMutation,
-            dadosCategorias,
-            isCategoriesLoading,
             infiniteTransactions: allTransactions,
             fetchNextPage,
             hasNextPage,

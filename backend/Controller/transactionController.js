@@ -106,7 +106,8 @@ const listTransactions = async (req, res) => {
 const groupTransactions = async (req, res) => {
     try {
         const { userId } = req.user.decoded
-        const transacoes = await GroupTransactionService(userId);
+        const query = req.query
+        const transacoes = await GroupTransactionService(userId, query);
         res.status(200).json(transacoes);
     } catch (error) {
         if (error.message === 'Nenhuma transação encontrada') {

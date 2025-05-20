@@ -17,8 +17,6 @@ export default function Linechart() {
         period: 'day'
     });
 
-    const [semana, setSemana] = useState(startOfDay(new Date()));
-
     const total = lineChartData?.filter(item => item.tipo === 'despesa')
         .reduce((acc, item) => {
             return acc += item.valor
@@ -45,8 +43,6 @@ export default function Linechart() {
         }, {})
     ) || [{ date_interval: startOfDay(new Date()), valor: 0, ocorrencias: 0, name_interval: 1 }];
 
-    console.log(totalExpensesByDay)
-
     const valores = totalExpensesByDay?.map(item => ({
         valor: item.valor, dia: item.date_interval.toLocaleDateString('pt-BR', {
             day: 'numeric',
@@ -62,7 +58,6 @@ export default function Linechart() {
         if (label === 'prev') {
             setFirstDate(prev => subDays(prev, 6))
             setLastDate(prev => subDays(prev, 6))
-            console.log(semana)
         }
         if (label === 'next') {
             setFirstDate(prev => addDays(prev, 6))

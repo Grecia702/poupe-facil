@@ -1,57 +1,78 @@
 import { StyleSheet, View, FlatList, TouchableOpacity, Text, ScrollView } from 'react-native';
 import React, { useContext, useMemo, useState } from 'react'
+import { subMonths, addMonths, startOfMonth, endOfMonth, format, set } from 'date-fns'
 import { colorContext } from '@context/colorScheme';
-import PieChart from '@components/pieChart';
-import { useTransactionAuth } from '@context/transactionsContext';
-import Card from '@components/card';
-import { useTransactionSummary } from '@hooks/useTransactionSummary';
 import { categoriaCores } from '@utils/categoriasCores';
+import PieChart from '@components/pieChart';
+import Card from '@components/card';
+import DateButtonNavigation from '@components/dateButtonNavigation';
+import { useDonutchartData } from '@hooks/useDonutchartData';
 
 // TODO: Event Handler que ao clicar no grafico redirecione para a pagina de transações com a categoria filtrada 
 
 export default function Piechart() {
-    const { dadosCategorias } = useTransactionAuth();
-    const { data, } = useTransactionSummary({});
     const { isDarkMode } = useContext(colorContext)
-    const [selectedItem, setSelectedItem] = useState(null);
-    const groupedData = data?.reduce((acc, item) => {
-        const week = `S${item.name_interval}`;
-        const tipo = item.tipo;
-        const valor = parseFloat(item.valor);
-        if (!acc[week]) {
-            acc[week] = { despesa: 0, receita: 0 };
-        }
-        acc[week][tipo] += valor;
+    const [firstDate, setFirstDate] = useState(
+        set(startOfMonth(new Date()), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
+    )
 
-        return acc;
-    }, {});
+    const [lastDate, setLastDate] = useState(
+        set(endOfMonth(new Date()), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
+    )
+    const { data, isLoading } = useDonutchartData({
+        first_date: firstDate,
+        last_date: lastDate
+    })
+    const [selectedItem, setSelectedItem] = useState(null);
+
 
 
     const handleSelectItem = (label) => {
         setSelectedItem(() => label);
     };
 
-    const total = dadosCategorias?.reduce((acc, item) => {
+    const total = data?.reduce((acc, item) => {
         acc += item.total
         return acc
     }, 0)
 
+    console.log(firstDate, lastDate)
+
+    const handleDate = (label) => {
+        if (label === 'prev') {
+            setFirstDate(prev => subMonths(prev, 1))
+            setLastDate(prev => set(endOfMonth(subMonths(prev, 1)), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }))
+        }
+        if (label === 'next') {
+            setFirstDate(prev => addMonths(prev, 1))
+            setLastDate(prev => set(endOfMonth(addMonths(prev, 1)), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }))
+
+        }
+    }
 
     return (
         <ScrollView contentContainerStyle={{ gap: 16, marginTop: 16 }} style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#ffffff' }]}>
             <View style={[styles.chart, { backgroundColor: isDarkMode ? '#222' : '#fffefe' }]}>
                 <Text style={[styles.title, { color: isDarkMode ? 'white' : 'black' }]}>Transações por categorias</Text>
-                <PieChart
-                    height={350}
-                    width={350}
-                    padAngle={3}
-                    data={dadosCategorias}
-                    total={total}
-                    selected={selectedItem}
-                />
+                <Text style={[styles.title, { color: isDarkMode ? 'white' : 'black' }]}>Periodo: {format(firstDate, 'MM-yyyy')}</Text>
+                {!isLoading && (
+                    <PieChart
+                        height={350}
+                        width={350}
+                        padAngle={3}
+                        data={data}
+                        total={total}
+                        selected={selectedItem}
+                    />
+                )
+                }
             </View>
+            <DateButtonNavigation
+                prevAction={() => handleDate('prev')}
+                nextAction={() => handleDate('next')}
+            />
             <FlatList
-                data={dadosCategorias}
+                data={data}
                 keyExtractor={(item) => item.categoria}
                 scrollEnabled={false}
                 initialNumToRender={10}
@@ -61,7 +82,7 @@ export default function Piechart() {
                     <Card
                         color={categoriaCores[item.categoria]}
                         title={item.categoria}
-                        text={(item.total)}
+                        text={(item.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }))}
                         selectedItem={selectedItem}
                         selected={selectedItem === item.categoria ? selectedItem : 'none'}
                         onPress={() => handleSelectItem(item.categoria)}
@@ -93,6 +114,7 @@ const styles = StyleSheet.create({
         padding: 16,
         borderRadius: 15,
         borderWidth: 1,
-        borderColor: '#ccc'
+        borderColor: '#ccc',
+        height: 420,
     },
 });

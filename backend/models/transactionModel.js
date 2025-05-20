@@ -119,17 +119,21 @@ const GroupTransactionsByType = async (userId) => {
   return { rows, total: rowCount, firstResult: rows[0] };
 }
 
-const GroupTransactionsByCategories = async (userId) => {
+const GroupTransactionsByCategories = async (userId, first_date, last_date) => {
   const query = `
-    SELECT categoria, COUNT(*) AS ocorrencias, SUM(valor) AS total
+    SELECT 
+    categoria, 
+    COUNT(*) AS ocorrencias, 
+    SUM(valor) AS total
     FROM user_transactions
     WHERE user_id = $1
     AND tipo = 'despesa'
     AND categoria IN ('Lazer', 'Carro', 'Educação', 'Alimentação', 'Internet', 'Contas', 'Compras', 'Outros')
+    AND data_transacao BETWEEN $2 AND $3
     GROUP BY categoria
-    ORDER BY total ASC`;
-  const { rows, rowCount } = await pool.query(query, [userId]);
-  return { rows, total: rowCount, firstResult: rows[0] };
+`;
+  const { rows, rowCount } = await pool.query(query, [userId, first_date, last_date]);
+  return { rows, total: rowCount, result: rows[0] };
 }
 
 const transactionSummary = async (first_day, last_day, interval, userId) => {

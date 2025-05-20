@@ -180,22 +180,15 @@ const GroupTransactionService = async (userId) => {
 
 };
 
-const GroupCategoriesService = async (userId) => {
-    try {
-        const transacoes = await transactionModel.GroupTransactionsByCategories(userId);
-        if (transacoes.total === 0) {
-            throw new Error('Nenhuma transação foi encontrada');
-        }
-        const data = transacoes.rows.map(row => ({
-            ...row,
-            ocorrencias: parseInt(row.ocorrencias),
-            total: Math.abs(row.total)
-        }));
-        return data;
-    } catch (error) {
-        throw error;
-    };
-
+const GroupCategoriesService = async (userId, query) => {
+    const { first_date, last_date } = query
+    const transacoes = await transactionModel.GroupTransactionsByCategories(userId, first_date, last_date);
+    const data = transacoes.rows.map(row => ({
+        ...row,
+        ocorrencias: parseInt(row.ocorrencias),
+        total: Math.abs(row.total)
+    }));
+    return data;
 };
 
 
