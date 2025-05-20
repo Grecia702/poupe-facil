@@ -21,7 +21,6 @@ const updateBudget = async ({ id, ...data }) => {
     return res.data;
 };
 
-
 const deleteBudget = async (id) => {
     const res = await api.delete(`/budget/${id}`);
     return res.data;

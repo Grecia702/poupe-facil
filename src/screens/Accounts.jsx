@@ -184,11 +184,6 @@ const BankAccount = () => {
                     style={{ position: 'absolute', bottom: 10, right: 10 }}
                 />
             </TouchableOpacity>
-            {/* <TouchableOpacity onPress={() => showNotif()}>
-                <MaterialIcons name="add-circle" size={64} color={"#d83fcb"}
-                    style={{ position: 'absolute', bottom: 10, left: 10 }}
-                />
-            </TouchableOpacity> */}
         </View>
     );
 };
@@ -199,7 +194,7 @@ const styles = StyleSheet.create({
     contentContainer: {
         minHeight: '100%',
         padding: 15,
-        gap: 15,
+        gap: 10,
         borderTopRightRadius: 50,
         borderTopLeftRadius: 50,
         paddingHorizontal: 15,

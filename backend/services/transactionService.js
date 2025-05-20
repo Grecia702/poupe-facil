@@ -4,7 +4,7 @@ const budgetModel = require("../models/budgetModel");
 const goalsModel = require("../models/goalsModel");
 const { calcularProximaOcorrencia } = require("../Utils/calcularOcorrencia")
 const { z } = require('zod');
-const { startOfMonth } = require('date-fns');
+const { startOfMonth, subDays } = require('date-fns');
 
 const transactionQuerySchema = z.object({
     tipo: z.string().optional().nullable()
@@ -201,7 +201,7 @@ const GroupCategoriesService = async (userId) => {
 
 const transactionSummaryService = async (userId, query) => {
     const { all, period } = transactionQuerySchema.parse(query);
-    const { date } = query
+    const { first_day, last_day } = query
     if (all) {
         const transactions = await transactionModel.listSumTransactions(userId,)
         const data = transactions.rows.map(row => {
@@ -214,45 +214,6 @@ const transactionSummaryService = async (userId, query) => {
         return data
     }
 
-
-    const first_day = startOfMonth(date).toISOString();
-    const last_day = date
-    // let name_interval;
-    // const firstTransaction = await transactionModel.getFirstTransaction(userId)
-    // if (firstTransaction.total === 0) {
-    //     throw new Error('Nenhuma transação encontrada');
-    // }
-    // const { data_transacao } = firstTransaction.result
-
-    // switch (period) {
-    //     case 'mensal':
-    //         date_start = subMonths(date_end, 1);
-    //         interval = '1 month'
-    //         name_interval = 'TMmonth';
-    //         break;
-    //     case 'trimestral':
-    //         date_start = subMonths(date_end, 3);
-    //         interval = '1 month'
-    //         name_interval = 'TMmonth';
-    //         break;
-    //     case 'semestral':
-    //         date_start = subMonths(date_end, 6);
-    //         interval = '1 month'
-    //         name_interval = 'TMmonth';
-    //         break;
-    //     case 'anual':
-    //         date_start = subYears(date_end, 1);
-    //         interval = '3 month'
-    //         name_interval = '"Q"Q-YYYY';
-    //         break;
-    //     case 'total':
-    //         date_start = data_transacao;
-    //         interval = '1 year'
-    //         name_interval = 'YYYY';
-    //         break;
-    //     default:
-    //         break;
-    // }
     const transactions = await transactionModel.transactionSummary(first_day, last_day, period, userId)
     if (transactions.total === 0) {
         throw new Error('Nenhuma transação encontrada');

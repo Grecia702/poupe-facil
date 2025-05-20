@@ -67,17 +67,10 @@ const getBudgetByIdService = async (userId, budgetId) => {
 
 const getActiveService = async (userId) => {
     const { result, exists } = await budgetModel.getActiveBudget(userId)
-    // console.log(budget)
     if (!exists) {
         return []
     }
-    // console.log(result.id)
     const budget = await budgetModel.getBudgetById(result.id, userId)
-    // if (!budget.exists) {
-    //     throw new Error('Nenhum orçamento com esse ID foi encontrado')
-    // }
-    // console.log(budget)
-    console.log(budget.result)
     return budget.result
 }
 

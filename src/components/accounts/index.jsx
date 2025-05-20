@@ -66,7 +66,7 @@ const ModalConfirmDelete = ({ open, setOpen, isDarkMode, accountId, setRefreshin
 
 
 
-export default function Account({ name, value, icon, color, textColor, isVisible, setVisibleId, setRefreshing, id, onPress }) {
+export default function Account({ name, value, icon, color, textColor, isVisible, setVisibleId, setRefreshing, id, onPress, hideOption }) {
     const { isDarkMode } = useContext(colorContext)
     const navigation = useNavigation();
     const [isOpen, setIsOpen] = useState(false)
@@ -142,12 +142,12 @@ export default function Account({ name, value, icon, color, textColor, isVisible
                 </TextContainer>
                 <InfoView>
                     <Balance color={textColor}>{Number(value).toFixed(2)}</Balance>
-                    <TouchableOpacity onPress={handleToggleDropdown}>
+                    {!hideOption && (<TouchableOpacity onPress={handleToggleDropdown}>
                         <MaterialIcons
                             name="more-vert" size={24}
                             color={textColor}
                         />
-                    </TouchableOpacity>
+                    </TouchableOpacity>)}
                 </InfoView>
             </AccountCard>
         </>

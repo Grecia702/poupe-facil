@@ -1,16 +1,22 @@
 import { useQuery } from '@tanstack/react-query'
 import api from '@context/axiosInstance'
+import { subDays, startOfMonth } from 'date-fns/'
 
 const fetchPosts = async ({ queryKey }) => {
-    const today = new Date().toISOString()
-    const [, { date = today, period = 'week', all }] = queryKey
-
+    const [, filters = {}] = queryKey
+    const {
+        first_day = startOfMonth(new Date()).toISOString(),
+        last_day = new Date().toISOString(),
+        period = 'week'
+    } = filters
     try {
         const response = await api.get('/profile/transaction/summary', {
-            params: { date, all, period },
+            params: {
+                first_day,
+                last_day,
+                period
+            },
         })
-
-        // console.log('response.data:', response.data)
         return response.data
     } catch (error) {
         console.error('Erro ao buscar posts:', error)

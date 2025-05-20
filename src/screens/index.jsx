@@ -32,15 +32,15 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const { isDarkMode } = useContext(colorContext)
   const { data } = useTransactionSummary({ all: true });
-  const overallBalance = data?.find(item => item.tipo === "Total").total || 0;
-  const expenses = data?.find(item => item.tipo === "despesa").total || 0;
-  const incomes = data?.find(item => item.tipo === "receita").total || 0;
+  const overallBalance = data?.find(item => item.tipo === "Total")?.total || 0;
+  const expenses = data?.find(item => item.tipo === "despesa")?.total || 0;
+  const incomes = data?.find(item => item.tipo === "receita")?.total || 0;
 
 
   const total = dadosCategorias?.reduce((acc, item) => {
     acc += item.total
     return acc
-  }, 0)
+  }, 0) || 0
 
 
   const recentTransactions = dadosAPI?.sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao))
@@ -72,11 +72,12 @@ export default function HomeScreen() {
                 icon={item.icone}
                 color={isDarkMode ? "#222" : "#DDD"}
                 textColor={isDarkMode ? "#CCC" : "#222"}
+                hideOption
               />)
             ))
           }
           <Separator color={isDarkMode ? "#cccccc6f" : "#22222275"} />
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{ marginTop: 8, flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={{ fontSize: 16, fontWeight: '600', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>Saldo Total:</Text>
             <Text style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>R${saldo?.toFixed(2)}</Text>
           </View>

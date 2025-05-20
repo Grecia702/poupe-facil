@@ -4,17 +4,17 @@ import React, { useContext } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { colorContext } from '../../context/colorScheme';
 import TabRoutes from './tab.router';
-// import StackRoutes from './stack';
 import Transactions from '../screens/Transactions/Transactions'
 import Accounts from '../screens/Accounts'
 import CreditCards from '../screens/CreditCards'
 import Budget from '../screens/Budget'
 import Overview from '../screens/Overview'
 import Goals from '../screens/Goals'
-import Charts from '../screens/Charts'
 import Logout from '../screens/Logout'
 import Settings from '../screens/Settings'
 import Profile from '../screens/Profile';
+import TopTabRoutes from './top_tabs.routes';
+
 
 const Drawer = createDrawerNavigator();
 export default function DrawerRoutes() {
@@ -97,7 +97,7 @@ export default function DrawerRoutes() {
             />
             <Drawer.Screen
                 name="Gráficos"
-                component={Charts}
+                component={TopTabRoutes}
                 options={{
                     drawerIcon: ({ color, size }) => <MaterialIcons name="pie-chart" size={size} color={color} />,
                     drawerLabel: 'Gráficos',
@@ -126,7 +126,7 @@ export default function DrawerRoutes() {
                 options={{
                     drawerIcon: ({ color, size }) => <Feather name="settings" color={color} size={size} />,
                     drawerLabel: 'Configurações',
-                    headerShown: false
+                    // headerShown: false
                 }}
             />
             <Drawer.Screen
