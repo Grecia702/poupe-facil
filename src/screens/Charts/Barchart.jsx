@@ -1,128 +1,23 @@
 import { StyleSheet, View, TouchableOpacity, Text, ScrollView } from 'react-native';
 import React, { useContext, useMemo, useState } from 'react'
-import { Dimensions } from 'react-native';
 import { colorContext } from '@context/colorScheme';
-import { VictoryBar, VictoryAxis, VictoryChart, VictoryTheme, VictoryTooltip, VictoryStack } from 'victory-native';
 import { useTransactionSummary } from '@hooks/useTransactionSummary';
 import { startOfMonth } from 'date-fns/startOfMonth';
-import DateButtonNavigation from '../../components/dateButtonNavigation';
-import { startOfDay } from 'date-fns';
+import BarChartComponent from '@components/barChartComponent';
+import DateButtonNavigation from '@components/dateButtonNavigation';
+import { startOfDay, subDays, subMonths, addDays, addMonths } from 'date-fns';
 
-const BarChart = ({ data, color }) => {
-    const { width } = Dimensions.get('window');
-    return (
-        <>
-
-            <VictoryChart theme={VictoryTheme.grayscale}
-                width={width * 0.9}
-                height={325}
-                padding={{ left: 90, right: 10, bottom: 30, top: 70, }}
-                domain={{ x: [0.5, 4.5] }}
-            >
-                <VictoryAxis
-                    style={{
-                        tickLabels: { fontSize: 16, fill: color ? "#d1d1d1" : "#000000" },
-                        axis: {
-                            stroke: color ? '#686faa6a' : "#b4b4b4c7",
-                            strokeWidth: 2,
-                        },
-
-                    }}
-                />
-                <VictoryAxis
-                    dependentAxis
-                    tickFormat={(t) => `R$ ${t.toLocaleString('pt-BR')}`}
-                    style={{
-                        grid: {
-                            stroke: color ? '#686faa6a' : "#b4b4b48f",
-                            strokeWidth: 2,
-                        },
-                        tickLabels: { fontSize: 16, fill: color ? "#d1d1d1" : "#000000" },
-                        axis: { stroke: "none" },
-                    }}
-                />
-
-                <VictoryStack offset={0} >
-                    <VictoryBar
-                        data={data}
-                        x="week"
-                        y="despesa"
-                        labels={({ datum }) => [
-                            `Despesa: R$ ${datum.despesa.toLocaleString('pt-BR')}`,
-                            `Receita: R$ ${datum.receita.toLocaleString('pt-BR')}`
-                        ]}
-                        activateData={true}
-                        activateLabels={true}
-                        barWidth={40}
-                        style={{
-                            data: { fill: color ? "#882e2e" : "#cc4646" },
-                            labels: { fontSize: 16, fill: "#000000" },
-                        }}
-                        labelComponent={
-                            <VictoryTooltip
-
-                                flyoutStyle={{
-                                    fill: "#fff",
-                                    stroke: "#ccc",
-                                    strokeWidth: 1,
-                                    shadowColor: "#000",
-                                }}
-                                style={{
-                                    fill: "#333",
-                                    fontSize: 16,
-                                    fontWeight: "500",
-                                }}
-                                cornerRadius={6}
-                                flyoutPadding={{ top: 10, bottom: 10, left: 15, right: 15 }}
-                            />
-                        }
-
-                    />
-                    <VictoryBar
-                        data={data}
-                        x="week"
-                        y="receita"
-                        labels={({ datum }) => [
-                            `Despesa: R$ ${datum.despesa.toLocaleString('pt-BR')}`,
-                            `Receita: R$ ${datum.receita.toLocaleString('pt-BR')}`
-                        ]}
-                        barWidth={40}
-                        cornerRadius={{ top: 4 }}
-                        style={{
-                            data: {
-                                fill: color ? "#258d48" : "#31c763"
-                            },
-                            labels: { fontSize: 16, fill: "#000000" },
-                        }}
-                        labelComponent={
-                            <VictoryTooltip
-                                flyoutStyle={{
-                                    fill: "#fff",
-                                    stroke: "#ccc",
-                                    strokeWidth: 1,
-                                    shadowColor: "#000",
-                                }}
-                                style={{
-                                    fill: "#333",
-                                    fontSize: 16,
-                                    fontWeight: "500",
-                                }}
-                                cornerRadius={6}
-                                flyoutPadding={{ top: 10, bottom: 10, left: 15, right: 15 }}
-                            />
-                        }
-                    />
-                </VictoryStack>
-            </VictoryChart>
-        </>
-    )
-}
 
 export default function Barchart() {
     const { isDarkMode } = useContext(colorContext)
-    const [lastDate, setLastDate] = useState(startOfMonth(new Date()))
-    const [firstDate, setFirstDate] = useState(startOfDay(new Date()))
-    const { data, isLoading } = useTransactionSummary({});
+    const [lastDate, setLastDate] = useState(startOfDay(new Date()))
+    const [firstDate, setFirstDate] = useState(startOfMonth(new Date()))
+
+    const { data, isLoading } = useTransactionSummary({
+        first_day: firstDate,
+        last_day: lastDate,
+        period: 'week'
+    });
 
 
     const groupedData = data?.reduce((acc, item) => {
@@ -130,34 +25,39 @@ export default function Barchart() {
         const tipo = item.tipo;
         const valor = parseFloat(item.valor);
         if (!acc[week]) {
-            acc[week] = { despesa: 0, receita: 0 };
+            acc[week] = { despesa: 0, receita: 0, date_interval: item.date_interval };
         }
         acc[week][tipo] += valor;
 
         return acc;
     }, {});
+
     const chartData = groupedData
         ? Object.entries(groupedData)?.map(([week, values]) => ({
             week,
+            date_interval: new Date(values.date_interval).toISOString(),
             despesa: values.despesa,
             receita: values.receita,
         }))
         : [];
+
+
     const totalSemana = chartData?.reduce((acc, item) => {
         acc.despesa += item.despesa
         acc.receita += item.receita
         return acc
     }, { despesa: 0, receita: 0 })
 
+
     const handleDate = (label) => {
         if (label === 'prev') {
-            setFirstDate(prev => subDays(prev, 7))
-            setLastDate(prev => subDays(prev, 7))
-            console.log(semana)
+            setFirstDate(prev => subMonths(prev, 1))
+            setLastDate(prev => subMonths(prev, 1))
+            console.log(firstDate, lastDate)
         }
         if (label === 'next') {
-            setFirstDate(prev => addDays(prev, 7))
-            setLastDate(prev => addDays(prev, 7))
+            setFirstDate(prev => addMonths(prev, 1))
+            setLastDate(prev => addMonths(prev, 1))
         }
     }
 
@@ -172,7 +72,7 @@ export default function Barchart() {
                     Receita x despesas por semana
                 </Text>
                 {!isLoading && (
-                    <BarChart
+                    <BarChartComponent
                         color={isDarkMode}
                         data={chartData}
                     />
@@ -213,6 +113,7 @@ const styles = StyleSheet.create({
     chart: {
         padding: 8,
         borderRadius: 24,
-        borderWidth: 2
+        borderWidth: 2,
+        height: 420,
     }
 });

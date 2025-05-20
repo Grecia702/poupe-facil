@@ -133,12 +133,17 @@ const GroupTransactionsByCategories = async (userId) => {
 }
 
 const transactionSummary = async (first_day, last_day, interval, userId) => {
+  let intervalAddition = '';
+  if (interval === 'week') {
+    intervalAddition = " + interval '2 weeks'";
+  }
+
   const query = `
 WITH periodo AS (
   SELECT 
     generate_series(
       date_trunc($3::text, $1::date), 
-      date_trunc($3::text, $2::date), 
+      date_trunc($3::text, $2::date) ${intervalAddition}, 
     ('1 ' || $3)::interval
     ) AS date_interval
 ),
@@ -152,7 +157,7 @@ naturezas(natureza) AS (
   VALUES ('fixa'), ('variavel')
 )
 SELECT 
-  TO_CHAR(p.date_interval, 'YYYY-MM-DD') AS date_interval,
+  p.date_interval AS date_interval,
   p.periodo_num AS name_interval,
   t.tipo,
   n.natureza,

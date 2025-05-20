@@ -19,26 +19,27 @@ export default function Linechart() {
 
     const [semana, setSemana] = useState(startOfDay(new Date()));
 
-    const total = lineChartData?.reduce((acc, item) => {
-        return acc += item.valor
-    }, 0) || 0
+    const total = lineChartData?.filter(item => item.tipo === 'despesa')
+        .reduce((acc, item) => {
+            return acc += item.valor
+        }, 0) || 0
 
-    const incomes = (lineChartData || []).filter(item => item.tipo === 'despesa');
     const expenses = (lineChartData || []).filter(item => item.tipo === 'despesa');
 
     const totalExpensesByDay = Object.values(
         expenses?.reduce((acc, item) => {
             const key = item.date_interval;
+            const ocorrencias = parseInt(item.ocorrencias)
 
             if (!acc[key]) {
                 acc[key] = {
                     date_interval: new Date(key),
                     name_interval: item.name_interval,
-                    ocorrencias: item.ocorrencias,
+                    ocorrencias: 0,
                     valor: 0
                 };
             }
-
+            acc[key].ocorrencias += ocorrencias
             acc[key].valor += item.valor;
             return acc;
         }, {})
@@ -96,9 +97,8 @@ export default function Linechart() {
                         theme={VictoryTheme.material}
                         height={350}
                         width={screenWidth}
-                        padding={{ left: 65, right: 65, bottom: 90, top: 30 }}
-                        domain={{ y: [0, maiorValor.valor + 100] }}
-
+                        padding={{ left: 65, right: 65, bottom: 90, top: 50 }}
+                        domain={{ y: [0, (maiorValor?.valor || 0) + 100] }}
                     >
                         <VictoryLine
                             data={totalExpensesByDay}
@@ -108,11 +108,13 @@ export default function Linechart() {
                             style={{
                                 data: { stroke: "#be372e", strokeWidth: 5 },
                             }}
+                        // animate={{ duration: 500 }}
                         />
+
                         <VictoryAxis
                             fixLabelOverlap
                             tickLabelComponent={<VictoryLabel dy={10} textAnchor="middle" />}
-                            tickValues={totalExpensesByDay.map((item) => new Date(item.date_interval).getTime())}
+                            tickValues={totalExpensesByDay.map(item => new Date(item.date_interval).getTime())}
                             tickFormat={(t) => {
                                 const date = new Date(t);
                                 const day = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', timeZone: 'UTC' }).format(date);
@@ -126,6 +128,7 @@ export default function Linechart() {
                                 axis: { stroke: '#686faa6a', strokeWidth: 3 },
                             }}
                         />
+
                         <VictoryAxis
                             dependentAxis
                             tickFormat={(t) => `R$ ${t.toLocaleString('pt-BR')}`}
@@ -138,11 +141,11 @@ export default function Linechart() {
 
                         <VictoryScatter
                             data={totalExpensesByDay}
-                            x={(d) => new Date(d.date_interval).getTime()}
+                            x="date_interval"
                             y="valor"
                             size={7}
                             style={{ data: { fill: "#be372e" } }}
-                            labels={({ datum }) => `Valor: R$${datum.valor}\n Ocorrencias: ${datum.ocorrencias}`}
+                            labels={({ datum }) => `Valor: R$${datum.valor}\n Ocorrências: ${datum.ocorrencias}`}
                             labelComponent={
                                 <VictoryTooltip
                                     flyoutStyle={{
@@ -163,6 +166,7 @@ export default function Linechart() {
                         />
                     </VictoryChart>
 
+
                 )}
             </View>
 
@@ -178,7 +182,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: 600,
-        marginTop: 24,
+        marginTop: 16,
         marginLeft: 8,
     },
     container: {
