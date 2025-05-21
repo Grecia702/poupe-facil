@@ -88,10 +88,14 @@ const CreateTransactionService = async (dados, userId) => {
 
     const goals = await goalsModel.checkActiveGoal(userId)
 
+    console.log(goals)
+
     let goals_id = null;
     if (goals.exists) {
         goals_id = goals.result.id
     }
+
+    console.log(goals_id)
 
     await transactionModel.CreateTransaction(
         dados.id_contabancaria,
@@ -143,13 +147,6 @@ const ListTransactionsService = async (userId, query) => {
     if (total === 0) {
         throw new Error('Nenhuma transação encontrada');
     }
-    // const data = transacoes.rows.map(row => {
-    //     const valor = Math.abs(row.valor)
-    //     return {
-    //         ...row,
-    //         valor: valor
-    //     }
-    // });
     return {
         data: transacoes.rows,
         meta: {

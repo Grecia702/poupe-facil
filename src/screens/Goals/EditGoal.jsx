@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const Goals = () => {
+const EditGoal = () => {
     return (
         <View>
-            <Text>Goals</Text>
+            <Text>EditGoal</Text>
         </View>
     )
 }
 
-export default Goals
+export default EditGoal
 
 const styles = StyleSheet.create({})

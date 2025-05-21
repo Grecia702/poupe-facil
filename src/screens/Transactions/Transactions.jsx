@@ -191,22 +191,6 @@ const Transactions = () => {
         }
     }
 
-    // const ModalTransactions = () => {
-    //     return (
-    //         <Modal
-    //             animationType="slide"
-    //             transparent={true}
-    //             visible={modalVisible}
-    //             onRequestClose={() => setModalVisible(false)}
-    //         >
-    //             <ModalView setModalVisible={setModalVisible}
-    //                 setFiltrosAtivos={setFiltrosChips}
-    //                 setTesteFiltros={setFiltrosCategorias}
-    //             />
-    //         </Modal>
-    //     );
-    // }
-
     const renderItem = ({ item }) => {
         return (
             <TransactionCard

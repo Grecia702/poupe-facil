@@ -11,6 +11,7 @@ export const Container = styled.TouchableOpacity`
   background-color: ${({ isPressed, color, background }) => (isPressed ? color : background)};
   border-width: ${({ isPressed }) => (isPressed ? "4px" : "0px")};
   border-color: ${({ isPressed, color }) => (isPressed ? color : 'color')};
+  elevation: 1;
 `;
 export const Tag = styled.View`
   width: 10px;
@@ -24,11 +25,3 @@ export const Title = styled.Text`
   color: ${({ color, isPressed }) => (isPressed ? '#FFF' : color)};
   margin-right: 15px;
 `;
-
-// export const Text = styled.Text`
-//   margin-right: 20px;
-//   font-size: 18px;
-//   font-weight: 600;
-//   color: ${({ color }) => color};
-// `;
-

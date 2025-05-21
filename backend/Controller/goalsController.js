@@ -20,7 +20,8 @@ const createGoal = async (req, res) => {
 const getGoals = async (req, res) => {
     try {
         const { userId } = req.user.decoded
-        const goals = await getGoalService(userId)
+        const query = req.query
+        const goals = await getGoalService(userId, query)
         return res.status(200).json(goals)
     } catch (error) {
         if (error.message === 'Nenhuma meta encontrada') {

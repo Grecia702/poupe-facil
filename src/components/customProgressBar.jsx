@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, View, I18nManager } from 'react-native';
+import { Animated, View } from 'react-native';
 
 export default function CustomProgressBar({
   progress = 0,
@@ -7,7 +7,9 @@ export default function CustomProgressBar({
   width = 200,
   color = '#007AFF',
   unfilledColor = '#eee',
-  borderRadius = 999,
+  borderRadius = 999, // máximo arredondamento
+  borderColor,
+  borderWidth,
   duration = 500,
   style,
 }) {
@@ -21,14 +23,9 @@ export default function CustomProgressBar({
     }).start();
   }, [progress]);
 
-  const translateX = progressAnim.interpolate({
+  const animatedWidth = progressAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-(width / 2), 0],
-  });
-
-  const scaleX = progressAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.0001, 1],
+    outputRange: [0, width],
   });
 
   return (
@@ -38,7 +35,9 @@ export default function CustomProgressBar({
           width,
           height,
           backgroundColor: unfilledColor,
+          borderColor,
           borderRadius,
+          borderWidth,
           overflow: 'hidden',
         },
         style,
@@ -47,13 +46,9 @@ export default function CustomProgressBar({
       <Animated.View
         style={{
           height,
+          width: animatedWidth,
           backgroundColor: color,
-          borderTopRightRadius: borderRadius,
-          borderBottomRightRadius: borderRadius,
-          transform: [
-            { translateX: I18nManager.isRTL ? -translateX : translateX },
-            { scaleX },
-          ],
+          borderRadius: 999,
         }}
       />
     </View>

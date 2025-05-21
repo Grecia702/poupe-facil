@@ -9,7 +9,7 @@ import Accounts from '../screens/Accounts'
 import CreditCards from '../screens/CreditCards'
 import Budget from '../screens/Budget'
 import Overview from '../screens/Overview'
-import Goals from '../screens/Goals'
+import Goals from '../screens/Goals/ActiveGoals'
 import Logout from '../screens/Logout'
 import Settings from '../screens/Settings'
 import Profile from '../screens/Profile';

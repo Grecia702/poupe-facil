@@ -11,21 +11,24 @@ import TransactionCard from '@components/transactions';
 import WidgetTeste from '@components/widget';
 import Account from '@components/accounts';
 import { Separator } from '@components/accounts/styles';
-import { Bar } from 'react-native-progress';
 import VisaoGeral from '@components/header';
 import { useTransactionAuth } from '@context/transactionsContext';
 import { useBudgetAuth } from '@context/budgetsContext';
 import { useContasAuth } from '@context/contaContext';
+import { useGoals } from '@hooks/useGoals';
 import { useTransactionSummary } from '@hooks/useTransactionSummary';
 import CalendarEmpty from '../assets/calendar-empty.svg';
+import TargetArrow from '../assets/target-arrow.svg';
 import Budget from '@components/budgetBars';
-import CreateItem from '../components/createItem';
+import CreateItem from '@components/createItem';
+import Goals from '../components/goals';
 
 export default function HomeScreen() {
 
   const { dadosAPI, isLoading, dadosCategorias, isCategoriesLoading } = useTransactionAuth();
   const { dadosContas } = useContasAuth();
   const { budgetData } = useBudgetAuth()
+  const { data: goalsData } = useGoals()
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshing, setRefreshing] = useState(true);
   const [progress, setProgress] = useState(0.2);
@@ -42,6 +45,7 @@ export default function HomeScreen() {
     return acc
   }, 0) || 0
 
+  console.log(goalsData)
 
   const recentTransactions = dadosAPI?.sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao))
     .slice(0, 5);
@@ -188,23 +192,33 @@ export default function HomeScreen() {
           }
         </View>
 
-        <WidgetTeste direction={'column'} gap={5} Color={isDarkMode ? "#2e2e2e" : "#ffffff"} Title={"Metas"} TextColor={isDarkMode ? "#c4c4c4" : "#3a3a3a"} >
-          <Text style={{ alignSelf: 'center', color: isDarkMode ? "#FFF" : "#132217", fontSize: 18, fontWeight: '600', marginTop: 10 }}>Comprar um PC</Text>
-          <Bar
-            height={20}
-            width={320}
-            color={"#4CAF50"}
-            unfilledColor={'#C8E6C9'}
-            progress={progress}
-            borderWidth={1}
-            borderRadius={15}
-            borderColor={"#000"}
-          >
-            <Text style={{ position: 'absolute', color: '#1B5E20', marginLeft: '87.5%', fontWeight: 'bold' }}>
-              {Math.round(progress * 100)}%
-            </Text>
-          </Bar>
-          <Text style={{ color: isDarkMode ? '#7bf185' : '#215a26' }}>1660,00 de  40000,00</Text>
+        <WidgetTeste
+          direction={'column'} gap={5}
+          Color={isDarkMode ? "#2e2e2e" : "#ffffff"}
+          Title={"Metas"}
+          TextColor={isDarkMode ? "#c4c4c4" : "#3a3a3a"}
+          onPressDetails={() => navigation.navigate('GoalsTabs')}
+        >
+          {goalsData?.metas.length > 0 ? (
+            <Goals
+              goal_desc={goalsData.metas[0]?.desc_meta}
+              current_amount={goalsData.metas[0]?.saldo_meta}
+              total_amount={goalsData.metas[0]?.valor_meta}
+              start_date={goalsData.metas[0]?.data_inicio}
+              end_date={goalsData.metas[0]?.deadline}
+              status_meta={'andamento'}
+            />
+          ) : (
+            <CreateItem
+              text={'Nenhuma meta encontrada.'}
+              buttonText={"Criar agora"}
+              screen={'Create Goal'}
+              icon={
+                <TargetArrow color={isDarkMode ? "#AAA" : "#2c2c2c"} width={96} height={96} />
+              }
+            />
+          )
+          }
         </WidgetTeste>
       </Wrapper>
     </ScrollView >

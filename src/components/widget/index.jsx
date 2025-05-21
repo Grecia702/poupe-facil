@@ -1,14 +1,17 @@
 import { SectionTitle } from "./styles";
 import { Text, View, StyleSheet } from "react-native";
+import { colorContext } from '@context/colorScheme';
+import { useContext } from 'react'
 
 export default function WidgetTeste({ Color, Title, TextColor, children, align, onPressDetails }) {
+    const { isDarkMode } = useContext(colorContext)
     return (
         <View style={[styles.widget, { backgroundColor: Color }]}>
             <View style={styles.title}>
                 <SectionTitle color={TextColor}>{Title}</SectionTitle>
                 <Text
                     onPress={onPressDetails}
-                    style={{ alignSelf: 'flex-end', textDecorationLine: 'underline', color: TextColor }}
+                    style={[styles.link, { color: isDarkMode ? '#3d91d6' : '#1675c2' }]}
                 >
                     Ver mais
                 </Text>
@@ -36,5 +39,8 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'space-between',
         marginBottom: 32
+    },
+    link: {
+        alignSelf: 'flex-end', textDecorationLine: 'underline', fontSize: 16, fontWeight: 'bold',
     },
 })
