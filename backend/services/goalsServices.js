@@ -11,14 +11,7 @@ const goalQuerySchema = z.object({
 const createGoalService = async (userId, query) => {
     const { desc_meta, valor_meta, status_meta } = goalQuerySchema.parse(query)
     const { deadline } = query
-    const goal = await goalsModel.checkActiveGoal(userId)
-    // if (goal.exists) {
-    //     status_meta = false
-    // }
     const data_inicio = new Date()
-
-    console.log(userId, desc_meta, valor_meta, status_meta, data_inicio, deadline)
-
     await goalsModel.createGoal(userId, desc_meta, valor_meta, status_meta, data_inicio, deadline)
 }
 

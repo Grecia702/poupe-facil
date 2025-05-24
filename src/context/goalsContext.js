@@ -56,14 +56,20 @@ export const GoalsProvider = ({ children }) => {
 
     const createGoalsMutation = useMutation({
         mutationFn: createGoals,
+        enabled: isAuthenticated,
+        onSuccess: async () => {
+            await queryClient.invalidateQueries(['goals_id']);
+        },
     });
 
     const updateGoalsMutation = useMutation({
         mutationFn: updateGoals,
+        enabled: isAuthenticated,
     });
 
     const deleteGoalsMutation = useMutation({
         mutationFn: deleteGoals,
+        enabled: isAuthenticated,
         onSuccess: async () => {
             await queryClient.invalidateQueries(['goals_id']);
         },

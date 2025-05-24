@@ -22,6 +22,8 @@ import TargetArrow from '../assets/target-arrow.svg';
 import Budget from '@components/budgetBars';
 import CreateItem from '@components/createItem';
 import Goals from '../components/goals';
+import { subMonths, addMonths, startOfMonth, endOfMonth, format, set } from 'date-fns'
+import { useDonutchartData } from '@hooks/useDonutchartData';
 
 export default function HomeScreen() {
 
@@ -34,18 +36,22 @@ export default function HomeScreen() {
   const [progress, setProgress] = useState(0.2);
   const navigation = useNavigation();
   const { isDarkMode } = useContext(colorContext)
-  const { data } = useTransactionSummary({ all: true });
-  const overallBalance = data?.find(item => item.tipo === "Total")?.total || 0;
-  const expenses = data?.find(item => item.tipo === "despesa")?.total || 0;
-  const incomes = data?.find(item => item.tipo === "receita")?.total || 0;
+  const overallBalance = 0;
+  const expenses = 0;
+  const incomes = 0;
+  const firstDate = set(startOfMonth(new Date()), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
+  const lastDate = set(endOfMonth(new Date()), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
 
+  const { data: donutData, isLoading: donutLoading } = useDonutchartData({
+    first_date: firstDate,
+    last_date: lastDate
+  })
 
-  const total = dadosCategorias?.reduce((acc, item) => {
+  const total = donutData?.reduce((acc, item) => {
     acc += item.total
     return acc
   }, 0) || 0
 
-  console.log(goalsData)
 
   const recentTransactions = dadosAPI?.sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao))
     .slice(0, 5);
@@ -145,7 +151,7 @@ export default function HomeScreen() {
         <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffff"} Title={"Gráficos"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
 
           <TouchableOpacity onPress={() => navigation.navigate('Gráficos')} >
-            {!isCategoriesLoading && <PieChart height={350} width={350} data={dadosCategorias} total={total} padAngle={3} selected={selectedItem} />}
+            {!isCategoriesLoading && <PieChart height={350} width={350} data={donutData} total={total} padAngle={3} selected={selectedItem} />}
           </TouchableOpacity>
 
 
@@ -170,7 +176,7 @@ export default function HomeScreen() {
             </ContentLoader>
           ) : (
             <FlatList
-              data={dadosCategorias}
+              data={donutData}
               keyExtractor={(item) => item.categoria}
               refreshing={refreshing}
               scrollEnabled={false}

@@ -139,47 +139,76 @@ const GroupTransactionsByCategories = async (userId, first_date, last_date) => {
 const transactionSummary = async (first_day, last_day, interval, userId) => {
   let intervalAddition = '';
   if (interval === 'week') {
-    intervalAddition = " + interval '2 weeks'";
+    intervalAddition = " + interval '1 weeks'";
   }
 
   const query = `
 WITH periodo AS (
   SELECT 
     generate_series(
-      date_trunc($3::text, $1::date), 
-      date_trunc($3::text, $2::date) ${intervalAddition}, 
-    ('1 ' || $3)::interval
+      $1::date, 
+      $2::date, 
+      ('1 ' || $3)::interval
     ) AS date_interval
-),
+  ),
 periodo_numerado AS (
   SELECT date_interval, ROW_NUMBER() OVER () AS periodo_num FROM periodo
 ),
 tipos(tipo) AS (
   VALUES ('receita'), ('despesa')
-),
-naturezas(natureza) AS (
-  VALUES ('fixa'), ('variavel')
 )
 SELECT 
   p.date_interval AS date_interval,
   p.periodo_num AS name_interval,
   t.tipo,
-  n.natureza,
   COUNT(ut.user_id) AS ocorrencias,
   COALESCE(SUM(ut.valor), 0) AS valor
 FROM periodo_numerado p
 CROSS JOIN tipos t
-CROSS JOIN naturezas n
 LEFT JOIN user_transactions ut 
-  ON DATE_TRUNC($3::text, ut.data_transacao) = p.date_interval
+  ON ut.data_transacao >= p.date_interval
+  AND ut.data_transacao < p.date_interval + ('1 ' || $3)::interval
   AND ut.user_id = $4
   AND ut.tipo = t.tipo
-  AND ut.natureza = n.natureza
-GROUP BY p.periodo_num, p.date_interval, t.tipo, n.natureza
-ORDER BY p.periodo_num, t.tipo, n.natureza;
+  AND ut.data_transacao BETWEEN $1 AND $2
+GROUP BY p.periodo_num, p.date_interval, t.tipo
+ORDER BY p.periodo_num, t.tipo
 `;
   const { rows, rowCount } = await pool.query(query, [first_day, last_day, interval, userId]);
   return { rows, total: rowCount, firstResult: rows[0] };
+}
+
+const transactionSummaryTotal = async (first_day, last_day, userId) => {
+  const query = `
+  WITH periodo AS (
+  SELECT 
+    generate_series(
+      date_trunc('month'::text, $1::date), 
+      date_trunc('month'::text, $2::date), 
+    ('1 ' || 'month')::interval
+    ) AS date_interval
+  ),
+  periodo_numerado AS (
+    SELECT date_interval, ROW_NUMBER() OVER () AS periodo_num FROM periodo
+  ),
+  tipos(tipo) AS (
+    VALUES ('receita'), ('despesa')
+  )
+  SELECT 
+    TO_CHAR(p.date_interval, 'mon') AS date_interval,
+    t.tipo,
+    COALESCE(SUM(ut.valor), 0) AS valor
+  FROM periodo_numerado p
+  CROSS JOIN tipos t
+  LEFT JOIN user_transactions ut 
+    ON DATE_TRUNC('month'::text, ut.data_transacao) = p.date_interval
+    AND ut.user_id = $3
+    AND ut.tipo = t.tipo
+  GROUP BY p.periodo_num, p.date_interval, t.tipo
+  ORDER BY p.periodo_num, t.tipo
+  `;
+  const { rows, rowCount } = await pool.query(query, [first_day, last_day, userId]);
+  return { rows, total: rowCount, result: rows };
 }
 
 const getFirstTransaction = async (userId) => {
@@ -207,5 +236,6 @@ module.exports = {
   GroupTransactionsByType,
   GroupTransactionsByCategories,
   transactionSummary,
+  transactionSummaryTotal,
   getFirstTransaction,
 };

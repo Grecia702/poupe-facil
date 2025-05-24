@@ -1,4 +1,4 @@
-console.log('SERVER STARTED - CWD:', process.cwd(), 'DIRNAME:', __dirname)
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -9,15 +9,14 @@ const authRoutes = require(path.join(__dirname, 'Routes', 'authRoutes'));
 const transactionRoutes = require(path.join(__dirname, 'Routes', 'transactionRoutes'));
 const budgetRoutes = require(path.join(__dirname, 'Routes', 'budgetRoutes'));
 const goalsRoutes = require(path.join(__dirname, 'Routes', 'goalsRoutes'));
+const gptRoutes = require(path.join(__dirname, 'Routes', 'gptRoutes'));
 const logger = require(path.join(__dirname, 'Utils', 'loggerConfig'));
 const requestTimeLogger = require(path.join(__dirname, 'Utils', 'requestTime'));
-
 const cookieParser = require('cookie-parser');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
 const { iniciarCron } = require(path.join(__dirname, 'Utils', 'transacoesRecorrentes'));
 
 iniciarCron();
-
 
 const rateLimiter = new RateLimiterMemory({
     points: 10,
@@ -41,6 +40,8 @@ app.use(cors({
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+
 
 app.use((req, res, next) => {
     rateLimiter.consume(req.ip)
@@ -68,6 +69,7 @@ app.use("/api/auth", (req, res, next) => {
 
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/gpt", gptRoutes)
 app.use("/api/profile/account", accountRoutes);
 app.use("/api/profile/transaction", transactionRoutes);
 app.use("/api/budget", budgetRoutes);

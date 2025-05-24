@@ -4,7 +4,7 @@ const budgetModel = require("../models/budgetModel");
 const goalsModel = require("../models/goalsModel");
 const { calcularProximaOcorrencia } = require("../Utils/calcularOcorrencia")
 const { z } = require('zod');
-const { startOfMonth, subDays } = require('date-fns');
+const { startOfMonth, subDays, subMonths, endOfMonth } = require('date-fns');
 
 const transactionQuerySchema = z.object({
     tipo: z.string().optional().nullable()
@@ -190,33 +190,80 @@ const GroupCategoriesService = async (userId, query) => {
 
 
 const transactionSummaryService = async (userId, query) => {
-    const { all, period } = transactionQuerySchema.parse(query);
+    const { period, all } = transactionQuerySchema.parse(query);
     const { first_day, last_day } = query
-    if (all) {
-        const transactions = await transactionModel.listSumTransactions(userId,)
-        const data = transactions.rows.map(row => {
-            const valor = Math.abs(row.total)
-            return {
-                ...row,
-                total: valor
-            }
-        });
-        return data
-    }
 
     const transactions = await transactionModel.transactionSummary(first_day, last_day, period, userId)
     if (transactions.total === 0) {
         throw new Error('Nenhuma transação encontrada');
     }
 
-    const data = transactions.rows.map(row => {
-        const valor = Math.abs(row.valor)
-        return {
-            ...row,
-            valor: valor
-        }
-    });
+    console.log(transactions)
 
+    const data = transactions.rows.map(row => ({
+        ...row,
+        valor: Math.abs(row.valor),
+    }));
+
+    const [actualMonthTotal, lastMonthTotal] = await Promise.all([
+        transactionModel.transactionSummaryTotal(first_day, last_day, userId),
+        transactionModel.transactionSummaryTotal(
+            startOfMonth(subMonths(first_day, 1)),
+            endOfMonth(subMonths(first_day, 1)),
+            userId
+        )
+    ]);
+
+    const actualMonthResult = actualMonthTotal.result.reduce((acc, item) => {
+        acc[item.tipo] = Number(item.valor);
+        return acc;
+    }, { despesa: 0, receita: 0 });
+
+    const lastMonthResult = lastMonthTotal.result.reduce((acc, item) => {
+        acc[item.tipo] = Number(item.valor);
+        return acc;
+    }, { despesa: 0, receita: 0 });
+
+
+    console.log('total despesas atuais', actualMonthResult.despesa, 'total despesas antigas', lastMonthResult.despesa)
+    // console.log(actualMonthResult.receita, lastMonthResult.receita)
+
+    const variacao = {
+        despesa: (((actualMonthResult.despesa - lastMonthResult.despesa) / lastMonthResult.despesa) * 100).toFixed(2),
+        receita: (((actualMonthResult.receita - lastMonthResult.receita) / lastMonthResult.receita) * 100).toFixed(2)
+    }
+
+    console.log('total despesas atuais', actualMonthResult.despesa, 'total despesas antigas', lastMonthResult.despesa)
+    console.log('total receitas atuais', actualMonthResult.receita, 'total receitas antigas', lastMonthResult.receita)
+
+    console.log('porcentagem despesa', variacao.despesa)
+    console.log('porcentagem receita', variacao.receita)
+
+    if (period === 'week') {
+        const groupedData = data.reduce((acc, item) => {
+            const week = `S${item.name_interval}`;
+            const tipo = item.tipo;
+            const valor = item.valor;
+            if (!acc[week]) {
+                acc[week] = { despesa: 0, receita: 0, date_interval: item.date_interval };
+            }
+            acc[week][tipo] += valor;
+
+            return acc;
+        }, {});
+
+        const chartData = Object.entries(groupedData).map(([week, values]) => ({
+            week,
+            date_interval: new Date(values.date_interval),
+            despesa: values.despesa,
+            receita: values.receita,
+        }))
+        return {
+            data: chartData,
+            total: actualMonthResult,
+            percent: variacao
+        }
+    }
     return data
 };
 

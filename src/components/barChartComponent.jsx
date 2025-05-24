@@ -1,8 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native'
 import { VictoryBar, VictoryAxis, VictoryChart, VictoryTheme, VictoryTooltip, VictoryStack } from 'victory-native';
 import { Dimensions } from 'react-native';
-import { getWeekOfMonth, startOfWeek, endOfWeek } from 'date-fns'
-import { useMemo } from 'react';
+import { startOfWeek, endOfWeek } from 'date-fns'
 
 const BarChartComponent = ({ data, color }) => {
     const { width } = Dimensions.get('window');
@@ -11,15 +9,14 @@ const BarChartComponent = ({ data, color }) => {
             <VictoryChart theme={VictoryTheme.grayscale}
                 width={width * 0.9}
                 height={325}
-                padding={{ left: 90, right: 20, bottom: 50, top: 70, }}
-                domain={{ x: [0.5, 4.5] }}
+                padding={{ left: 90, right: 40, bottom: 50, top: 70, }}
+                domain={{ x: [0.5, 5.5] }}
             >
                 <VictoryAxis
                     tickValues={data.map(item => item.date_interval)}
                     tickFormat={(t) => {
                         const date = new Date(t);
-                        const semana = getWeekOfMonth(date)
-                        const inicio = startOfWeek(date, { weekStartsOn: 1 }).getDate() // segunda
+                        const inicio = startOfWeek(date, { weekStartsOn: 1 }).getDate()
                         const fim = endOfWeek(date, { weekStartsOn: 1 }).getDate()
                         const month = new Intl.DateTimeFormat('pt-BR', { month: 'short', timeZone: 'UTC' }).format(date);
                         return `${inicio}-${fim}\n${month}\n`;
@@ -57,7 +54,7 @@ const BarChartComponent = ({ data, color }) => {
                         ]}
                         activateData={true}
                         activateLabels={true}
-                        barWidth={40}
+                        barWidth={30}
                         cornerRadius={{ top: 4 }}
                         style={{
                             data: { fill: color ? "#882e2e" : "#cc4646" },
@@ -90,7 +87,7 @@ const BarChartComponent = ({ data, color }) => {
                             `Despesa: R$ ${datum.despesa.toLocaleString('pt-BR')}`,
                             `Receita: R$ ${datum.receita.toLocaleString('pt-BR')}`
                         ]}
-                        barWidth={40}
+                        barWidth={30}
                         cornerRadius={{ top: 4 }}
                         style={{
                             data: {

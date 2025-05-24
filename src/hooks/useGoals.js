@@ -22,7 +22,7 @@ const fetchGoals = async ({ queryKey }) => {
 
 export const useGoals = (filters) => {
     return useQuery({
-        queryKey: ['goals', filters],
+        queryKey: ['goals_id', filters],
         queryFn: fetchGoals,
     })
 }

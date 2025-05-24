@@ -4,7 +4,7 @@ import InactiveGoals from '@screens/Goals/InactiveGoals';
 import ConcludedGoals from '@screens/Goals/ConcludedGoals';
 import React, { useContext } from 'react';
 import { MaterialIcons } from '@expo/vector-icons'
-import { colorContext } from '../../context/colorScheme';
+import { colorContext } from '@context/colorScheme';
 
 const Tab = createMaterialTopTabNavigator();
 

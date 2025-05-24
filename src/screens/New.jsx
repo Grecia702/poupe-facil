@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View, FlatList } from 'react-native';
 import React, { useContext, useMemo, useState } from 'react'
-import { colorContext } from '../../context/colorScheme';
+import { colorContext } from '@context/colorScheme';
 import PieChart from '@components/pieChart';
 import { useTransactionAuth } from '@context/transactionsContext';
 import { WidgetView } from '@components/transactions/styles';

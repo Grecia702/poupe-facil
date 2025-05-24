@@ -36,7 +36,6 @@ export default function Piechart() {
         return acc
     }, 0)
 
-    console.log(firstDate, lastDate)
 
     const handleDate = (label) => {
         if (label === 'prev') {
@@ -54,7 +53,7 @@ export default function Piechart() {
         <ScrollView contentContainerStyle={{ gap: 16, marginTop: 16 }} style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#ffffff' }]}>
             <View style={[styles.chart, { backgroundColor: isDarkMode ? '#222' : '#fffefe' }]}>
                 <Text style={[styles.title, { color: isDarkMode ? 'white' : 'black' }]}>Transações por categorias</Text>
-                <Text style={[styles.title, { color: isDarkMode ? 'white' : 'black' }]}>Periodo: {format(firstDate, 'MM-yyyy')}</Text>
+                <Text style={[{ alignSelf: 'center', fontSize: 18, color: isDarkMode ? 'white' : 'black' }]}>Periodo: {firstDate.toLocaleString('pt-BR', { month: 'long' })}</Text>
                 {!isLoading && (
                     <PieChart
                         height={350}
@@ -78,6 +77,7 @@ export default function Piechart() {
                 initialNumToRender={10}
                 maxToRenderPerBatch={5}
                 windowSize={5}
+                contentContainerStyle={{ paddingBottom: 72 }}
                 renderItem={({ item }) => (
                     <Card
                         color={categoriaCores[item.categoria]}
@@ -99,8 +99,9 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: 600,
-        marginTop: 16,
-        marginLeft: 8,
+        marginTop: 8,
+        marginBottom: 8,
+        alignSelf: 'center',
     },
     container: {
         backgroundColor: '#fff',
@@ -111,7 +112,7 @@ const styles = StyleSheet.create({
     },
     chart: {
         elevation: 1,
-        padding: 16,
+        padding: 24,
         borderRadius: 15,
         borderWidth: 1,
         borderColor: '#ccc',

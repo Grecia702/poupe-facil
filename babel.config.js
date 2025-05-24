@@ -15,7 +15,7 @@ module.exports = function (api) {
             ['module-resolver', {
                 root: ['./'],
                 alias: {
-                    '@context': './context',
+                    '@context': './src/context',
                     '@components': './src/components',
                     '@utils': './src/utils',
                     '@hooks': './src/hooks',

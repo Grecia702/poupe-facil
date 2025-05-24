@@ -1,10 +1,10 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { colorContext } from '../../context/colorScheme';
+import { colorContext } from '@context/colorScheme';
 import { Feather } from '@expo/vector-icons'
 import React, { useContext } from 'react';
-import HomeScreen from '../screens/index'
-import New from '../screens/New'
-import Profile from '../screens/Profile';
+import HomeScreen from '@screens/index'
+import New from '@screens/New'
+import Profile from '@screens/Profile';
 const Tab = createBottomTabNavigator();
 
 export default function TabRoutes() {

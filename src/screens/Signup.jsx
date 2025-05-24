@@ -60,7 +60,6 @@ const SignupScreen = () => {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <Toast />
             <View style={styles.view}>
 
                 <Text style={styles.title}>Cadastre-se</Text>

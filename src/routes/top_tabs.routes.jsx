@@ -1,10 +1,10 @@
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import Piechart from '../screens/Charts/Piechart';
-import Barchart from '../screens/Charts/Barchart';
+import Piechart from '@screens/Charts/Piechart';
+import Barchart from '@screens/Charts/Barchart';
 import React, { useContext } from 'react';
-import Linechart from '../screens/Charts/Linechart';
+import Linechart from '@screens/Charts/Linechart';
 import { MaterialIcons } from '@expo/vector-icons'
-import { colorContext } from '../../context/colorScheme';
+import { colorContext } from '@context/colorScheme';
 
 const Tab = createMaterialTopTabNavigator();
 

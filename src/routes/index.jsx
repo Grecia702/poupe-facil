@@ -1,7 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native'
 import StackRoutes from './stack'
 import React, { useContext } from 'react';
-import { colorContext } from '../../context/colorScheme';
+import { colorContext } from '@context/colorScheme';
 import { StatusBar } from 'react-native';
 
 export default function Routes() {

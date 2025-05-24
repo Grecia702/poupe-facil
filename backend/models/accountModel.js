@@ -5,7 +5,7 @@ const pool = require('../db.js')
 const CreateAccount = async (id_usuario, nome_conta, timestamp, saldo, tipo_conta, icone, desc_conta) => {
     const query = `
     INSERT INTO contasBancarias 
-    (id_usuario , nome_conta, data_criacao, saldo, tipo_conta, icone, desc_conta) 
+    (id_usuario , nome_conta, created_at, saldo, tipo_conta, icone, desc_conta) 
     VALUES ($1, $2, $3, $4, $5, $6, $7)`;
 
     await pool.query(query, [id_usuario, nome_conta, timestamp, saldo, tipo_conta, icone, desc_conta]);
@@ -30,7 +30,7 @@ const DeleteAccount = async (id, userId) => {
 }
 
 const ListAllAccounts = async (userId, limit, offset) => {
-    const { rows, rowCount } = await pool.query("SELECT * FROM contasBancarias WHERE id_usuario = $1 ORDER BY data_criacao DESC LIMIT $2 OFFSET $3", [userId, limit, offset]);
+    const { rows, rowCount } = await pool.query("SELECT * FROM contasBancarias WHERE id_usuario = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", [userId, limit, offset]);
     return { rows, total: rowCount, firstResult: rows[0] };
 }
 
