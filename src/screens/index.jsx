@@ -1,8 +1,8 @@
-import { View, Text, TouchableOpacity, ScrollView, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, FlatList, Modal } from 'react-native';
 import { colorContext } from '@context/colorScheme';
 import { useContext, useState, useMemo } from 'react'
 import { categoriaCores } from '../utils/categoriasCores'
-import { Wrapper } from '../components/main/styles';
+import Wrapper from '@components/wrapper';
 import Card from '@components/card';
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import PieChart from '@components/pieChart';
@@ -12,35 +12,37 @@ import WidgetTeste from '@components/widget';
 import Account from '@components/accounts';
 import { Separator } from '@components/accounts/styles';
 import VisaoGeral from '@components/header';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useTransactionAuth } from '@context/transactionsContext';
 import { useBudgetAuth } from '@context/budgetsContext';
 import { useContasAuth } from '@context/contaContext';
 import { useGoals } from '@hooks/useGoals';
-import { useTransactionSummary } from '@hooks/useTransactionSummary';
 import CalendarEmpty from '../assets/calendar-empty.svg';
 import TargetArrow from '../assets/target-arrow.svg';
 import Budget from '@components/budgetBars';
 import CreateItem from '@components/createItem';
 import Goals from '../components/goals';
-import { subMonths, addMonths, startOfMonth, endOfMonth, format, set } from 'date-fns'
+import NavMonths from '@components/navMonths';
+import { startOfMonth, endOfMonth, set, format, addMonths, subMonths } from 'date-fns'
 import { useDonutchartData } from '@hooks/useDonutchartData';
 
-export default function HomeScreen() {
 
-  const { dadosAPI, isLoading, dadosCategorias, isCategoriesLoading } = useTransactionAuth();
+
+export default function HomeScreen() {
+  const { dadosAPI, isLoading, isCategoriesLoading } = useTransactionAuth();
   const { dadosContas } = useContasAuth();
+  const { balanceAccount, lastDate, setLastDate } = useContasAuth({});
+  console.log(lastDate)
   const { budgetData } = useBudgetAuth()
   const { data: goalsData } = useGoals()
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshing, setRefreshing] = useState(true);
-  const [progress, setProgress] = useState(0.2);
   const navigation = useNavigation();
   const { isDarkMode } = useContext(colorContext)
-  const overallBalance = 0;
-  const expenses = 0;
-  const incomes = 0;
   const firstDate = set(startOfMonth(new Date()), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
-  const lastDate = set(endOfMonth(new Date()), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
+  // const lastDate = set(endOfMonth(new Date()), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
+  const [open, setOpen] = useState(false);
+  const [monthIndex, setMonthIndex] = useState(new Date());
 
   const { data: donutData, isLoading: donutLoading } = useDonutchartData({
     first_date: firstDate,
@@ -53,8 +55,7 @@ export default function HomeScreen() {
   }, 0) || 0
 
 
-  const recentTransactions = dadosAPI?.sort((a, b) => new Date(b.data_transacao) - new Date(a.data_transacao))
-    .slice(0, 5);
+  const recentTransactions = dadosAPI?.slice(0, 5);
 
   const saldo = dadosContas?.reduce((acc, item) => {
     return acc + parseFloat(item.saldo)
@@ -64,9 +65,38 @@ export default function HomeScreen() {
     setSelectedItem(label);
   };
 
+  // console.log(monthIndex)
+
   return (
     <ScrollView style={{ backgroundColor: isDarkMode ? "rgb(26, 26, 26)" : "#c6ebe9" }}>
-      <VisaoGeral saldo={overallBalance} receitas={incomes} despesas={expenses} />
+
+      <VisaoGeral
+        saldo={(balanceAccount?.saldo_total || 0)}
+        balanco_geral={(balanceAccount?.balanco_geral || 0)}
+        despesa={(balanceAccount?.despesa || 0)}
+        receita={(balanceAccount?.receita || 0)}
+      >
+        <View style={{ flexDirection: 'row', alignSelf: 'center', gap: 5 }}>
+          <TouchableOpacity onPress={() => setLastDate(prev => set(endOfMonth(subMonths(prev, 1)), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }))}>
+            <MaterialIcons name="arrow-back-ios" size={24} color={isDarkMode ? "#CCC" : "#f3f3f3"} />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => setOpen(true)}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: isDarkMode ? "#CCC" : "#f3f3f3" }}>
+              {lastDate.toLocaleDateString('pt-BR', { month: 'long' }) + ' ' + lastDate.getFullYear()}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setLastDate(prev => set(endOfMonth(addMonths(prev, 1)), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }))}>
+            <MaterialIcons name="arrow-forward-ios" size={24} color={isDarkMode ? "#CCC" : "#f3f3f3"} />
+          </TouchableOpacity>
+          {/* <NavMonths
+            isDarkMode={isDarkMode}
+            meses={monthIndex}
+            open={open}
+            setOpen={setOpen}
+          /> */}
+        </View>
+      </VisaoGeral>
       <Wrapper>
         <WidgetTeste
           Color={isDarkMode ? "#2e2e2e" : "#ffffff"}

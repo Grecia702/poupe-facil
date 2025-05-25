@@ -136,7 +136,7 @@ export default function DrawerRoutes() {
                 options={{
                     drawerIcon: ({ color, size }) => <Feather name="settings" color={color} size={size} />,
                     drawerLabel: 'Configurações',
-                    // headerShown: false
+                    headerShown: false
                 }}
             />
             <Drawer.Screen

@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import api from './axiosInstance';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@context/authContext';
@@ -14,6 +14,23 @@ const getContas = async () => {
         throw error;
     }
 };
+
+const getAccountBalance = async ({ queryKey }) => {
+    const now = new Date();
+    try {
+        const [_key, params = {}] = queryKey;
+        const { last_date = now } = params;
+
+        const { data } = await api.get('/profile/account/total', {
+            params: { last_date }
+        });
+        return data;
+    } catch (error) {
+        console.log('Erro ao fazer a requisição:', error);
+        throw error;
+    }
+};
+
 
 const createAccount = async (accountData) => {
     try {
@@ -36,9 +53,9 @@ const deleteAccount = async (id) => {
 export const ContasProvider = ({ children }) => {
     const { isAuthenticated } = useAuth();
     const queryClient = useQueryClient();
-
+    const [lastDate, setLastDate] = useState(new Date());
     const { data: dadosContas, isLoading, error, refetch } = useQuery({
-        queryKey: ['id'],
+        queryKey: ['account_id'],
         queryFn: getContas,
         enabled: isAuthenticated,
         onSuccess: (data) => {
@@ -49,15 +66,20 @@ export const ContasProvider = ({ children }) => {
         }
     });
 
+    const { data: balanceAccount, refetch: refetchBalance } = useQuery({
+        queryKey: ['balance_id', { last_date: lastDate }],
+        queryFn: getAccountBalance,
+        enabled: isAuthenticated
+    });
+
     const createAccountMutation = useMutation({
         mutationFn: createAccount,
     });
 
-
     const deleteContaMutation = useMutation({
         mutationFn: deleteAccount,
         onSuccess: () => {
-            queryClient.invalidateQueries(['id']);
+            queryClient.invalidateQueries(['account_id']);
         },
         onError: (error) => {
             console.log('Erro ao deletar conta:', error);
@@ -71,8 +93,11 @@ export const ContasProvider = ({ children }) => {
     return (
         <ContasContext.Provider value={{
             dadosContas,
+            balanceAccount,
             isLoading,
             error,
+            lastDate,
+            setLastDate,
             refetch,
             createAccountMutation,
             deleteConta

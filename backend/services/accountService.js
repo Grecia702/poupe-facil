@@ -1,5 +1,5 @@
-const { error } = require("winston");
 const accountModel = require("../models/accountModel");
+const userModel = require("../models/userModel");
 
 const validarCamposObrigatorios = (dados) => {
     const camposObrigatorios = ['nome_conta', 'saldo', 'tipo_conta', 'icone'];
@@ -38,8 +38,8 @@ const RemoveAccountService = async (userId, id) => {
     }
 }
 
-const ListAccountService = async (userId, limit, offset) => {
-    const account = await accountModel.ListAllAccounts(userId, limit, offset);
+const ListAccountService = async (userId, first_date, last_date) => {
+    const account = await accountModel.ListAllAccounts(userId, first_date, last_date);
     if (!account.rows || account.rows.length === 0) {
         throw new Error('Nenhuma conta encontrada');
     }
@@ -54,11 +54,24 @@ const ListAccountByIDService = async (AccountId, userId) => {
     return account.rows;
 };
 
-const ListTransactionsService = async (AccountId, userId) => {
-    const account = await accountModel.ListTransactionsByAccount(AccountId, userId);
-    if (!account.rows || account.rows.length === 0) {
-        throw new Error('Não foi encontrada nenhuma transação para essa conta');
-    }
-    return account.rows;
-}
-module.exports = { CreateAccountService, ListAccountService, RemoveAccountService, ListAccountByIDService, ListAccountByIDService, ListTransactionsService };
+const sumAccountService = async (userId, last_date) => {
+    const { result } = await userModel.getCreatedAt(userId)
+    const account = await accountModel.getSumAccounts(userId, result.created_at, last_date);
+
+    const data = {
+        saldo_total: parseFloat(account.result.saldo_total),
+        despesa: Math.abs(parseFloat(account.result.despesa)),
+        receita: parseFloat(account.result.receita),
+        balanco_geral: parseFloat(account.result.balanco_geral)
+    };
+    return data;
+};
+
+module.exports = {
+    CreateAccountService,
+    ListAccountService,
+    RemoveAccountService,
+    ListAccountByIDService,
+    ListAccountByIDService,
+    sumAccountService
+};

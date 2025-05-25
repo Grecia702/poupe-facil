@@ -4,8 +4,9 @@ const { CreateAccountService,
     ListAccountByIDService,
     RemoveAccountService,
     UpdateAccountService,
-    ListTransactionsService }
-    = require("../services/accountService")
+    ListTransactionsService,
+    sumAccountService
+} = require("../services/accountService")
 
 const moment = require('moment');
 
@@ -54,10 +55,8 @@ const RemoveAccount = async (req, res) => {
 const ListAccount = async (req, res) => {
     try {
         const { userId } = req.user.decoded
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const offset = (page - 1) * limit;
-        const accounts = await ListAccountService(userId, limit, offset);
+        const { first_date, last_date } = req.body
+        const accounts = await ListAccountService(userId, first_date, last_date);
         return res.status(200).json(accounts)
     }
     catch (err) {
@@ -83,18 +82,19 @@ const FindAccountByID = async (req, res) => {
     }
 }
 
-const ListTransactionsByAccount = async (req, res) => {
+const sumAccountController = async (req, res) => {
     try {
         const { userId } = req.user.decoded
-        const { id } = req.params
-        const transactions = await ListTransactionsService(id, userId);
-        return res.status(200).json(transactions)
+        const { last_date } = req.query
+        const account = await sumAccountService(userId, last_date);
+        return res.status(200).json(account)
     }
     catch (err) {
-        if (err.message === 'Não foi encontrada nenhuma transação para essa conta') {
+        if (err.message === 'Conta não encontrada') {
             return res.status(404).json({ message: err.message });
         }
-        return res.status(500).json({ message: 'Erro na requisição', error: err.message })
+        return res.status(500).json({ message: 'Erro interno no servidor', error: err.message });
     }
 }
-module.exports = { CreateAccount, RemoveAccount, ListAccount, FindAccountByID, ListTransactionsByAccount };
+
+module.exports = { CreateAccount, RemoveAccount, ListAccount, FindAccountByID, sumAccountController };

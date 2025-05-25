@@ -10,4 +10,10 @@ const deleteUser = async (id) => {
     await pool.query("DELETE FROM usuario WHERE id = $1", [id])
 }
 
-module.exports = { updateUser, deleteUser };
+const getCreatedAt = async (id) => {
+    const { rows } = await pool.query("SELECT created_at FROM usuario WHERE id = $1", [id])
+    return { result: rows[0] }
+}
+
+
+module.exports = { updateUser, deleteUser, getCreatedAt };

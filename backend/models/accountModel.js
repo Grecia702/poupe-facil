@@ -29,9 +29,38 @@ const DeleteAccount = async (id, userId) => {
     await pool.query("DELETE FROM contasBancarias WHERE id = $1 AND id_usuario = $2", [id, userId])
 }
 
-const ListAllAccounts = async (userId, limit, offset) => {
-    const { rows, rowCount } = await pool.query("SELECT * FROM contasBancarias WHERE id_usuario = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", [userId, limit, offset]);
+const ListAllAccounts = async (userId) => {
+    const query = `
+    SELECT 
+    id,
+	nome_conta,
+	saldo,
+	desc_conta,
+	icone,
+	tipo_conta
+    FROM contasBancarias 
+    WHERE id_usuario = $1 
+    ORDER BY id
+    `;
+    const { rows, rowCount } = await pool.query(query, [userId]);
     return { rows, total: rowCount, firstResult: rows[0] };
+}
+
+const getSumAccounts = async (userId, first_date, last_date) => {
+    const query = `
+SELECT 
+    COALESCE(SUM(valor) FILTER (WHERE tipo = 'receita'), 0) AS receita,
+    COALESCE(SUM(valor) FILTER (WHERE tipo = 'despesa'), 0) AS despesa,
+	    COALESCE((SELECT SUM(saldo) FROM contasBancarias WHERE id_usuario = $1), 0)
+    + COALESCE(SUM(valor), 0) AS saldo_total,
+	COALESCE(SUM(valor), 0) AS balanco_geral
+FROM user_transactions
+WHERE user_id = $1
+  AND data_transacao BETWEEN $2 AND $3
+    `;
+
+    const { rows, rowCount } = await pool.query(query, [userId, first_date, last_date]);
+    return { rows, total: rowCount, result: rows[0] };
 }
 
 const ListTransactionsByAccount = async (accountId, userId) => {
@@ -49,4 +78,13 @@ const AccountExists = async (account_name, userId) => {
     return rows[0].exists;
 }
 
-module.exports = { CreateAccount, FindAccountByID, UpdateAccount, DeleteAccount, ListAllAccounts, ListTransactionsByAccount, AccountExists };
+module.exports = {
+    CreateAccount,
+    FindAccountByID,
+    UpdateAccount,
+    DeleteAccount,
+    ListAllAccounts,
+    ListTransactionsByAccount,
+    getSumAccounts,
+    AccountExists
+};

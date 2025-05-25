@@ -33,7 +33,7 @@ export default function Barchart() {
         return acc
     }, { despesa: 0, receita: 0 })
 
-    console.log(totalSemana)
+    // console.log(totalSemana)
 
     let porcentagem_despesa
 
