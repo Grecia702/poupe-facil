@@ -6,12 +6,9 @@ const DeleteButton = ({ visible, setVisible, children }) => {
     return (
         <TouchableOpacity style={styles.delete} onPress={setVisible}>
             <MaterialIcons name="delete" size={24} color="white" />
-            <CustomModal
-                visible={visible}
-                setVisible={setVisible}
-            >
-                {children}
-            </CustomModal>
+
+            {children}
+
         </TouchableOpacity>
     )
 }

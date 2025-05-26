@@ -11,17 +11,17 @@ const checkValidAccount = async (accountId, userId) => {
   return rowCount > 0;
 }
 
-const CreateTransaction = async (id_contabancaria, categoria, tipo, valor, data_transacao, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id) => {
+const CreateTransaction = async (id_contabancaria, categoria, tipo, valor, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id) => {
   const query = `
     INSERT INTO transacoes 
-    (id_contabancaria, categoria, tipo, valor, data_transacao, natureza , recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id) 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
-  await pool.query(query, [id_contabancaria, categoria, tipo, valor, data_transacao, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id]);
+    (id_contabancaria, categoria, tipo, valor, natureza , recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
+  await pool.query(query, [id_contabancaria, categoria, tipo, valor, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id]);
 }
 
 const ReadTransaction = async (userId, transactionId) => {
   const { rows, rowCount } = await pool.query("SELECT * FROM user_transactions WHERE user_id = $1 AND transaction_id = $2 ", [userId, transactionId]);
-  return { rows, exists: rowCount > 0, total: rowCount, firstResult: rows[0] };
+  return { rows, exists: rowCount > 0, total: rowCount, result: rows[0] };
 }
 
 const UpdateTransaction = async (id, campos) => {
@@ -57,14 +57,26 @@ const DeleteTransaction = async (userId, transactionId) => {
 
 const ListTransactions = async (userId, queryParams) => {
   const { tipo, natureza, limit, offset, orderBy, orderDirection } = queryParams
+  let orderParam = orderBy
+  if (orderBy === 'valor') {
+    orderParam = 'ABS(valor)'
+  }
   const query = `
-    SELECT transaction_id, tipo, natureza, categoria, valor, 
-    data_transacao, recorrente, frequencia_recorrencia, proxima_ocorrencia
+    SELECT 
+    transaction_id,
+    tipo, 
+    natureza, 
+    categoria, 
+    valor, 
+    data_transacao, 
+    recorrente, 
+    frequencia_recorrencia, 
+    proxima_ocorrencia
     FROM user_transactions 
     WHERE user_id = $1
       AND ($2::text IS NULL OR tipo = $2::text)
       AND ($3::text IS NULL OR natureza = $3::text)
-    ORDER BY ${orderBy} ${orderDirection}, transaction_id ASC
+    ORDER BY ${orderParam} ${orderDirection}, transaction_id ASC
     LIMIT $4
     OFFSET $5
   `;

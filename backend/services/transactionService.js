@@ -14,7 +14,7 @@ const transactionQuerySchema = z.object({
         }),
     natureza: z.string().optional().nullable()
         .transform(val => val?.toLowerCase())
-        .refine(val => !val || ['fixa', 'variavel'].includes(val), {
+        .refine(val => !val || ['Fixa', 'Variavel'].includes(val), {
             message: "natureza inválida"
         }),
     orderBy: z.enum(['valor', 'data_transacao', 'tipo', 'natureza', 'transaction_id']).default('transaction_id'),
@@ -28,7 +28,7 @@ const transactionQuerySchema = z.object({
 
 
 const validarCamposObrigatorios = (dados) => {
-    const camposObrigatorios = ['id_contabancaria', 'categoria', 'tipo', 'valor', 'natureza', 'data_transacao'];
+    const camposObrigatorios = ['id_contabancaria', 'categoria', 'tipo', 'valor', 'natureza'];
     const camposFaltando = camposObrigatorios.filter(campo => !dados[campo]);
 
     if (camposFaltando.length > 0) {
@@ -48,16 +48,13 @@ const validarFrequenciaRecorrencia = (frequencia) => {
 const CreateTransactionService = async (dados, userId) => {
 
     validarCamposObrigatorios(dados);
+    if (dados.valor <= 0) {
+        throw new Error('Valor da transação tem que ser maior ou diferente de 0 ');
+    }
+    if (dados.tipo === 'Despesa') {
+        dados.valor *= -1
+    }
 
-    if (!dados.data_transacao) {
-        dados.data_transacao = new Date()
-    }
-    if (dados.tipo === 'Despesa' && dados.valor <= 0) {
-        throw new Error('Valor da despesa tem que ser maior ou diferente de 0 ');
-    }
-    if (dados.tipo === 'Receita' && dados.valor <= 0) {
-        throw new Error('Valor da receita  tem que ser maior ou diferente de 0 ');
-    }
     if (dados.natureza === 'Fixa') {
         dados.recorrente = true;
 
@@ -102,7 +99,6 @@ const CreateTransactionService = async (dados, userId) => {
         dados.categoria,
         dados.tipo,
         dados.valor,
-        dados.data_transacao,
         dados.natureza,
         dados.recorrente,
         dados.frequencia_recorrencia,
@@ -118,7 +114,12 @@ const getTransactionByID = async (userId, transactionId) => {
         throw new Error('Nenhuma transação com essa ID foi encontrada');
     }
 
-    return transacoes.rows;
+    const data = {
+        ...transacoes.result,
+        valor: parseFloat(transacoes.result.valor)
+    }
+
+    return data;
 };
 
 const RemoveTransactionService = async (userId, transactionId) => {
@@ -133,22 +134,21 @@ const RemoveTransactionService = async (userId, transactionId) => {
 
 
 const ListTransactionsService = async (userId, query) => {
-    const { page, limit, all, ...rest } = transactionQuerySchema.parse(query);
-    if (all) {
-        const transactions = await transactionModel.listSumTransactions(userId)
-        return transactions.rows
-    }
+    const { page, limit, ...rest } = transactionQuerySchema.parse(query);
     const offset = (page - 1) * limit;
     const queryParams = { ...rest, page, limit, offset };
     const [transacoes, total] = await Promise.all([
         transactionModel.ListTransactions(userId, queryParams),
         transactionModel.countTransactionsResult(userId, queryParams)
     ])
-    if (total === 0) {
-        throw new Error('Nenhuma transação encontrada');
-    }
+
+    const transactionData = transacoes.rows.map((item) => ({
+        ...item,
+        valor: Math.abs(parseFloat((item.valor)))
+    }))
+
     return {
-        data: transacoes.rows,
+        data: transactionData,
         meta: {
             total: total,
             page: page,

@@ -1,11 +1,12 @@
 import { StyleSheet, FlatList, TouchableOpacity, Modal, Text, View, Pressable, ActivityIndicator, useWindowDimensions } from 'react-native'
-import { useState, useContext, useMemo, useLayoutEffect } from 'react'
+import { useState, useContext, useMemo, useLayoutEffect, useCallback } from 'react'
 import { MaterialIcons } from '@expo/vector-icons'
 import { colorContext } from '@context/colorScheme'
 import TransactionCard from '@components/transactions';
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
-import { usePosts } from '@hooks/usePosts';
+// import { usePosts } from '@hooks/usePosts';
+import { useTransactionAuth } from '@context/transactionsContext';
 import { useQueryClient } from '@tanstack/react-query';
 
 // TODO:  refatorar e otimizar
@@ -15,11 +16,28 @@ const Transactions = () => {
     const tipo = params
     // console.log('tipo: ', tipo)
     const [filters, setFilters] = useState({ tipo: tipo, orderBy: 'transaction_id', orderDirection: 'DESC' })
-    const { data, refetch, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } = usePosts({
+    // const { data, refetch, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } = usePosts({
+    //     tipo: filters.tipo,
+    //     orderBy: filters.orderBy,
+    //     orderDirection: filters.orderDirection,
+    // });
+
+    const { useFilteredTransacoes } = useTransactionAuth();
+
+    const {
+        data,
+        refetch,
+        isLoading,
+        error,
+        hasNextPage,
+        fetchNextPage,
+        isFetchingNextPage
+    } = useFilteredTransacoes({
         tipo: filters.tipo,
         orderBy: filters.orderBy,
-        orderDirection: filters.orderDirection,
+        orderDirection: filters.orderDirection
     });
+
     const { height, width } = useWindowDimensions();
     const queryClient = useQueryClient();
     const navigation = useNavigation();
@@ -58,6 +76,8 @@ const Transactions = () => {
             fetchNextPage();
         }
     };
+
+
 
     // console.log('IDs das transações:', allData.map(item => item.transaction_id));
     useLayoutEffect(() => {
@@ -171,7 +191,6 @@ const Transactions = () => {
         }
     };
 
-
     const orderTransactions = (order) => {
         setSelected(order);
         setIsOpen(false);
@@ -249,13 +268,13 @@ const Transactions = () => {
                                         [styles.optionsButton, { borderColor: isDarkMode ? "#DDD" : "#111", }]
                                     }>
                                         <MaterialIcons name="filter-alt" size={24} color={isDarkMode ? "#DDD" : "#111"} />
-                                        <Text style={{ fontWeight: 500, color: isDarkMode ? "#DDD" : "#111" }}>Filtrar por</Text>
+                                        {/* <Text style={{ fontWeight: 500, color: isDarkMode ? "#DDD" : "#111" }}>Filtrar por</Text> */}
                                     </TouchableOpacity>
                                     <TouchableOpacity onPressIn={toggleDropdown} style={
                                         [styles.optionsButton, { borderColor: isDarkMode ? "#DDD" : "#111", }]
                                     }>
                                         <MaterialIcons name="sort" size={24} color={isDarkMode ? "#DDD" : "#111"} />
-                                        <Text style={{ fontWeight: 500, color: isDarkMode ? "#DDD" : "#111" }}>Ordenar por</Text>
+                                        {/* <Text style={{ fontWeight: 500, color: isDarkMode ? "#DDD" : "#111" }}>Ordenar por</Text> */}
                                     </TouchableOpacity>
                                 </View>
                                 {

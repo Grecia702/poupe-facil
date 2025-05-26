@@ -40,10 +40,11 @@ const RemoveAccountService = async (userId, id) => {
 
 const ListAccountService = async (userId, first_date, last_date) => {
     const account = await accountModel.ListAllAccounts(userId, first_date, last_date);
-    if (!account.rows || account.rows.length === 0) {
-        throw new Error('Nenhuma conta encontrada');
-    }
-    return account.rows
+    const data = account.rows.map(item => ({
+        ...item,
+        saldo: parseFloat(item.saldo)
+    }));
+    return data
 }
 
 const ListAccountByIDService = async (AccountId, userId) => {

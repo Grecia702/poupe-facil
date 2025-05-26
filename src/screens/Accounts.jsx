@@ -1,9 +1,7 @@
 import { StyleSheet, Text, View, TouchableOpacity, FlatList, Modal, Pressable } from 'react-native';
 import React, { useState, useContext, useMemo, useCallback } from 'react';
-import TransactionCard from '@components/transactions'
 import Account from '@components/accounts';
 import { useContasAuth } from '@context/contaContext';
-import { useTransactionAuth } from '@context/transactionsContext';
 import { colorContext } from '@context/colorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Separator } from '../components/accounts/styles';
@@ -79,28 +77,12 @@ const BankAccount = () => {
     ]
     const navigation = useNavigation();
     const { dadosContas, refetch } = useContasAuth();
-    const { dadosAPI } = useTransactionAuth();
     const { isDarkMode } = useContext(colorContext);
     const [monthIndex, setMonthIndex] = useState(new Date().getMonth());
     const [dropdownVisibleId, setDropdownVisibleId] = useState(null);
-    const [visibleId, setVisibleId] = useState(null)
     const [open, setOpen] = useState(false);
     const [refreshing, setRefreshing] = useState(false)
-    const accountMemo = useMemo(() => dadosContas, [dadosContas]);
-    const transactionMemo = useMemo(() => dadosAPI, [dadosAPI])
     const currentMonth = meses[monthIndex];
-
-    const toast = useToast();
-    const showNotif = () => {
-        toast.show('Sucesso! Cadê meu dinheiro?', {
-            type: 'success',
-            duration: 1500,
-        })
-    }
-
-    const handleExpand = (id) => {
-        setVisibleId((prevId) => (prevId === id ? null : id));
-    };
 
     const HeaderComponent = () => {
         return (
@@ -126,11 +108,14 @@ const BankAccount = () => {
             </View>
         );
     };
+
+    console.log(dadosContas)
+
     return (
         <View style={{ flex: 1 }}>
             <FlatList
                 data={dadosContas}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => (item.id).toString()}
                 contentContainerStyle={[styles.contentContainer, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}
                 style={{ backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E' }}
                 ListHeaderComponent={HeaderComponent}
@@ -138,8 +123,6 @@ const BankAccount = () => {
                 refreshing={refreshing}
                 onRefresh={refetch}
                 renderItem={({ item }) => {
-                    const isExpanded = visibleId === item.id;
-                    const conta_id = item.id
                     return (
                         <>
                             <Account
@@ -148,33 +131,12 @@ const BankAccount = () => {
                                 icon={item.icone}
                                 color={isDarkMode ? "#222" : "#DDD"}
                                 textColor={isDarkMode ? "#CCC" : "#222"}
-                                onPress={handleExpand}
                                 id={item.id}
                                 isVisible={dropdownVisibleId === item.id}
                                 setVisibleId={setDropdownVisibleId}
                                 setRefreshing={setRefreshing}
                             />
                             <Separator color={isDarkMode ? "#cccccc6f" : "#22222275"} />
-                            {isExpanded && (
-                                transactionMemo
-                                    ?.filter(item => item.account_id === conta_id)
-                                    .map(item => {
-                                        return (
-                                            <View key={item.transaction_id} style={[styles.transactionCards]}>
-                                                <TransactionCard
-                                                    iconName={item.categoria}
-                                                    color={item.tipo === "Despesa" ? '#dd6161' : '#2563EB'}
-                                                    state={isDarkMode}
-                                                    category={item.categoria}
-                                                    date={format(item.data_transacao, "dd/MM/yyyy")}
-                                                    value={item.valor}
-                                                    onPress={() => console.log(item.transaction_id)}
-                                                    id={item.transaction_id}
-                                                />
-                                            </View>
-                                        )
-                                    })
-                            )}
                         </>
                     );
                 }}

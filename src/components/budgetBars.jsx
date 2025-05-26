@@ -7,6 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import DeleteButton from './deleteButton';
 import { useToast } from 'react-native-toast-notifications';
 import ActionButtons from '@components/actionButtons';
+import DangerModal from '@components/dangerModal';
 import { useBudgetAuth } from '@context/budgetsContext'
 
 const Budget = ({ data }) => {
@@ -104,14 +105,10 @@ const Budget = ({ data }) => {
                         <Text style={styles.buttonEdit}>Editar</Text>
                     </TouchableOpacity>
                     <DeleteButton visible={visible} setVisible={() => setVisible(true)}>
-                        <Text style={[styles.text, { color: isDarkMode ? 'white' : 'black' }]}>
-                            Essa ação não pode ser desfeita. {'\n'} Deseja realmente excluir este orçamento?
-                        </Text>
-                        <ActionButtons
-                            onCreate={() => handleDelete(data)}
-                            onCancel={() => setVisible(false)}
-                            createLabel={'Apagar'}
-                            createColor={'#CC5555'}
+                        <DangerModal
+                            open={visible}
+                            setOpen={setVisible}
+                            onPress={() => handleDelete(data)}
                         />
                     </DeleteButton>
                 </View>

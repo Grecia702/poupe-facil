@@ -58,7 +58,9 @@ export const Date = styled(Title)`
 export const Value = styled(Title)`
     font-size: 16px;
     font-weight: 600;
-    width: 80px;
+    width: 100px;
     text-align: right;
     color:  ${({ $state }) => ($state ? "#FFF" : "#303131")};
+        display: flex;
+    justify-content: flex-end;
 `;

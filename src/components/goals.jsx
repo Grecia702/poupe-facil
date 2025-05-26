@@ -11,7 +11,7 @@ const Goals = ({ goal_desc, start_date, end_date, current_amount, status_meta, t
     const progress = current_amount / total_amount
     const valor_gasto = current_amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
     const valor_total = total_amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-    const deadline = differenceInDays(end_date, start_date)
+    const deadline = differenceInDays(end_date, new Date())
     const openMenu = () => setVisible(true);
     const closeMenu = () => setVisible(false);
     let color = '#A0A0A0';

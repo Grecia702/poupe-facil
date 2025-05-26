@@ -74,10 +74,15 @@ export const ContasProvider = ({ children }) => {
 
     const createAccountMutation = useMutation({
         mutationFn: createAccount,
+        enabled: isAuthenticated,
+        onSuccess: () => {
+            queryClient.invalidateQueries(['account_id']);
+        },
     });
 
     const deleteContaMutation = useMutation({
         mutationFn: deleteAccount,
+        enabled: isAuthenticated,
         onSuccess: () => {
             queryClient.invalidateQueries(['account_id']);
         },

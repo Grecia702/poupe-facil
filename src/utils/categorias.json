@@ -1,58 +1,58 @@
-[
-    {
+{
+    "Contas": {
         "id": "1",
         "label": "Contas",
         "color": "rgb(180, 9, 9)",
         "value": 100,
         "icon": "credit-card"
     },
-    {
+    "Alimentação": {
         "id": "2",
         "label": "Alimentação",
         "color": "rgb(204, 118, 38)",
         "value": 200,
         "icon": "restaurant-menu"
     },
-    {
+    "Carro": {
         "id": "3",
         "label": "Carro",
         "color": "rgb(57, 184, 74)",
         "value": 300,
         "icon": "directions-car"
     },
-    {
+    "Internet": {
         "id": "4",
         "label": "Internet",
         "color": "rgb(64, 155, 230)",
         "value": 500,
         "icon": "computer"
     },
-    {
+    "Lazer": {
         "id": "5",
         "label": "Lazer",
         "color": "rgb(114, 13, 109)",
         "value": 500,
         "icon": "beach-access"
     },
-    {
+    "Educação": {
         "id": "6",
         "label": "Educação",
-        "color": "rgb(68, 59, 90)",
+        "color": "rgb(98, 99, 120)",
         "value": 500,
         "icon": "menu-book"
     },
-    {
+    "Compras": {
         "id": "7",
         "label": "Compras",
         "color": "rgb(202, 185, 27)",
         "value": 500,
         "icon": "shopping-cart"
     },
-    {
+    "Outros": {
         "id": "8",
         "label": "Outros",
         "color": "rgb(83, 87, 83)",
         "value": 500,
         "icon": "more-horiz"
     }
-]
+}

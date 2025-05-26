@@ -1,17 +1,17 @@
-import { StyleSheet, View, Modal } from 'react-native'
+import { StyleSheet, View, Modal, TouchableOpacity } from 'react-native'
 import { colorContext } from '@context/colorScheme';
 import { useContext } from 'react'
 
-const CustomModal = ({ visible, children }) => {
+const CustomModal = ({ visible, setVisible, children }) => {
     const { isDarkMode } = useContext(colorContext);
     return (
         <Modal visible={visible} transparent animationType="slide">
-            <View style={styles.overlay}>
+            <TouchableOpacity style={styles.overlay} onPress={setVisible}>
                 <View style={[styles.modal, { backgroundColor: isDarkMode ? '#333' : '#EEE' }]}>
                     {children}
                 </View>
 
-            </View>
+            </TouchableOpacity>
         </Modal>
     )
 }
@@ -21,7 +21,7 @@ export default CustomModal
 const styles = StyleSheet.create({
     overlay: {
         flex: 1,
-        backgroundColor: '#00000066',
+        backgroundColor: '#00000086',
         justifyContent: 'center',
         padding: 20,
     },

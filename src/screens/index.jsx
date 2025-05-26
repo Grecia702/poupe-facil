@@ -19,6 +19,7 @@ import { useContasAuth } from '@context/contaContext';
 import { useGoals } from '@hooks/useGoals';
 import CalendarEmpty from '../assets/calendar-empty.svg';
 import TargetArrow from '../assets/target-arrow.svg';
+import TransactionEmpty from '../assets/empty-cart.svg';
 import Budget from '@components/budgetBars';
 import CreateItem from '@components/createItem';
 import Goals from '../components/goals';
@@ -29,10 +30,9 @@ import { useDonutchartData } from '@hooks/useDonutchartData';
 
 
 export default function HomeScreen() {
-  const { dadosAPI, isLoading, isCategoriesLoading } = useTransactionAuth();
+  const { dadosAPI, isLoading } = useTransactionAuth();
   const { dadosContas } = useContasAuth();
   const { balanceAccount, lastDate, setLastDate } = useContasAuth({});
-  console.log(lastDate)
   const { budgetData } = useBudgetAuth()
   const { data: goalsData } = useGoals()
   const [selectedItem, setSelectedItem] = useState(null);
@@ -40,9 +40,6 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const { isDarkMode } = useContext(colorContext)
   const firstDate = set(startOfMonth(new Date()), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
-  // const lastDate = set(endOfMonth(new Date()), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
-  const [open, setOpen] = useState(false);
-  const [monthIndex, setMonthIndex] = useState(new Date());
 
   const { data: donutData, isLoading: donutLoading } = useDonutchartData({
     first_date: firstDate,
@@ -98,30 +95,6 @@ export default function HomeScreen() {
         </View>
       </VisaoGeral>
       <Wrapper>
-        <WidgetTeste
-          Color={isDarkMode ? "#2e2e2e" : "#ffffff"}
-          Title={"Contas"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"}
-          onPressDetails={() => navigation.navigate('Accounts')}
-        >
-          {
-            dadosContas?.map(item => (
-              (<Account
-                name={item.nome_conta}
-                key={item.id}
-                value={item.saldo}
-                icon={item.icone}
-                color={isDarkMode ? "#222" : "#DDD"}
-                textColor={isDarkMode ? "#CCC" : "#222"}
-                hideOption
-              />)
-            ))
-          }
-          <Separator color={isDarkMode ? "#cccccc6f" : "#22222275"} />
-          <View style={{ marginTop: 8, flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={{ fontSize: 16, fontWeight: '600', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>Saldo Total:</Text>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>R${saldo?.toFixed(2)}</Text>
-          </View>
-        </WidgetTeste>
 
         <WidgetTeste
           Color={isDarkMode ? "#2e2e2e" : "#fff"}
@@ -147,6 +120,31 @@ export default function HomeScreen() {
           )}
         </WidgetTeste>
 
+        <WidgetTeste
+          Color={isDarkMode ? "#2e2e2e" : "#ffffff"}
+          Title={"Contas"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"}
+          onPressDetails={() => navigation.navigate('Accounts')}
+        >
+          {
+            dadosContas?.map(item => (
+              (<Account
+                name={item.nome_conta}
+                key={item.id}
+                value={item.saldo}
+                icon={item.icone}
+                color={isDarkMode ? "#222" : "#DDD"}
+                textColor={isDarkMode ? "#CCC" : "#222"}
+                hideOption
+              />)
+            ))
+          }
+          <Separator color={isDarkMode ? "#cccccc6f" : "#22222275"} />
+          <View style={{ marginTop: 8, flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={{ fontSize: 16, fontWeight: '600', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>Saldo Total:</Text>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>R${saldo?.toFixed(2)}</Text>
+          </View>
+        </WidgetTeste>
+
 
         <WidgetTeste
           Color={isDarkMode ? "#2e2e2e" : "#ffffff"}
@@ -165,14 +163,20 @@ export default function HomeScreen() {
                 type={item?.natureza}
                 recurrence={item?.recorrente}
                 date={item?.data_transacao}
-                value={item?.valor} />
+                value={item?.valor}
+                hideOption
+              />
             ))
           ) : (
             <>
-              <Text>Voce não criou nenhuma transação</Text>
-              <TouchableOpacity style={{ backgroundColor: '#3044b8' }}>
-                <Text style={{ color: '#FFF' }}>Criar</Text>
-              </TouchableOpacity>
+              <CreateItem
+                text={'Nenhuma transação encontrada.'}
+                buttonText={'Criar agora'}
+                screen={'CreateTransaction'}
+                icon={
+                  <TransactionEmpty color={isDarkMode ? "#AAA" : "#000000"} width={96} height={96} />
+                }
+              />
             </>
           )
           }
@@ -181,7 +185,7 @@ export default function HomeScreen() {
         <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffff"} Title={"Gráficos"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
 
           <TouchableOpacity onPress={() => navigation.navigate('Gráficos')} >
-            {!isCategoriesLoading && <PieChart height={350} width={350} data={donutData} total={total} padAngle={3} selected={selectedItem} />}
+            {donutData && <PieChart height={350} width={350} data={donutData} total={total} padAngle={3} selected={selectedItem} />}
           </TouchableOpacity>
 
 
@@ -217,7 +221,7 @@ export default function HomeScreen() {
                 <Card
                   color={categoriaCores[item.categoria]}
                   title={item.categoria}
-                  text={(item.total)}
+                  text={(item.total).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   selectedItem={selectedItem}
                   selected={selectedItem === item.categoria ? selectedItem : 'none'}
                   onPress={() => handleSelectItem(item.categoria)}

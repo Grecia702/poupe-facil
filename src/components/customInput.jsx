@@ -18,7 +18,7 @@ const CustomInput = ({ description, placeholder, type, value, onChangeText, requ
                 ) : (
                     <TextInput
                         keyboardType={type}
-                        placeholder={type === 'numeric-pad' ? '0,00' : placeholder}
+                        placeholder={placeholder}
                         style={[styles.inputText, { height: height || 'auto', color: isDarkMode ? '#DDD' : "#333", }]}
                         value={value}
                         maxLength={type === 'numeric-pad' ? 20 : undefined}

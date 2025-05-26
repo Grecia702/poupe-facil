@@ -1,6 +1,6 @@
 
 import React, { useState, useContext } from 'react'
-import { Pressable, View, Text, Modal, StyleSheet } from 'react-native';
+import { Pressable, View, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { AccountCard, Balance, IconCard, InfoView, TextContainer, Title } from './styles'
 import { MaterialIcons } from '@expo/vector-icons'
@@ -8,76 +8,36 @@ import { TouchableOpacity } from "react-native";
 import { useContasAuth } from '@context/contaContext';
 import { colorContext } from '@context/colorScheme'
 import { useToast } from 'react-native-toast-notifications';
+import DangerModal from '@components/dangerModal';
 
 
-const ModalConfirmDelete = ({ open, setOpen, isDarkMode, accountId, setRefreshing }) => {
-    const { deleteConta, refetch } = useContasAuth();
+export default function Account({ name, value, icon, color, textColor, isVisible, setVisibleId, setRefreshing, id, hideOption }) {
+    const { isDarkMode } = useContext(colorContext)
+    const navigation = useNavigation();
+    const [isOpen, setIsOpen] = useState(false)
     const toast = useToast();
-
-    const showNotif = ({ setOpen, accountId }) => {
-        setOpen(prev => !prev)
-        console.log('exibindo toast')
+    const { deleteConta, refetch } = useContasAuth();
+    const handleToggleDropdown = () => {
+        setVisibleId(isVisible ? null : id);
+    };
+    const handleClose = () => {
+        setVisibleId(null);
+    };
+    const showNotif = () => {
+        setIsOpen(prev => !prev)
         toast.show('Conta deletada com sucesso', {
             type: 'success',
             duration: 1500,
         });
         setRefreshing(prev => !prev);
         setTimeout(() => {
-            deleteConta(accountId)
+            deleteConta(id)
             refetch()
         }, 2000);
         setTimeout(() => {
             setRefreshing(prev => !prev);
         }, 3500);
-
     }
-    return (
-        <Modal
-            transparent
-            visible={open}
-            animationType="fade"
-            onRequestClose={() => setOpen(false)}
-        >
-            <Pressable style={styles.overlay} onPress={() => setOpen(prev => !prev)}>
-                <View style={[styles.modal, { backgroundColor: isDarkMode ? "#333" : "#e8f5e6" }]}>
-                    <Text style={{ width: 180, fontWeight: 500, lineHeight: 20, textAlign: 'center', color: isDarkMode ? "#FFF" : "#333" }}>
-                        Você tem certeza que
-                        quer apagar esta conta?
-                    </Text>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch' }}>
-
-                        <TouchableOpacity onPress={() => setOpen(prev => !prev)}
-                            style={{ padding: 8, backgroundColor: '#b8b6b6', borderRadius: 5 }}
-                        >
-                            <Text>Cancelar</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity onPress={() => showNotif({ setOpen, accountId })}
-                            style={{ padding: 8, backgroundColor: '#ca4c4c', borderRadius: 5 }}
-                        >
-                            <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>Deletar</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Pressable>
-        </Modal>
-    )
-}
-
-
-
-export default function Account({ name, value, icon, color, textColor, isVisible, setVisibleId, setRefreshing, id, onPress, hideOption }) {
-    const { isDarkMode } = useContext(colorContext)
-    const navigation = useNavigation();
-    const [isOpen, setIsOpen] = useState(false)
-
-    const handleToggleDropdown = () => {
-        setVisibleId(isVisible ? null : id);
-    };
-
-    const handleClose = () => {
-        setVisibleId(null);
-    };
 
     const DropDown = () => {
         return (
@@ -94,32 +54,25 @@ export default function Account({ name, value, icon, color, textColor, isVisible
                     }}
                 />
 
-                <View style={{
-                    position: 'absolute',
-                    top: 0,
-                    right: 20,
-                    backgroundColor: isDarkMode ? '#3b3b3b' : '#cceed9',
-                    elevation: 10,
-                    borderWidth: 1,
-                    borderRadius: 6,
-                    height: 'auto',
-                    zIndex: 1,
-                }}>
-                    <TouchableOpacity onPress={() => navigation.navigate('EditAccount', { accountId: id })
-                    } style={{ paddingVertical: 10, paddingHorizontal: 20 }}>
+                <View style={[styles.dropdown, { backgroundColor: isDarkMode ? '#3b3b3b' : '#cceed9', }]}>
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('EditAccount', { accountId: id })}
+                        style={{ paddingVertical: 10, paddingHorizontal: 20 }}
+                    >
                         <Text style={{ color: isDarkMode ? '#EEE' : '#222', textAlign: 'left' }}>Editar</Text>
                     </TouchableOpacity>
                     <View style={{ backgroundColor: "#22222288", height: 1, width: '100 %' }} />
-                    <TouchableOpacity onPress={() => setIsOpen(prev => !prev)}
-                        style={{ paddingVertical: 10, paddingHorizontal: 20 }}>
+                    <TouchableOpacity
+                        onPress={() => setIsOpen(prev => !prev)}
+                        style={{ paddingVertical: 10, paddingHorizontal: 20 }}
+                    >
                         <Text style={{ color: isDarkMode ? '#EEE' : '#222', textAlign: 'left' }}>Apagar</Text>
                     </TouchableOpacity>
-                    <ModalConfirmDelete
+                    <DangerModal
                         open={isOpen}
                         setRefreshing={setRefreshing}
                         setOpen={setIsOpen}
-                        accountId={id}
-                        isDarkMode={isDarkMode}
+                        onPress={() => showNotif()}
                     />
                 </View>
             </>
@@ -130,7 +83,7 @@ export default function Account({ name, value, icon, color, textColor, isVisible
 
         <>
             {isVisible && <DropDown />}
-            <AccountCard onPress={() => onPress(id)}>
+            <AccountCard >
                 <IconCard color={color}>
                     <MaterialIcons
                         name={icon}
@@ -141,7 +94,7 @@ export default function Account({ name, value, icon, color, textColor, isVisible
                     <Title color={textColor}>{name}</Title>
                 </TextContainer>
                 <InfoView>
-                    <Balance color={textColor}>{Number(value).toFixed(2)}</Balance>
+                    <Balance color={textColor}>{value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Balance>
                     {!hideOption && (<TouchableOpacity onPress={handleToggleDropdown}>
                         <MaterialIcons
                             name="more-vert" size={24}
@@ -154,30 +107,15 @@ export default function Account({ name, value, icon, color, textColor, isVisible
     )
 }
 
-
-
 const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modal: {
-        padding: 20,
-        gap: 20,
-        borderRadius: 10,
-    },
     dropdown: {
-        alignItems: 'center',
-        maxWidth: '60%',
-        padding: 20,
-        gap: 10,
-        borderRadius: 10,
+        position: 'absolute',
+        top: 0,
+        right: 20,
         elevation: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-    },
+        borderWidth: 1,
+        borderRadius: 6,
+        height: 'auto',
+        zIndex: 1,
+    }
 })

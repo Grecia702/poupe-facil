@@ -83,7 +83,6 @@ const CreateGoals = () => {
         }
     };
 
-    console.log(fields)
 
     return (
         <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '	#e5e5ea' }]}>

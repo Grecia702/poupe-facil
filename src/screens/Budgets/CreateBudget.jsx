@@ -57,8 +57,6 @@ const CreateBudget = () => {
         });
     };
 
-    console.log(fields)
-
     const toastSuccess = () => {
         toast.show('Orçamento criado com sucesso', {
             type: 'success',
@@ -78,14 +76,14 @@ const CreateBudget = () => {
 
     return (
         <View style={[styles.container, { backgroundColor: isDarkMode ? "#333" : '#ffffff' }]}>
-            <CustomInput
+            {/* <CustomInput
                 description={'Período (mês e ano)*'}
                 type={'default'}
                 value={fields.data_desc}
                 onChangeText={(text) => handleCurrencyInput(text)}
                 placeholder={'Maio de 2025'}
                 required
-            />
+            /> */}
             <CustomInput
                 description={'Valor limite do orçamento*'}
                 type={'numeric-pad'}
