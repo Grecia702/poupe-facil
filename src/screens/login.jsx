@@ -58,7 +58,6 @@ const LoginScreen = () => {
     };
 
     const handleLogin = async () => {
-        console.log(credentials)
         if (!credentials.email || !credentials.password) {
             toastError('Preencha todos os campos.');
             return;

@@ -24,25 +24,24 @@ const ReadTransaction = async (userId, transactionId) => {
   return { rows, exists: rowCount > 0, total: rowCount, result: rows[0] };
 }
 
-const UpdateTransaction = async (id, campos) => {
-  const setClause = Object.keys(campos)
-    .map((campo, i) => `${campo} = $${i + 1}`)
-    .join(', ');
-
-  const valores = Object.values(campos);
-
+const UpdateTransaction = async (userId, transaction_id, queryParams) => {
+  const keys = Object.keys(queryParams);
+  if (keys.length === 0) {
+    throw new Error('Nenhum campo para atualizar');
+  }
+  const values = Object.values(queryParams);
+  const setClause = keys.map((key, index) => `${key} = $${index + 1}`).join(', ');
+  const params = [...values, userId, transaction_id]
   const query = `
-        UPDATE transacoes t
-        SET ${setClause} 
-        FROM usuario u
-        JOIN contasBancarias b ON b.id = u.id 
-        WHERE u.id = $1
-        AND t.id = $2
-        RETURNING u.*;
+    UPDATE transacoes AS t
+    SET ${setClause}, updated_at = NOW()
+    FROM contasBancarias AS cb
+    WHERE t.id_contabancaria = cb.id
+    AND cb.id_usuario = $${keys.length + 1}
+    AND t.id = $${keys.length + 2}
     `;
-  const parametros = [...valores, id, campos.id_transacao];
-  return await pool.query(query, parametros);
-};
+  await pool.query(query, params)
+}
 
 const DeleteTransaction = async (userId, transactionId) => {
   const query = `

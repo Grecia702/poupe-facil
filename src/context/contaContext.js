@@ -41,6 +41,12 @@ const createAccount = async (accountData) => {
     }
 };
 
+const updateAccount = async ({ id, ...transactionData }) => {
+    const res = await api.patch(`/profile/account/${id}`, transactionData);
+    return res.data
+};
+
+
 const deleteAccount = async (id) => {
     try {
         await api.delete(`/profile/account/${id}`);
@@ -74,7 +80,13 @@ export const ContasProvider = ({ children }) => {
 
     const createAccountMutation = useMutation({
         mutationFn: createAccount,
-        enabled: isAuthenticated,
+        onSuccess: () => {
+            queryClient.invalidateQueries(['account_id']);
+        },
+    });
+
+    const updateAccountMutation = useMutation({
+        mutationFn: updateAccount,
         onSuccess: () => {
             queryClient.invalidateQueries(['account_id']);
         },
@@ -82,13 +94,9 @@ export const ContasProvider = ({ children }) => {
 
     const deleteContaMutation = useMutation({
         mutationFn: deleteAccount,
-        enabled: isAuthenticated,
         onSuccess: () => {
             queryClient.invalidateQueries(['account_id']);
         },
-        onError: (error) => {
-            console.log('Erro ao deletar conta:', error);
-        }
     });
 
     const deleteConta = (id) => {
@@ -105,6 +113,7 @@ export const ContasProvider = ({ children }) => {
             setLastDate,
             refetch,
             createAccountMutation,
+            updateAccountMutation,
             deleteConta
         }}>
             {children}

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons'
 import { colorContext } from '@context/colorScheme';
 import { useNavigation } from '@react-navigation/native';
@@ -19,7 +19,7 @@ export default function VisaoGeral({ children, saldo, balanco_geral, despesa, re
             </Text>
 
             <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 20 }}>
-                <View
+                <TouchableOpacity
                     style={[styles.widget, { backgroundColor: isDarkMode ? "#2c2c2c" : "#F0FDF4", borderColor: isDarkMode ? "#e9dfdf" : "#F0FDF4" }]}
                     onPress={() => navigation.navigate('Transactions', { params: "receita" })}
                 >
@@ -32,8 +32,8 @@ export default function VisaoGeral({ children, saldo, balanco_geral, despesa, re
                     <Text style={[styles.textInfo, { fontWeight: '700', fontSize: 18, color: isDarkMode ? "white" : "#1E293B" }]}>
                         {`${receita.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
                     </Text>
-                </View>
-                <View
+                </TouchableOpacity>
+                <TouchableOpacity
                     style={[styles.widget, { backgroundColor: isDarkMode ? "#2c2c2c" : "#F0FDF4", borderColor: isDarkMode ? "#e9dfdf" : "#F0FDF4" }]}
                     onPress={() => navigation.navigate('Transactions', { params: "despesa" })}
                 >
@@ -46,7 +46,7 @@ export default function VisaoGeral({ children, saldo, balanco_geral, despesa, re
                     <Text style={[styles.textInfo, { fontWeight: '700', fontSize: 18, color: isDarkMode ? "white" : "#1E293B" }]}>
                         {`${despesa.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}
                     </Text>
-                </View>
+                </TouchableOpacity>
             </View>
         </View>
     )

@@ -14,16 +14,8 @@ const Transactions = () => {
     const route = useRoute();
     const { params } = route.params || '';
     const tipo = params
-    // console.log('tipo: ', tipo)
     const [filters, setFilters] = useState({ tipo: tipo, orderBy: 'transaction_id', orderDirection: 'DESC' })
-    // const { data, refetch, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } = usePosts({
-    //     tipo: filters.tipo,
-    //     orderBy: filters.orderBy,
-    //     orderDirection: filters.orderDirection,
-    // });
-
     const { useFilteredTransacoes } = useTransactionAuth();
-
     const {
         data,
         refetch,
@@ -37,19 +29,6 @@ const Transactions = () => {
         orderBy: filters.orderBy,
         orderDirection: filters.orderDirection
     });
-
-    const { height, width } = useWindowDimensions();
-    const queryClient = useQueryClient();
-    const navigation = useNavigation();
-    const onRefresh = async () => {
-        await queryClient.resetQueries(['posts', {
-            tipo: tipo,
-            // natureza: 'variavel',
-            orderBy: 'transaction_id',
-            orderDirection: 'DESC',
-        }]);
-        await refetch();
-    };
 
     const sortOptions = [
         { label: 'Data (Mais recentes)', value: 'date_desc' },
@@ -65,11 +44,25 @@ const Transactions = () => {
     const [filtrosChips, setFiltrosChips] = useState([]);
     const allData = useMemo(() => data?.pages?.flatMap(page => page.data) || [], [data]);
     const toggleDropdown = () => setIsOpen(prev => !prev);
+    const { height, width } = useWindowDimensions();
+    const queryClient = useQueryClient();
+    const navigation = useNavigation();
+    const onRefresh = async () => {
+        await queryClient.resetQueries(['posts', {
+            tipo: tipo,
+            // natureza: 'variavel',
+            orderBy: 'transaction_id',
+            orderDirection: 'DESC',
+        }]);
+        await refetch();
+    };
+
+
+
     const rectHeight = 30;
     const rectWidth = 100;
     const radius = 18;
     const priceWidth = 70;
-
 
     const handleLoadMore = () => {
         if (hasNextPage && !isFetchingNextPage) {

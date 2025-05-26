@@ -52,7 +52,7 @@ const CreateTransactionService = async (dados, userId) => {
         throw new Error('Valor da transação tem que ser maior ou diferente de 0 ');
     }
     if (dados.tipo === 'Despesa') {
-        dados.valor *= -1
+        dados.valor = -Math.abs(dados.valor)
     }
 
     if (dados.natureza === 'Fixa') {
@@ -132,6 +132,19 @@ const RemoveTransactionService = async (userId, transactionId) => {
     await transactionModel.DeleteTransaction(userId, transactionId)
 }
 
+const UpdateTransactionService = async (userId, transaction_id, queryParams) => {
+    let { valor } = queryParams;
+    const { result } = await transactionModel.ReadTransaction(userId, transaction_id)
+    if (valor !== undefined) {
+        valor = result.tipo === 'despesa' ? -Math.abs(Number(valor)) : Math.abs(Number(valor));
+    }
+
+    await transactionModel.UpdateTransaction(userId, transaction_id, {
+        ...queryParams,
+        ...(valor !== undefined && { valor })
+    });
+}
+
 
 const ListTransactionsService = async (userId, query) => {
     const { page, limit, ...rest } = transactionQuerySchema.parse(query);
@@ -198,8 +211,6 @@ const transactionSummaryService = async (userId, query) => {
         throw new Error('Nenhuma transação encontrada');
     }
 
-    console.log(transactions)
-
     const data = transactions.rows.map(row => ({
         ...row,
         valor: Math.abs(row.valor),
@@ -225,7 +236,7 @@ const transactionSummaryService = async (userId, query) => {
     }, { despesa: 0, receita: 0 });
 
 
-    console.log('total despesas atuais', actualMonthResult.despesa, 'total despesas antigas', lastMonthResult.despesa)
+    // console.log('total despesas atuais', actualMonthResult.despesa, 'total despesas antigas', lastMonthResult.despesa)
     // console.log(actualMonthResult.receita, lastMonthResult.receita)
 
     const variacao = {
@@ -233,11 +244,11 @@ const transactionSummaryService = async (userId, query) => {
         receita: (((actualMonthResult.receita - lastMonthResult.receita) / lastMonthResult.receita) * 100).toFixed(2)
     }
 
-    console.log('total despesas atuais', actualMonthResult.despesa, 'total despesas antigas', lastMonthResult.despesa)
-    console.log('total receitas atuais', actualMonthResult.receita, 'total receitas antigas', lastMonthResult.receita)
+    // console.log('total despesas atuais', actualMonthResult.despesa, 'total despesas antigas', lastMonthResult.despesa)
+    // console.log('total receitas atuais', actualMonthResult.receita, 'total receitas antigas', lastMonthResult.receita)
 
-    console.log('porcentagem despesa', variacao.despesa)
-    console.log('porcentagem receita', variacao.receita)
+    // console.log('porcentagem despesa', variacao.despesa)
+    // console.log('porcentagem receita', variacao.receita)
 
     if (period === 'week') {
         const groupedData = data.reduce((acc, item) => {
@@ -272,6 +283,7 @@ const transactionSummaryService = async (userId, query) => {
 module.exports = {
     CreateTransactionService,
     ListTransactionsService,
+    UpdateTransactionService,
     RemoveTransactionService,
     getTransactionByID,
     GroupTransactionService,

@@ -67,7 +67,7 @@ const CreateAccount = () => {
                 description={'Nome da conta*'}
                 type={'default'}
                 value={fields.nome_conta}
-                placeholder={"Conta corrente"}
+                placeholder={"Ex: Conta Banco A"}
                 onChangeText={(text) => setFields({ ...fields, nome_conta: text })}
                 required
             />
@@ -82,20 +82,21 @@ const CreateAccount = () => {
             <View style={{ flexDirection: 'column', gap: 10, paddingVertical: 5 }}>
 
                 <Text style={[styles.selectorText, { color: isDarkMode ? '#ccc' : '#333' }]}>Tipo</Text>
-                <TouchableOpacity style={styles.selector} onPress={() => setVisible(true)}>
-                    <View style={styles.iconWrapper}>
-                        <View style={{ backgroundColor: "#BBB", borderRadius: 30, padding: 8 }}>
-                            <MaterialIcons name={selected.icon} size={24} color={"#666"} />
+                <View style={[styles.buttonInput, { backgroundColor: isDarkMode ? '#222' : '#fff', borderColor: isDarkMode ? '#333' : '#ccc' }]}>
+                    <TouchableOpacity style={styles.selector} onPress={() => setVisible(true)}>
+                        <View style={styles.iconWrapper}>
+                            <View style={{ backgroundColor: "#BBB", borderRadius: 30, padding: 8 }}>
+                                <MaterialIcons name={selected.icon} size={24} color={"#666"} />
+                            </View>
+                            <Text style={[styles.selectorText, { color: isDarkMode ? '#ccc' : '#333' }]}>
+                                {selected.label}
+                            </Text>
                         </View>
-                        <Text style={[styles.selectorText, { color: isDarkMode ? '#ccc' : '#333' }]}>
-                            {selected.label}
-                        </Text>
-                    </View>
-                    <View>
-                        <MaterialIcons name="arrow-drop-down" size={24} color="#666" />
-                    </View>
-                </TouchableOpacity>
-
+                        <View>
+                            <MaterialIcons name="arrow-drop-down" size={24} color="#666" />
+                        </View>
+                    </TouchableOpacity>
+                </View>
                 <CustomModal visible={visible} setVisible={setVisible}>
                     <FlatList
                         data={ACCOUNT_ICONS}
@@ -121,7 +122,7 @@ const CreateAccount = () => {
             <CustomInput
                 description={'Descrição (opcional)'}
                 type={'default'}
-                placeholder={'Ex: Poupança, Emergência'}
+                placeholder={'Insira uma descrição...'}
                 value={fields.desc_conta}
                 onChangeText={(text) => setFields({ ...fields, desc_conta: text })}
                 height={100}
@@ -139,6 +140,7 @@ const CreateAccount = () => {
 
 export default CreateAccount
 
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -148,6 +150,12 @@ const styles = StyleSheet.create({
     modal: {
         borderRadius: 10,
         padding: 20,
+    },
+    buttonInput: {
+        minWidth: 150,
+        padding: 5,
+        borderRadius: 10,
+        borderWidth: 1,
     },
     option: {
         flexDirection: 'row',
@@ -182,185 +190,3 @@ const styles = StyleSheet.create({
         padding: 20,
     },
 })
-
-//     return (
-//         <SafeAreaView style={styles.container}>
-//             <View style={styles.fields}>
-//                 <Text>Nome *</Text>
-//                 <TextInput
-//                     style={{ flex: 1 }}
-//                     placeholder={"Minha Carteira"}
-//                     value={fields.nome_conta}
-//                     onChangeText={(text) => setFields({ ...fields, nome_conta: text })}
-//                 />
-//             </View>
-//             <View style={styles.separator} />
-//             <View style={styles.fields}>
-//                 <Text>Saldo Inicial *</Text>
-//                 <TextInput
-//                     style={{ flex: 1 }}
-//                     placeholder={"Ex: 1000,00"}
-//                     value={fields.saldo}
-//                     onChangeText={(text) => setFields({ ...fields, saldo: text })}
-//                 />
-//             </View>
-//             <View style={styles.separator} />
-//             {/* <View style={styles.fields}>
-//                 <Text>Data de criação</Text>
-//                 <TextInput
-//                     style={{ flex: 1 }}
-//                     placeholder={agora}
-//                     value={fields.data}
-//                     onChangeText={(text) => setFields({ ...fields, data: text })}
-//                 />
-//             </View>
-//             <View style={styles.separator} /> */}
-//             <View style={styles.fields}>
-//                 <Text>Tipo de conta</Text>
-//                 <TextInput
-//                     style={{ flex: 1 }}
-//                     placeholder={'Ex: Poupança, Emergência'}
-//                     value={fields.tipo_conta}
-//                     onChangeText={(text) => setFields({ ...fields, tipo_conta: text })}
-//                 />
-//             </View>
-//             <View style={styles.separator} />
-//             <View style={{ flexDirection: 'column', gap: 10, paddingVertical: 5 }}>
-
-//                 <Text>Ícone</Text>
-//                 <TouchableOpacity style={styles.selector} onPress={() => setVisible(true)}>
-//                     <View style={styles.iconWrapper}>
-//                         <View style={{ backgroundColor: "#BBB", borderRadius: 30, padding: 8 }}>
-//                             <MaterialIcons name={selected.icon} size={24} color={"#666"} />
-//                         </View>
-//                         <Text style={styles.selectorText}>{selected.label}</Text>
-//                     </View>
-//                     <View>
-//                         <MaterialIcons name="arrow-drop-down" size={24} color="#666" />
-//                     </View>
-//                 </TouchableOpacity>
-
-//                 <Modal visible={visible} transparent animationType="slide">
-//                     <TouchableOpacity style={styles.overlay} onPress={() => setVisible(false)}>
-//                         <View style={styles.modal}>
-//                             <FlatList
-//                                 data={ACCOUNT_ICONS}
-//                                 keyExtractor={(item) => item.label}
-//                                 renderItem={({ item }) => (
-//                                     <TouchableOpacity
-//                                         style={styles.option}
-//                                         onPress={() => {
-//                                             setSelected(item);
-//                                             setFields({ ...fields, icone: item.icon });
-//                                             setVisible(false);
-//                                         }}
-//                                     >
-//                                         <View style={{ backgroundColor: "#DDD", borderRadius: 30, padding: 8 }}>
-//                                             <MaterialIcons name={item.icon} size={24} color={"#666"} />
-//                                         </View>
-//                                         <Text style={styles.optionText}>{item.label}</Text>
-//                                     </TouchableOpacity>
-//                                 )}
-//                             />
-//                         </View>
-//                     </TouchableOpacity>
-//                 </Modal>
-//             </View>
-//             <View style={styles.separator} />
-//             <View style={styles.fields}>
-//                 <Text>Descrição (opcional)</Text>
-//                 <TextInput
-//                     style={{ flex: 1 }}
-//                     placeholder={"Conta bancária principal"}
-//                     value={fields.desc_conta}
-//                     onChangeText={(text) => setFields({ ...fields, desc_conta: text })}
-//                 />
-//             </View>
-//             <View style={styles.separator} />
-
-//             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: message ? 'space-between' : 'flex-end' }}>
-//                 {message &&
-//                     (<Text style={styles.errorMessage}>*Prencha os campos obrigatórios</Text>)
-//                 }
-//                 <TouchableOpacity style={styles.button} onPress={() => handleCreate()}>
-//                     <Text style={{ color: 'white', fontWeight: 500 }}>Criar</Text>
-//                 </TouchableOpacity>
-//             </View>
-//         </SafeAreaView>
-//     )
-// }
-
-// export default CreateAccount
-
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//         backgroundColor: '#CCC',
-//         padding: 30,
-//         gap: 10,
-//     },
-//     fields: {
-//         flexDirection: 'row',
-//         gap: 10,
-//         paddingVertical: 5
-//     },
-//     separator: {
-//         height: 2,
-//         marginHorizontal: -30,
-//         backgroundColor: 'black'
-//     },
-//     button: {
-//         backgroundColor: '#b82c2c',
-//         padding: 10,
-//         borderRadius: 15
-//     },
-//     label: {
-//         marginBottom: 10
-//     },
-//     picker: {
-//         height: 'auto',
-//         width: '100%',
-//         backgroundColor: 'red'
-//     },
-//     result: {
-//         marginTop: 20, fontSize: 16
-//     },
-//     modal: {
-//         backgroundColor: '#fff',
-//         borderRadius: 10,
-//         padding: 20,
-//     },
-//     option: {
-//         flexDirection: 'row',
-//         alignItems: 'center',
-//         paddingVertical: 12,
-//     },
-//     optionText: {
-//         marginLeft: 10,
-//         fontSize: 16,
-//     },
-//     selector: {
-//         flexDirection: 'row',
-//         justifyContent: 'space-between',
-//         alignItems: 'center',
-//         borderColor: '#999',
-//         borderRadius: 8,
-//     },
-//     iconWrapper: {
-//         flexDirection: 'row',
-//         alignItems: 'center'
-//     },
-//     selectorText: {
-//         marginLeft: 10
-//     },
-//     overlay: {
-//         flex: 1,
-//         backgroundColor: '#00000066',
-//         justifyContent: 'center',
-//         padding: 20,
-//     },
-//     errorMessage: {
-//         fontWeight: 500,
-//         color: '#e92424',
-//     }
-// })

@@ -18,13 +18,25 @@ const FindAccountByID = async (accountId, userId) => {
     WHERE id = $1 AND id_usuario = $2
     `;
     const { rows, rowCount } = await pool.query(query, [accountId, userId]);
-    return { rows, total: rowCount, firstResult: rows[0] };
+    return { rows, total: rowCount, exists: rowCount > 0, firstResult: rows[0] };
 }
 
-const UpdateAccount = async (id, nome_conta) => {
-    await pool.query("UPDATE contasBancarias SET nome_conta = $1  WHERE id = $2", [nome_conta, id])
+const UpdateAccount = async (userId, account_id, queryParams) => {
+    const keys = Object.keys(queryParams);
+    if (keys.length === 0) {
+        throw new Error('Nenhum campo para atualizar');
+    }
+    const values = Object.values(queryParams);
+    const setClause = keys.map((key, index) => `${key} = $${index + 1}`).join(', ');
+    const params = [...values, userId, account_id]
+    const query = `
+    UPDATE contasBancarias
+    SET ${setClause}, updated_at = NOW()
+    WHERE id_usuario = $${keys.length + 1}
+    AND id = $${keys.length + 2}
+    `;
+    await pool.query(query, params)
 }
-
 const DeleteAccount = async (id, userId) => {
     await pool.query("DELETE FROM contasBancarias WHERE id = $1 AND id_usuario = $2", [id, userId])
 }

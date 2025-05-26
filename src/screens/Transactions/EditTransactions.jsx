@@ -11,6 +11,7 @@ import { useNavigation } from '@react-navigation/native'
 import { colorContext } from '@context/colorScheme';
 import ActionButtons from '@components/actionButtons';
 import CustomInput from '@components/customInput';
+import { useTransactionAuth } from '@context/transactionsContext';
 
 const EditTransactions = () => {
     const route = useRoute();
@@ -23,6 +24,9 @@ const EditTransactions = () => {
     const [selected, setSelected] = useState({ ...data });
     const [fields, setFields] = useState({});
     const navigation = useNavigation();
+    const { useFilteredTransacoes, updateTransactionMutation } = useTransactionAuth();
+    const { refetch } = useFilteredTransacoes();
+    const toast = useToast();
     const [isAtivado, setIsAtivado] = useState(data?.recorrente);
     const toggleSwitch = () => {
         setFields(prevFields => ({
@@ -47,7 +51,7 @@ const EditTransactions = () => {
     }, [data, accountData])
 
 
-    const handleEditTransaction = () => {
+    const handleEditTransaction = async () => {
         if (fields.valor === '') {
             errorToast("Insira um valor válido")
             return
@@ -57,21 +61,26 @@ const EditTransactions = () => {
             errorToast("Valor não pode ser menor ou igual a zero")
             return
         }
-        createTransactionMutation.mutate(fields, {
-            onSuccess: () => refetchInfinite().then(() => showNotif()),
+        const updateData = {
+            id: data?.transaction_id,
+            ...fields
+        }
+        updateTransactionMutation.mutate(updateData, {
+            onSuccess: () => {
+                toastSuccess();
+                refetch();
+            },
             onError: (error) => errorToast(error),
         });
 
     }
 
-    const showNotif = () => {
-        toast.show('Transação criada com sucesso', {
+    const toastSuccess = () => {
+        toast.show('Transação atualizada com sucesso', {
             type: 'success',
             duration: 1500,
         })
-        setTimeout(() => {
-            navigation.goBack();
-        }, 50)
+        navigation.goBack();
 
     }
 
@@ -298,7 +307,7 @@ const EditTransactions = () => {
                 onCancel={() => navigation.goBack()}
                 onCreate={() => handleEditTransaction()}
                 cancelLabel="Voltar"
-                createLabel="Criar"
+                createLabel="Atualizar"
                 cancelColor="#8d8d8d"
             />
         </View>

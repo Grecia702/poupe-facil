@@ -8,7 +8,6 @@ import { colorContext } from '@context/colorScheme';
 import ActionButtons from '@components/actionButtons';
 import api from '@context/axiosInstance'
 import CustomInput from '@components/customInput';
-import { useCreateTransaction, usePosts } from '@hooks/usePosts';
 import { useTransactionAuth } from '@context/transactionsContext';
 
 const CreateTransactions = () => {
@@ -17,8 +16,6 @@ const CreateTransactions = () => {
     const [fields, setFields] = useState({ valor: '', categoria: CATEGORIAS["Outros"].label, natureza: selected.natureza, id_contabancaria: '', tipo: selected.type, recorrente: false, frequencia_recorrencia: null, });
     const [accountData, setAccountData] = useState([{ id: '', nome: '', icone: '' }])
     const [formatado, setFormatado] = useState('R$ 0,00');
-    const { mutate } = useCreateTransaction()
-    // const { refetch } = usePosts()
     const { useFilteredTransacoes, createTransactionMutation } = useTransactionAuth();
     const { refetch } = useFilteredTransacoes();
     const { isDarkMode } = useContext(colorContext);

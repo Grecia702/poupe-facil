@@ -55,6 +55,7 @@ export default function TransactionCard({ loadData, iconName, state, color, cate
         Lazer: 'beach-access',
         Educação: 'menu-book',
         Compras: 'shopping-cart',
+        Saúde: 'medication',
         Outros: 'more-horiz',
     };
 
@@ -83,7 +84,10 @@ export default function TransactionCard({ loadData, iconName, state, color, cate
                     height: 'auto',
                     zIndex: 1,
                 }}>
-                    <TouchableOpacity onPress={() => navigation.navigate('EditTransactions', { transactionId: id })
+                    <TouchableOpacity onPress={() => {
+                        navigation.navigate('EditTransactions', { transactionId: id });
+                        setVisibleId(null)
+                    }
                     } style={{ paddingVertical: 10, paddingHorizontal: 20 }}>
                         <Text style={{ color: isDarkMode ? '#EEE' : '#222', textAlign: 'center' }}>Editar</Text>
                     </TouchableOpacity>

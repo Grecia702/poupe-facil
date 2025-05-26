@@ -1,8 +1,8 @@
-const transactionModel = require("../models/transactionModel");
 const {
     CreateTransactionService,
     ListTransactionsService,
     getTransactionByID,
+    UpdateTransactionService,
     RemoveTransactionService,
     GroupTransactionService,
     GroupCategoriesService,
@@ -75,17 +75,14 @@ const removeTransaction = async (req, res) => {
 }
 
 const updateTransaction = async (req, res) => {
-    const { id } = req.params;
-    const campos = req.body;
     try {
-        if (Object.keys(campos).length === 0 || !id) {
-            return res.status(400).json({ erro: 'Nenhum campo fornecido' });
-        }
-
-        transactionModel.UpdateTransaction(id, campos);
-        return res.status(200).json({ message: 'Transação atualizada com sucesso' })
+        const { userId } = req.user.decoded
+        const { id } = req.params
+        const query = req.body
+        await UpdateTransactionService(userId, id, query)
+        res.status(200).json({ message: 'Transação atualizada com sucesso' })
     } catch (error) {
-        res.status(500).json({ message: 'Erro ao conectar com o banco de dados', error: error.message })
+        res.status(500).json({ message: 'Erro ao fazer a requisição: ', error: error.message })
     }
 }
 

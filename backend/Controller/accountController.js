@@ -4,11 +4,9 @@ const { CreateAccountService,
     ListAccountByIDService,
     RemoveAccountService,
     UpdateAccountService,
-    ListTransactionsService,
     sumAccountService
 } = require("../services/accountService")
 
-const moment = require('moment');
 
 const CreateAccount = async (req, res) => {
     try {
@@ -34,6 +32,24 @@ const CreateAccount = async (req, res) => {
         res.status(500).json({ message: 'Erro interno no servidor', error: error.message });
     }
 }
+
+const UpdateAccount = async (req, res) => {
+    try {
+        const { userId } = req.user.decoded
+        const { id } = req.params;
+        const query = req.body
+        await UpdateAccountService(userId, id, query)
+        return res.status(200).json({ message: 'Conta atualizada com sucesso' })
+    }
+    catch (error) {
+        if (error.message === 'Conta não encontrada') {
+            return res.status(404).json({ message: error.message });
+        }
+        res.status(500).json({ message: 'Erro ao fazer a requisição: ', error: error.message })
+    }
+}
+
+
 
 const RemoveAccount = async (req, res) => {
     try {
@@ -97,4 +113,4 @@ const sumAccountController = async (req, res) => {
     }
 }
 
-module.exports = { CreateAccount, RemoveAccount, ListAccount, FindAccountByID, sumAccountController };
+module.exports = { CreateAccount, UpdateAccount, RemoveAccount, ListAccount, FindAccountByID, sumAccountController };

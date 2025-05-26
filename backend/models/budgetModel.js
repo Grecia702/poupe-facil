@@ -65,12 +65,15 @@ const getActiveBudget = async (userId) => {
 
 const updateBudget = async (userId, budgetId, queryParams) => {
     const keys = Object.keys(queryParams);
+    if (keys.length === 0) {
+        throw new Error('Nenhum campo para atualizar');
+    }
     const values = Object.values(queryParams);
     const setClause = keys.map((key, index) => `${key} = $${index + 1}`).join(', ');
     const params = [...values, userId, budgetId]
     const query = `
     UPDATE planejamento
-    SET ${setClause}
+    SET ${setClause}, atualizado_em = NOW()
     WHERE id_usuario = $${keys.length + 1}
     AND id = $${keys.length + 2}
     `;

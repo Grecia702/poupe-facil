@@ -2,56 +2,63 @@
     "Contas": {
         "id": "1",
         "label": "Contas",
-        "color": "rgb(180, 9, 9)",
+        "color": "rgb(236, 72, 153)",
         "value": 100,
         "icon": "credit-card"
     },
     "Alimentação": {
         "id": "2",
         "label": "Alimentação",
-        "color": "rgb(204, 118, 38)",
+        "color": "rgb(249, 115, 22)",
         "value": 200,
         "icon": "restaurant-menu"
     },
     "Carro": {
         "id": "3",
         "label": "Carro",
-        "color": "rgb(57, 184, 74)",
+        "color": "rgb(34, 197, 94)",
         "value": 300,
         "icon": "directions-car"
     },
     "Internet": {
         "id": "4",
         "label": "Internet",
-        "color": "rgb(64, 155, 230)",
+        "color": "rgb(59, 130, 246)",
         "value": 500,
         "icon": "computer"
     },
     "Lazer": {
         "id": "5",
         "label": "Lazer",
-        "color": "rgb(114, 13, 109)",
+        "color": "rgb(168, 85, 247)",
         "value": 500,
         "icon": "beach-access"
     },
     "Educação": {
         "id": "6",
         "label": "Educação",
-        "color": "rgb(98, 99, 120)",
+        "color": "rgb(107, 114, 128)",
         "value": 500,
         "icon": "menu-book"
     },
     "Compras": {
         "id": "7",
         "label": "Compras",
-        "color": "rgb(202, 185, 27)",
+        "color": "rgb(253, 224, 71)",
         "value": 500,
         "icon": "shopping-cart"
     },
-    "Outros": {
+    "Saúde": {
         "id": "8",
+        "label": "Saúde",
+        "color": "rgb(220, 38, 38)",
+        "value": 500,
+        "icon": "medication"
+    },
+    "Outros": {
+        "id": "9",
         "label": "Outros",
-        "color": "rgb(83, 87, 83)",
+        "color": "rgb(75, 85, 99)",
         "value": 500,
         "icon": "more-horiz"
     }

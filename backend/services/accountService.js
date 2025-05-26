@@ -24,6 +24,14 @@ const CreateAccountService = async (dados, userId) => {
     await accountModel.CreateAccount(userId, dados.nome_conta, dados.data_criacao, dados.saldo, dados.tipo_conta, dados.icone, dados.desc_conta);
 }
 
+const UpdateAccountService = async (userId, account_id, queryParams) => {
+    const account = await accountModel.FindAccountByID(account_id, userId);
+    if (!account.exists) {
+        throw new Error('Conta não encontrada');
+    }
+    await accountModel.UpdateAccount(userId, account_id, queryParams);
+}
+
 const RemoveAccountService = async (userId, id) => {
     const account = await accountModel.FindAccountByID(id, userId)
     const ContaExiste = account.total > 0
@@ -71,6 +79,7 @@ const sumAccountService = async (userId, last_date) => {
 module.exports = {
     CreateAccountService,
     ListAccountService,
+    UpdateAccountService,
     RemoveAccountService,
     ListAccountByIDService,
     ListAccountByIDService,
