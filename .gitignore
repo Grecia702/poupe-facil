@@ -72,4 +72,6 @@ app.json
 
 # Backups
 
+*.traineddata
+**/uploads/*
 packagebackup.json

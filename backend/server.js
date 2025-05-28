@@ -10,6 +10,7 @@ const transactionRoutes = require(path.join(__dirname, 'Routes', 'transactionRou
 const budgetRoutes = require(path.join(__dirname, 'Routes', 'budgetRoutes'));
 const goalsRoutes = require(path.join(__dirname, 'Routes', 'goalsRoutes'));
 const gptRoutes = require(path.join(__dirname, 'Routes', 'gptRoutes'));
+const ocrRoutes = require(path.join(__dirname, 'Routes', 'OCRRoutes'));
 const logger = require(path.join(__dirname, 'Utils', 'loggerConfig'));
 const requestTimeLogger = require(path.join(__dirname, 'Utils', 'requestTime'));
 const cookieParser = require('cookie-parser');
@@ -68,6 +69,7 @@ app.use("/api/auth", (req, res, next) => {
 
 
 app.use("/api/users", userRoutes);
+app.use("/api/ocr", ocrRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/gpt", gptRoutes)
 app.use("/api/profile/account", accountRoutes);

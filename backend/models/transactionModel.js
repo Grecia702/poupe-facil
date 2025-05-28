@@ -22,7 +22,7 @@ const CreateTransaction = async (id_contabancaria, nome_transacao, categoria, da
 const CreateManyTransactions = async (transactions) => {
   const values = [];
   const placeholders = transactions.map((transaction, i) => {
-    const idx = i * 13;
+    const idx = i * 12;
     values.push(
       transaction.id_contabancaria,
       transaction.nome_transacao,
@@ -30,7 +30,6 @@ const CreateManyTransactions = async (transactions) => {
       transaction.data_transacao,
       transaction.tipo,
       transaction.valor,
-      transaction.data_transacao,
       transaction.natureza,
       transaction.recorrente,
       transaction.frequencia_recorrencia,
@@ -39,14 +38,14 @@ const CreateManyTransactions = async (transactions) => {
       transaction.goals_id
     );
 
-    return `($${idx + 1}, $${idx + 2}, $${idx + 3}, $${idx + 4}, $${idx + 5}, $${idx + 6}, $${idx + 7}, $${idx + 8}, $${idx + 9}, $${idx + 10}, $${idx + 11})`;
+    return `($${idx + 1}, $${idx + 2}, $${idx + 3}, $${idx + 4}, $${idx + 5}, $${idx + 6}, $${idx + 7}, $${idx + 8}, $${idx + 9}, $${idx + 10}, $${idx + 11},  $${idx + 12})`;
   }).join(', ');
 
   const query = `
     INSERT INTO transacoes 
     (id_contabancaria, nome_transacao, categoria, data_transacao, tipo, valor, natureza , recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id)   
     VALUES ${placeholders}
-    RETURNING categoria, tipo, valor, data_transacao;
+    RETURNING categoria, nome_transacao, tipo, valor, data_transacao;
   `;
 
   const { rows, rowCount } = await pool.query(query, values);

@@ -115,7 +115,7 @@ const BankAccount = () => {
         <View style={{ flex: 1 }}>
             <FlatList
                 data={dadosContas}
-                keyExtractor={(item) => (item.id).toString()}
+                keyExtractor={(item) => item.id.toString()}
                 contentContainerStyle={[styles.contentContainer, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}
                 style={{ backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E' }}
                 ListHeaderComponent={HeaderComponent}

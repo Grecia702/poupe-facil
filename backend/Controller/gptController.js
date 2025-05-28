@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 const transactionModel = require('../models/transactionModel');
 
 const promptBasic = async (req, res) => {
-    const { prompt } = req.body;
+    const { prompt, memory } = req.body;
     const { userId } = req.user.decoded;
     const date = new Date();
 
@@ -18,32 +18,38 @@ const promptBasic = async (req, res) => {
                 messages: [
                     {
                         role: 'system',
-                        content: `A data de hoje é ${date}, você é um assistente financeiro que retorna SOMENTE JSON válido
-                        se o prompt pedir resumo de transações ou perguntar quanto ele gastou no periodo de tempo que ele citar no formato:
-                        {
-                            "command": "transactionSummary",
-                            "first_day": "YYYY-MM-DD",
-                            "last_day": "YYYY-MM-DD",
-                            "period": "day|week|month"
-                        }
-                        Se ele pedir pra criar varias transações, ou informar quanto e com o que ele gastou em certas datas, responda no formato 
-                        {    
-                            "command": "createMany",
-                            "transactions": [
+                        content: `A data de hoje é ${date} e você é um assistente financeiro que responde sempre com JSON válido para pedidos claros.
+                                1. Para criar várias transações, responda:
                                 {
-                                    "id_contabancaria": 19,
-                                    "categoria": "('Lazer', 'Carro', 'Educação', 'Alimentação', 'Internet', 'Contas', 'Compras', 'Saúde','Outros')",
-                                    "tipo": "despesa|receita",
-                                    "valor": valor,
-                                    "data_transacao" "timestamp",
-                                    "natureza": "Variavel|Fixa",
-			                        "recorrente": false
-                                },
-                        }
-                        importante o timestamp estar envolta de aspas
-                        Caso ele não peça nenhum dos dois, responda exatamente {"command":"freeform"} sem mais nada.`
+                                    "command": "createMany",
+                                    "transactions": [
+                                        {
+                                            "id_contabancaria": 19,
+                                            "nome_transacao": string,
+                                            "categoria": "Lazer","Transporte","Educação","Alimentação","Internet","Contas","Compras","Saúde","Outros"
+                                            "data_transacao": "timestamp ISO 8601",
+                                            "tipo": "despesa" ou "receita",
+                                            "valor": decimal,
+                                            "natureza": "Variavel" ou "Fixa",
+                                            "recorrente": booleano
+                                            "frequencia_recorrencia": diario, semanal, etc...
+                                            "proxima_ocorrencia": "timestamp ISO 8601",
+                                            "budget_id": null,
+                                            "goals_id": null
+                                        }, ...
+                                    ]
+                                }   
+                                2. Para resumo de transações, responda:
+                                    {
+                                        "command": "transactionSummary",
+                                        "first_day": "YYYY-MM-DD",
+                                        "last_day": "YYYY-MM-DD",
+                                        "period": "day"|"week"|"month"
+                                    }
+                                3. Para dúvidas, explicações ou perguntas fora do escopo, responda APENAS: {"command":"freeform"}.
+`
                     },
-                    { role: 'user', content: prompt }
+                    { role: 'user', content: `Prompt: ${prompt}\nUltimas mensagens:\n${memory}` }
                 ],
                 max_tokens: 1000,
             }),
@@ -51,9 +57,6 @@ const promptBasic = async (req, res) => {
 
         const structuredData = await structuredResponse.json();
         const jsonResponse = structuredData.choices[0].message.content;
-
-        console.log(jsonResponse)
-
         let parsed;
         try {
             parsed = JSON.parse(jsonResponse);
@@ -128,12 +131,12 @@ const promptBasic = async (req, res) => {
                         {
                             role: 'system',
                             content: `A data atual é ${date} e você é um assistente financeiro de um aplicativo de controle de finanças.
-                            responda no formato "Transação adicionada\n📌 Categoria\nTipo\nValor(em localestring pra reais)\n\nData (padrão dd-MM-YYYY HH:mm)\n
+                            responda no formato "Transação adicionada\nNome\n📌 Categoria\nTipo\nValor(em localestring pra reais)\n\nData (padrão dd-MM-YYYY HH:mm)\n
                             `
                         },
                         { role: 'user', content: JSON.stringify([queryResult.rows]) }
                     ],
-                    max_tokens: 400,
+                    max_tokens: 500,
                 }),
             });
 
@@ -145,7 +148,6 @@ const promptBasic = async (req, res) => {
                 message: friendlyMessage,
             });
         }
-
 
         if (parsed.command === 'freeform') {
             const freeformResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -160,15 +162,11 @@ const promptBasic = async (req, res) => {
                         {
                             role: 'system',
                             content: `
-                            Você é um assistente financeiro. 
-                            Nunca responda dúvidas fora de finanças. 
-                            Se a pergunta estiver fora do escopo, responda apenas: "Não posso ajudar com isso. 
-                            Pergunte algo sobre controle de finanças."
+Responda tudo que o usuario pedir.  
                             `
-                        }, { role: 'user', content: prompt }
-
+                        }, { role: 'user', content: `Prompt: ${prompt}\nUltimas Mensagens:\n${memory}` }
                     ],
-                    max_tokens: 400,
+                    max_tokens: 500,
                 }),
             });
 

@@ -1,62 +1,43 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import api from '@context/axiosInstance';
-import { View, TextInput, Text, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, FlatList } from 'react-native';
+import { View, TextInput, Text, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, ScrollView } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { colorContext } from '@context/colorScheme';
+import { colorContext } from '@context/colorScheme'
 
 const Chatbot = () => {
     const [message, setMessage] = useState({ message_user: '' });
     const [messages, setMessages] = useState([]);
-    const [isTyping, setIsTyping] = useState(false);
-    const [typingDots, setTypingDots] = useState('');
-    const flatListRef = useRef(null);
-    const { isDarkMode } = useContext(colorContext);
+    const scrollViewRef = useRef(null);
+    const { isDarkMode } = useContext(colorContext)
 
     useEffect(() => {
-        const botReply = { text: 'Olá, sou seu assistente virtual, como posso ajudar?', from: 'bot' };
+        const botReply = { content: 'Olá, sou seu assistente virtual, como posso ajudar?', role: 'assistant' };
         setMessages([botReply]);
     }, []);
 
     useEffect(() => {
-        if (flatListRef.current && messages.length > 0) {
-            flatListRef.current.scrollToEnd({ animated: true });
+        if (scrollViewRef.current && messages.length > 0) {
+            scrollViewRef.current?.scrollToEnd({ animated: true });
         }
     }, [messages]);
 
-    useEffect(() => {
-        let interval;
-        if (isTyping) {
-            interval = setInterval(() => {
-                setTypingDots(prev => (prev.length < 3 ? prev + '.' : ''));
-            }, 500);
-        } else {
-            setTypingDots('');
-        }
-        return () => clearInterval(interval);
-    }, [isTyping]);
-
     const sendMessage = async () => {
         if (message.message_user.trim() === '') return;
-        const newMessage = { text: message.message_user, from: 'user' };
+        const newMessage = { content: message.message_user, role: 'user' };
         setMessages(prevMessages => [...prevMessages, newMessage]);
         setMessage({ message_user: '' });
-        setIsTyping(true);
-        setMessages(prevMessages => [...prevMessages, { text: 'Digitando', from: 'bot', isTypingIndicator: true }]);
-
         try {
             const { data } = await api.post('/gpt', {
-                prompt: message.message_user
-            });
-            setMessages(prevMessages => prevMessages.filter(msg => !msg.isTypingIndicator));
-            const botReply = { text: data.message, from: 'bot' };
+                prompt: message.message_user,
+                memory: JSON.stringify(messages.slice(-5))
+            })
+            const botReply = { content: `${data.message}`, role: 'assistant' };
             setMessages(prevMessages => [...prevMessages, botReply]);
         } catch (error) {
-            setMessages(prevMessages => prevMessages.filter(msg => !msg.isTypingIndicator));
-            console.log(error.message);
-        } finally {
-            setIsTyping(false);
+            console.log(error.message)
         }
-    };
+
+    }
 
     return (
         <KeyboardAvoidingView
@@ -64,25 +45,21 @@ const Chatbot = () => {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             keyboardVerticalOffset={80}
         >
-            <FlatList
-                data={messages}
-                keyExtractor={(_, index) => index.toString()}
-                renderItem={({ item }) => (
-                    <View style={[
-                        styles.messageBase,
-                        item.from === 'user' ? styles.messageUser : styles.messageBot,
-                        item.isTypingIndicator && { fontStyle: 'italic', opacity: 0.7 }
-                    ]}>
-                        <Text style={styles.messageText}>
-                            {item.isTypingIndicator ? `Digitando${typingDots}` : item.text}
-                        </Text>
-                    </View>
-                )}
+            <ScrollView
                 style={{ flex: 1 }}
-                contentContainerStyle={{ padding: 10, paddingBottom: 72, gap: 24 }}
-                ref={flatListRef}
-            />
-
+                contentContainerStyle={{ padding: 10, paddingBottom: 72 }}
+                ref={scrollViewRef}
+            >
+                {messages.map((item, index) => (
+                    <View key={index} style={[
+                        styles.messageBase,
+                        item.role === 'user' ? styles.messageUser : styles.messageBot,
+                        { marginBottom: 24 }
+                    ]}>
+                        <Text style={styles.messageText}>{item.content}</Text>
+                    </View>
+                ))}
+            </ScrollView>
             <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#222' : '#fffefe', borderColor: isDarkMode ? '#444' : '#ccc' }]}>
                 <TextInput
                     style={[styles.input, { color: isDarkMode ? '#ccc' : '#333', borderColor: isDarkMode ? '#444' : '#ccc' }]}
@@ -90,6 +67,8 @@ const Chatbot = () => {
                     placeholderTextColor={isDarkMode ? '#aaa' : '#222'}
                     value={message.message_user}
                     autoFocus={true}
+                    onSubmitEditing={sendMessage}
+                    returnKeyType="send"
                     onChangeText={(text) => setMessage({ message_user: text })}
                 />
                 <TouchableOpacity style={[styles.sendMessage, { borderColor: isDarkMode ? '#444' : '#ccc' }]} onPress={sendMessage}>
@@ -105,7 +84,6 @@ export default Chatbot;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: 32
     },
     inputContainer: {
         borderTopWidth: 1,
