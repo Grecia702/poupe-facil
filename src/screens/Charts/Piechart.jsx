@@ -50,7 +50,7 @@ export default function Piechart() {
     }
 
     return (
-        <ScrollView contentContainerStyle={{ gap: 16, marginTop: 16 }} style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#ffffff' }]}>
+        <ScrollView contentContainerStyle={{ gap: 16, marginTop: 16 }} style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#f7f7f8' }]}>
             <View style={[styles.chart, { backgroundColor: isDarkMode ? '#222' : '#fffefe' }]}>
                 <Text style={[styles.title, { color: isDarkMode ? 'white' : 'black' }]}>Transações por categorias</Text>
                 <Text style={[{ alignSelf: 'center', fontSize: 18, color: isDarkMode ? 'white' : 'black' }]}>Periodo: {firstDate.toLocaleString('pt-BR', { month: 'long' })}</Text>

@@ -1,12 +1,13 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { View } from 'react-native'
 import { useAuth } from '@context/authContext';
 import { useNavigation } from '@react-navigation/native'
+import DangerModal from '@components/dangerModal';
 
-const Logout = () => {
+const Logout = ({ isOpen, setIsOpen }) => {
     const navigation = useNavigation();
     const { logoutMutation } = useAuth()
-
     const handleLogout = async () => {
+        setIsOpen(false)
         logoutMutation.mutate(null, {
             onSuccess: () => {
                 navigation.reset({
@@ -21,26 +22,17 @@ const Logout = () => {
     }
     return (
         <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-            <Text>Fazer Logout</Text>
-            <TouchableOpacity style={styles.button} onPress={() => handleLogout()}>
-                <Text style={styles.Texto}>Logout</Text>
-            </TouchableOpacity>
+            <DangerModal
+                open={isOpen}
+                setOpen={setIsOpen}
+                onPress={() => handleLogout()}
+                confirmButton={'Logout'}
+                icon={'logout'}
+                title={'Fazer Logout'}
+                text={'Deseja sair de sua conta?\n Você terá que fazer login novamente.'}
+            />
         </View>
     )
 }
 
 export default Logout
-
-const styles = StyleSheet.create({
-    button: {
-        width: 'auto',
-        height: 50,
-        backgroundColor: 'blue',
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    Texto: {
-        color: 'white',
-        fontSize: 16
-    }
-})

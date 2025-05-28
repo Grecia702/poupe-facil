@@ -9,7 +9,7 @@ import { Dimensions } from 'react-native';
 
 export default function Linechart() {
     const { isDarkMode } = useContext(colorContext)
-    const [lastDate, setLastDate] = useState(startOfDay(new Date()))
+    const [lastDate, setLastDate] = useState(new Date())
     const [firstDate, setFirstDate] = useState(subDays(lastDate, 6))
     const { data: lineChartData, isLoading } = useTransactionSummary({
         first_day: firstDate,
@@ -17,7 +17,9 @@ export default function Linechart() {
         period: 'day'
     });
 
-    console.log(lineChartData)
+
+    console.log(firstDate, lastDate)
+
 
     const total = lineChartData?.filter(item => item.tipo === 'despesa')
         .reduce((acc, item) => {
@@ -54,7 +56,6 @@ export default function Linechart() {
     })) || []
     const maiorValor = valores.reduce((acc, item) => item.valor > acc.valor ? item : acc, { valor: 0 });
     const mediaSemanal = maiorValor.valor / 7
-
     const screenWidth = Dimensions.get('window').width;
     const handleDate = (label) => {
         if (label === 'prev') {
@@ -73,12 +74,16 @@ export default function Linechart() {
                 <View style={[styles.card, { backgroundColor: isDarkMode ? '#222' : '#fffefe', }]}>
                     <Text style={[styles.cardText, { color: isDarkMode ? '#ccc' : '#4d5e6f' }]}>Despesas</Text>
                     <Text style={[styles.cardText, { color: isDarkMode ? '#ccc' : '#4d5e6f' }]}>Totais</Text>
-                    <Text style={[styles.cardTextHighlight, { color: isDarkMode ? '#E0E0E0' : '#101f31' }]}>R${total?.toLocaleString('pt-BR')}</Text>
+                    <Text style={[styles.cardTextHighlight, { color: isDarkMode ? '#E0E0E0' : '#101f31' }]}>
+                        {total?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    </Text>
                 </View>
                 <View style={[styles.card, { backgroundColor: isDarkMode ? '#222' : '#fffefe', }]}>
                     <Text style={[styles.cardText, { color: isDarkMode ? '#ccc' : '#4d5e6f' }]}>Despesa Média </Text>
                     <Text style={[styles.cardText, { color: isDarkMode ? '#ccc' : '#4d5e6f' }]}>Semanal</Text>
-                    <Text style={[styles.cardTextHighlight, { color: isDarkMode ? '#E0E0E0' : '#101f31' }]}>R${mediaSemanal.toLocaleString('pt-BR')}</Text>
+                    <Text style={[styles.cardTextHighlight, { color: isDarkMode ? '#E0E0E0' : '#101f31' }]}>
+                        {mediaSemanal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    </Text>
                 </View>
                 <View style={[styles.card, { backgroundColor: isDarkMode ? '#222' : '#fffefe', }]}>
                     <Text style={[styles.cardText, { color: isDarkMode ? '#ccc' : '#4d5e6f' }]}>Dia de maior </Text>

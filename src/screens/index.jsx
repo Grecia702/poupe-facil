@@ -20,6 +20,7 @@ import { useGoals } from '@hooks/useGoals';
 import CalendarEmpty from '../assets/calendar-empty.svg';
 import TargetArrow from '../assets/target-arrow.svg';
 import TransactionEmpty from '../assets/empty-cart.svg';
+import AccountEmpty from '../assets/bank-account.svg';
 import Budget from '@components/budgetBars';
 import CreateItem from '@components/createItem';
 import Goals from '../components/goals';
@@ -30,7 +31,8 @@ import { useDonutchartData } from '@hooks/useDonutchartData';
 
 
 export default function HomeScreen() {
-  const { dadosAPI, isLoading } = useTransactionAuth();
+  const { useFilteredTransacoes } = useTransactionAuth();
+  const { data: transactionData, refetch, isLoading } = useFilteredTransacoes();
   const { dadosContas } = useContasAuth();
   const { balanceAccount, lastDate, setLastDate } = useContasAuth({});
   const { budgetData } = useBudgetAuth()
@@ -50,10 +52,7 @@ export default function HomeScreen() {
     acc += item.total
     return acc
   }, 0) || 0
-
-
-  const recentTransactions = dadosAPI?.slice(0, 5);
-
+  const recentTransactions = transactionData?.pages[0].data.slice(0, 5);
   const saldo = dadosContas?.reduce((acc, item) => {
     return acc + parseFloat(item.saldo)
   }, 0)
@@ -62,7 +61,6 @@ export default function HomeScreen() {
     setSelectedItem(label);
   };
 
-  // console.log(monthIndex)
 
   return (
     <ScrollView style={{ backgroundColor: isDarkMode ? "rgb(26, 26, 26)" : "#c6ebe9" }}>
@@ -109,8 +107,8 @@ export default function HomeScreen() {
           ) : (
             <>
               <CreateItem
-                text={'Nenhum orçamento encontrado'}
-                buttonText={'Criar agora'}
+                text={'Nenhum orçamento encontrado.'}
+                buttonText={'Criar orçamento'}
                 screen={'CreateBudget'}
                 icon={
                   <CalendarEmpty color={isDarkMode ? "#AAA" : "#000000"} width={96} height={96} />
@@ -125,26 +123,43 @@ export default function HomeScreen() {
           Title={"Contas"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"}
           onPressDetails={() => navigation.navigate('Accounts')}
         >
-          {
-            dadosContas?.map(item => (
-              (<Account
-                name={item.nome_conta}
-                key={item.id}
-                value={item.saldo}
-                icon={item.icone}
-                color={isDarkMode ? "#222" : "#DDD"}
-                textColor={isDarkMode ? "#CCC" : "#222"}
-                hideOption
-              />)
-            ))
-          }
-          <Separator color={isDarkMode ? "#cccccc6f" : "#22222275"} />
-          <View style={{ marginTop: 8, flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={{ fontSize: 16, fontWeight: '600', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>Saldo Total:</Text>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>R${saldo?.toFixed(2)}</Text>
-          </View>
-        </WidgetTeste>
+          {dadosContas?.length > 0 ? (
+            <>
+              {dadosContas.map(item => (
+                <Account
+                  key={item.id.toString()}
+                  name={item.nome_conta}
+                  value={item.saldo}
+                  icon={item.icone}
+                  color={isDarkMode ? "#222" : "#DDD"}
+                  textColor={isDarkMode ? "#CCC" : "#222"}
+                  hideOption
+                />
+              ))}
 
+              <Separator color={isDarkMode ? "#cccccc6f" : "#22222275"} />
+
+              <View style={{ marginTop: 8, flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>
+                  Saldo Total:
+                </Text>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>
+                  R${saldo?.toFixed(2)}
+                </Text>
+              </View>
+            </>
+          ) : (
+            <CreateItem
+              text={'Nenhuma conta bancária encontrada.'}
+              buttonText={'Criar conta'}
+              screen={'CreateAccount'}
+              icon={
+                <AccountEmpty color={isDarkMode ? "#AAA" : "#000000"} width={96} height={96} />
+              }
+            />
+          )}
+
+        </WidgetTeste>
 
         <WidgetTeste
           Color={isDarkMode ? "#2e2e2e" : "#ffffff"}
@@ -152,13 +167,15 @@ export default function HomeScreen() {
           TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"}
           onPressDetails={() => navigation.navigate('Transações')}
         >
-          {Array.isArray(recentTransactions) ? (
+          {recentTransactions?.length > 0 ? (
             recentTransactions.map((item, index) => (
               <TransactionCard
                 key={index}
                 iconName={item?.categoria}
-                color={item?.tipo === "Despesa" ? "#dd5454" : "#2563EB"}
+                color={item?.tipo === "despesa" ? "#dd5454" : "#2563EB"}
                 state={isDarkMode}
+                name_transaction={item?.nome_transacao}
+                conta={item?.conta}
                 category={item?.categoria}
                 type={item?.natureza}
                 recurrence={item?.recorrente}
@@ -171,7 +188,7 @@ export default function HomeScreen() {
             <>
               <CreateItem
                 text={'Nenhuma transação encontrada.'}
-                buttonText={'Criar agora'}
+                buttonText={'Criar Transação'}
                 screen={'CreateTransaction'}
                 icon={
                   <TransactionEmpty color={isDarkMode ? "#AAA" : "#000000"} width={96} height={96} />
@@ -250,8 +267,8 @@ export default function HomeScreen() {
             />
           ) : (
             <CreateItem
-              text={'Nenhuma meta encontrada.'}
-              buttonText={"Criar agora"}
+              text={'Nenhuma meta financeira encontrada.'}
+              buttonText={"Criar meta"}
               screen={'Create Goal'}
               icon={
                 <TargetArrow color={isDarkMode ? "#AAA" : "#2c2c2c"} width={96} height={96} />

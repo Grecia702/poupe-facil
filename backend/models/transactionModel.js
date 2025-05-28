@@ -11,13 +11,47 @@ const checkValidAccount = async (accountId, userId) => {
   return rowCount > 0;
 }
 
-const CreateTransaction = async (id_contabancaria, categoria, tipo, valor, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id) => {
+const CreateTransaction = async (id_contabancaria, nome_transacao, categoria, data_transacao, tipo, valor, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id) => {
   const query = `
     INSERT INTO transacoes 
-    (id_contabancaria, categoria, tipo, valor, natureza , recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id) 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`;
-  await pool.query(query, [id_contabancaria, categoria, tipo, valor, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id]);
+    (id_contabancaria, nome_transacao, categoria, data_transacao, tipo, valor, natureza , recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
+  await pool.query(query, [id_contabancaria, nome_transacao, categoria, data_transacao, tipo, valor, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id]);
 }
+
+const CreateManyTransactions = async (transactions) => {
+  const values = [];
+  const placeholders = transactions.map((transaction, i) => {
+    const idx = i * 13;
+    values.push(
+      transaction.id_contabancaria,
+      transaction.nome_transacao,
+      transaction.categoria,
+      transaction.data_transacao,
+      transaction.tipo,
+      transaction.valor,
+      transaction.data_transacao,
+      transaction.natureza,
+      transaction.recorrente,
+      transaction.frequencia_recorrencia,
+      transaction.proxima_ocorrencia,
+      transaction.budget_id,
+      transaction.goals_id
+    );
+
+    return `($${idx + 1}, $${idx + 2}, $${idx + 3}, $${idx + 4}, $${idx + 5}, $${idx + 6}, $${idx + 7}, $${idx + 8}, $${idx + 9}, $${idx + 10}, $${idx + 11})`;
+  }).join(', ');
+
+  const query = `
+    INSERT INTO transacoes 
+    (id_contabancaria, nome_transacao, categoria, data_transacao, tipo, valor, natureza , recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id, goals_id)   
+    VALUES ${placeholders}
+    RETURNING categoria, tipo, valor, data_transacao;
+  `;
+
+  const { rows, rowCount } = await pool.query(query, values);
+  return { rows, rowCount }
+};
 
 const ReadTransaction = async (userId, transactionId) => {
   const { rows, rowCount } = await pool.query("SELECT * FROM user_transactions WHERE user_id = $1 AND transaction_id = $2 ", [userId, transactionId]);
@@ -63,11 +97,13 @@ const ListTransactions = async (userId, queryParams) => {
   const query = `
     SELECT 
     transaction_id,
-    tipo, 
-    natureza, 
-    categoria, 
-    valor, 
+    conta,
+    nome_transacao,
+    categoria,
+    valor,
     data_transacao, 
+    tipo, 
+    natureza,
     recorrente, 
     frequencia_recorrencia, 
     proxima_ocorrencia
@@ -97,7 +133,6 @@ GROUP BY GROUPING SETS ((tipo), ())
   const { rows, rowCount } = await pool.query(query, [userId]);
   return { rows, total: rowCount, firstResult: rows[0] };
 }
-
 
 const countTransactionsResult = async (userId, queryParams) => {
   const { tipo, natureza } = queryParams
@@ -139,7 +174,7 @@ const GroupTransactionsByCategories = async (userId, first_date, last_date) => {
     FROM user_transactions
     WHERE user_id = $1
     AND tipo = 'despesa'
-    AND categoria IN ('Lazer', 'Carro', 'Educação', 'Alimentação', 'Internet', 'Contas', 'Compras', 'Outros')
+    AND categoria IN ('Lazer', 'Transporte', 'Educação', 'Alimentação', 'Internet', 'Contas', 'Compras', 'Outros', 'Saúde')
     AND data_transacao BETWEEN $2 AND $3
     GROUP BY categoria
 `;
@@ -148,17 +183,12 @@ const GroupTransactionsByCategories = async (userId, first_date, last_date) => {
 }
 
 const transactionSummary = async (first_day, last_day, interval, userId) => {
-  let intervalAddition = '';
-  if (interval === 'week') {
-    intervalAddition = " + interval '1 weeks'";
-  }
-
   const query = `
 WITH periodo AS (
   SELECT 
     generate_series(
-      $1::date, 
-      $2::date, 
+      $1, 
+      $2, 
       ('1 ' || $3)::interval
     ) AS date_interval
   ),
@@ -234,10 +264,10 @@ const getFirstTransaction = async (userId) => {
   return { rows, total: rowCount, result: rows[0] };
 }
 
-
 module.exports = {
   checkValidAccount,
   CreateTransaction,
+  CreateManyTransactions,
   ReadTransaction,
   UpdateTransaction,
   DeleteTransaction,

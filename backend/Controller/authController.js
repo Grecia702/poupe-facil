@@ -56,7 +56,7 @@ const signup = async (req, res) => {
     try {
         const query = req.body;
         await signupService(query)
-        return res.status(204)
+        return res.status(201).json({ message: 'Cadastro realizado com sucesso' })
     }
     catch (err) {
         if (err.message === "Já existe uma conta com este e-mail") {

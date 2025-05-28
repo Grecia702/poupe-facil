@@ -18,23 +18,41 @@ const promptBasic = async (req, res) => {
                 messages: [
                     {
                         role: 'system',
-                        content: `A data de hoje é ${date}, você é um assistente financeiro que retorna SOMENTE JSON válido no formato:
+                        content: `A data de hoje é ${date}, você é um assistente financeiro que retorna SOMENTE JSON válido
+                        se o prompt pedir resumo de transações ou perguntar quanto ele gastou no periodo de tempo que ele citar no formato:
                         {
                             "command": "transactionSummary",
                             "first_day": "YYYY-MM-DD",
                             "last_day": "YYYY-MM-DD",
                             "period": "day|week|month"
                         }
-                        Responda SOMENTE com JSON válido, e apenas se o prompt pedir resumo de transações ou perguntar quanto ele gastou no periodo de tempo que ele citar. Se não for o caso, responda com: {"command": "freeform"}.`
+                        Se ele pedir pra criar varias transações, ou informar quanto e com o que ele gastou em certas datas, responda no formato 
+                        {    
+                            "command": "createMany",
+                            "transactions": [
+                                {
+                                    "id_contabancaria": 19,
+                                    "categoria": "('Lazer', 'Carro', 'Educação', 'Alimentação', 'Internet', 'Contas', 'Compras', 'Saúde','Outros')",
+                                    "tipo": "despesa|receita",
+                                    "valor": valor,
+                                    "data_transacao" "timestamp",
+                                    "natureza": "Variavel|Fixa",
+			                        "recorrente": false
+                                },
+                        }
+                        importante o timestamp estar envolta de aspas
+                        Caso ele não peça nenhum dos dois, responda exatamente {"command":"freeform"} sem mais nada.`
                     },
                     { role: 'user', content: prompt }
                 ],
-                max_tokens: 150,
+                max_tokens: 1000,
             }),
         });
 
         const structuredData = await structuredResponse.json();
         const jsonResponse = structuredData.choices[0].message.content;
+
+        console.log(jsonResponse)
 
         let parsed;
         try {
@@ -48,9 +66,6 @@ const promptBasic = async (req, res) => {
 
             const queryResult = await transactionModel.transactionSummary(first_day, last_day, period, userId);
             const queryCategories = await transactionModel.GroupTransactionsByCategories(userId, first_day, last_day)
-
-            // console.log(queryCategories.rows)
-
             const formatResponse = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
@@ -97,6 +112,41 @@ const promptBasic = async (req, res) => {
             });
         }
 
+
+        if (parsed.command === 'createMany') {
+            const { transactions } = parsed;
+            const queryResult = await transactionModel.CreateManyTransactions(transactions, userId);
+            const formatResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${process.env.API_KEY_OPENAI}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: 'gpt-3.5-turbo',
+                    messages: [
+                        {
+                            role: 'system',
+                            content: `A data atual é ${date} e você é um assistente financeiro de um aplicativo de controle de finanças.
+                            responda no formato "Transação adicionada\n📌 Categoria\nTipo\nValor(em localestring pra reais)\n\nData (padrão dd-MM-YYYY HH:mm)\n
+                            `
+                        },
+                        { role: 'user', content: JSON.stringify([queryResult.rows]) }
+                    ],
+                    max_tokens: 400,
+                }),
+            });
+
+            const formatData = await formatResponse.json();
+            const friendlyMessage = formatData.choices[0].message.content;
+            return res.json({
+                command: parsed.command,
+                rawData: queryResult.rows,
+                message: friendlyMessage,
+            });
+        }
+
+
         if (parsed.command === 'freeform') {
             const freeformResponse = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
@@ -107,7 +157,16 @@ const promptBasic = async (req, res) => {
                 body: JSON.stringify({
                     model: 'gpt-3.5-turbo',
                     messages: [
-                        { role: 'user', content: prompt }
+                        {
+                            role: 'system',
+                            content: `
+                            Você é um assistente financeiro. 
+                            Nunca responda dúvidas fora de finanças. 
+                            Se a pergunta estiver fora do escopo, responda apenas: "Não posso ajudar com isso. 
+                            Pergunte algo sobre controle de finanças."
+                            `
+                        }, { role: 'user', content: prompt }
+
                     ],
                     max_tokens: 400,
                 }),

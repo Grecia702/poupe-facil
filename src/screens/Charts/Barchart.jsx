@@ -5,21 +5,52 @@ import { useTransactionSummary } from '@hooks/useTransactionSummary';
 import { startOfMonth } from 'date-fns/startOfMonth';
 import BarChartComponent from '@components/barChartComponent';
 import DateButtonNavigation from '@components/dateButtonNavigation';
-import { subMonths, startOfWeek, endOfWeek, addMonths, endOfMonth } from 'date-fns';
+import { subMonths, addMonths, endOfMonth, getDate } from 'date-fns';
 
 
 export default function Barchart() {
     const { isDarkMode } = useContext(colorContext)
     const [firstDate, setFirstDate] = useState(() => {
         const date = startOfMonth(new Date())
-        date.setHours(0, 0, 0, 0)
+        // date.setHours(-4, 0, 0, 0)
         return date
     })
     const [lastDate, setLastDate] = useState(() => {
         const date = endOfMonth(new Date())
-        date.setHours(23, 59, 59, 999)
+        date.setHours(19, 59, 59, 999)
         return date
     })
+
+
+
+    const handleDate = (label) => {
+        if (label === 'prev') {
+            setFirstDate(prev => {
+                const date = startOfMonth(subMonths(prev, 1))
+                return date
+            })
+
+            setLastDate(prev => {
+                const date = endOfMonth(subMonths(prev, 1))
+                date.setHours(19, 59, 59, 999)
+                return date
+            })
+        }
+        if (label === 'next') {
+            setFirstDate(prev => {
+                const date = startOfMonth(addMonths(prev, 1))
+                return date
+            })
+
+            setLastDate(prev => {
+                const date = endOfMonth(addMonths(prev, 1))
+                date.setHours(19, 59, 59, 999)
+                return date
+            })
+
+        }
+    }
+    console.log(getDate(lastDate))
 
     const { data: barChartData, isLoading } = useTransactionSummary({
         first_day: firstDate,
@@ -32,8 +63,6 @@ export default function Barchart() {
         acc.receita += item.receita
         return acc
     }, { despesa: 0, receita: 0 })
-
-    // console.log(totalSemana)
 
     let porcentagem_despesa
 
@@ -53,19 +82,10 @@ export default function Barchart() {
     }
 
 
-    const handleDate = (label) => {
-        if (label === 'prev') {
-            setFirstDate(prev => subMonths(prev, 1))
-            setLastDate(prev => subMonths(prev, 1))
-        }
-        if (label === 'next') {
-            setFirstDate(prev => addMonths(prev, 1))
-            setLastDate(prev => addMonths(prev, 1))
-        }
-    }
+
 
     return (
-        <ScrollView contentContainerStyle={{ gap: 16, marginTop: 16 }} style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#ffffff' }]}>
+        <ScrollView contentContainerStyle={{ gap: 16, marginTop: 16 }} style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#f7f7f8' }]}>
             <View style={{ alignSelf: 'center', marginTop: 24 }}>
                 <Text style={[styles.legend, { color: isDarkMode ? '#ddd' : '#111' }]}>
                     Total Despesas:
@@ -86,7 +106,7 @@ export default function Barchart() {
                 <Text style={[styles.title, { color: isDarkMode ? '#ddd' : '#111' }]}>
                     Receita x despesas por semana
                 </Text>
-                {barChartData?.data && (
+                {!isLoading && (
                     <BarChartComponent
                         color={isDarkMode}
                         data={barChartData.data}

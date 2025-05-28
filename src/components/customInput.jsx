@@ -6,7 +6,7 @@ const CustomInput = ({ description, placeholder, type, value, onChangeText, requ
     const { isDarkMode } = useContext(colorContext);
     return (
         <View style={styles.container}>
-            <Text style={[styles.title, { color: required ? '#c94444' : (isDarkMode ? '#ddd' : '#111') }]}>{description}</Text>
+            <Text style={[styles.title, { color: required ? '#c94444' : (isDarkMode ? '#ddd' : '#333') }]}>{description}</Text>
             <View style={[styles.input, { backgroundColor: isDarkMode ? '#222' : '#fff', borderColor: isDarkMode ? '#333' : '#ccc' }]}>
 
                 {type === 'date' ? (

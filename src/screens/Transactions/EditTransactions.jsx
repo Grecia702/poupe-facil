@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput, Modal, TouchableOpacity, FlatList, Switch } from 'react-native'
+import { StyleSheet, Text, View, Platform, Modal, TouchableOpacity, FlatList, Switch } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { useRoute } from '@react-navigation/native';
 import api from '@context/axiosInstance'
@@ -12,22 +12,33 @@ import { colorContext } from '@context/colorScheme';
 import ActionButtons from '@components/actionButtons';
 import CustomInput from '@components/customInput';
 import { useTransactionAuth } from '@context/transactionsContext';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
 
 const EditTransactions = () => {
     const route = useRoute();
     const { transactionId } = route.params;
     const { data } = useTransactionByID(transactionId)
     const { isDarkMode } = useContext(colorContext);
+    const date = data?.data_transacao ? new Date(data.data_transacao) : new Date();
     const [formatado, setFormatado] = useState(null);
     const [visible, setVisible] = useState({ categoria: false, account: false, natureza: false, type: false, recurring: false });
     const { dadosContas: accountData } = useContasAuth()
     const [selected, setSelected] = useState({ ...data });
-    const [fields, setFields] = useState({});
+    const [show, setShow] = useState(false);
+    const [fields, setFields] = useState({ data_transacao: date });
     const navigation = useNavigation();
-    const { useFilteredTransacoes, updateTransactionMutation } = useTransactionAuth();
-    const { refetch } = useFilteredTransacoes();
+    const { updateTransactionMutation } = useTransactionAuth();
     const toast = useToast();
     const [isAtivado, setIsAtivado] = useState(data?.recorrente);
+    const onChange = (event, selectedDate) => {
+        setShow(Platform.OS === 'ios');
+        if (selectedDate) {
+            setFields({ ...fields, data_transacao: selectedDate });
+        }
+    };
     const toggleSwitch = () => {
         setFields(prevFields => ({
             ...prevFields,
@@ -52,6 +63,10 @@ const EditTransactions = () => {
 
 
     const handleEditTransaction = async () => {
+        if (fields.nome_transacao === '') {
+            errorToast("Insira um nome para a transação")
+            return
+        }
         if (fields.valor === '') {
             errorToast("Insira um valor válido")
             return
@@ -68,7 +83,6 @@ const EditTransactions = () => {
         updateTransactionMutation.mutate(updateData, {
             onSuccess: () => {
                 toastSuccess();
-                refetch();
             },
             onError: (error) => errorToast(error),
         });
@@ -102,9 +116,19 @@ const EditTransactions = () => {
         setFormatado(f);
     };
 
+    console.log(fields)
+
     return (
 
         <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '	#e5e5ea' }]}>
+            <CustomInput
+                description={'Nome da despesa*'}
+                type={'default'}
+                value={fields.nome_transacao}
+                onChangeText={(text) => setFields({ ...fields, nome_transacao: text })}
+                placeholder={`${data?.nome_transacao}`}
+                required
+            />
             <CustomInput
                 description={'Valor*'}
                 type={'numeric-pad'}
@@ -113,6 +137,22 @@ const EditTransactions = () => {
                 placeholder={`${formatado}`}
                 required
             />
+            <CustomInput
+                description={'Data de transação'}
+                type={'date'}
+                value={fields.data_transacao}
+                placeholder={format(fields.data_transacao, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                onPress={() => setShow(true)}
+            />
+            {show && (
+                <DateTimePicker
+                    value={fields.data_transacao}
+                    mode="date"
+                    display="default"
+                    onChange={onChange}
+
+                />
+            )}
             <Text style={{ color: isDarkMode ? '#DDD' : "#333" }}>Categorias</Text>
             <View style={[styles.buttonInput, { backgroundColor: isDarkMode ? '#222' : '#fff', borderColor: isDarkMode ? '#333' : '#ccc' }]}>
                 <TouchableOpacity style={styles.selector} onPress={() => setVisible(prev => ({ ...prev, categoria: true }))}>

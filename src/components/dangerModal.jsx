@@ -3,7 +3,7 @@ import { MaterialIcons } from '@expo/vector-icons'
 import { colorContext } from '@context/colorScheme';
 import { useContext } from 'react'
 
-const DangerModal = ({ open, setOpen, onPress }) => {
+const DangerModal = ({ open, setOpen, onPress, icon, title, text, confirmButton }) => {
     const { isDarkMode } = useContext(colorContext);
 
     return (
@@ -18,15 +18,15 @@ const DangerModal = ({ open, setOpen, onPress }) => {
 
                 <View style={[styles.modal, { backgroundColor: isDarkMode ? "#333" : "#e4e4e4" }]}>
                     <View style={{ backgroundColor: "#ce8888", padding: 12, borderRadius: 40, alignSelf: 'center', marginBottom: 8 }}>
-                        <MaterialIcons name="warning" size={40} color={isDarkMode ? "#8d1818" : "#be1e1e"} />
+                        <MaterialIcons name={icon || "warning"} size={40} color={isDarkMode ? "#8d1818" : "#be1e1e"} />
                     </View>
 
                     <Text style={{ fontSize: 24, marginVertical: 8, fontWeight: '500', textAlign: 'center', color: isDarkMode ? "#FFF" : "#333" }}>
-                        Você tem certeza?
+                        {title || 'Você tem certeza?'}
                     </Text>
 
-                    <Text style={{ fontSize: 14, marginBottom: 24, fontWeight: '400', textAlign: 'center', color: isDarkMode ? "#d6d6d6" : "#333" }}>
-                        Essa ação não poderá ser desfeita.
+                    <Text style={{ lineHeight: 20, fontSize: 14, marginBottom: 24, fontWeight: '400', textAlign: 'center', color: isDarkMode ? "#d6d6d6" : "#333" }}>
+                        {text || 'Essa ação não poderá ser desfeita.'}
                     </Text>
 
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch' }}>
@@ -41,7 +41,9 @@ const DangerModal = ({ open, setOpen, onPress }) => {
                             onPress={onPress}
                             style={{ padding: 8, paddingHorizontal: 16, backgroundColor: '#ca4c4c', borderRadius: 5 }}
                         >
-                            <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 16 }}>Deletar</Text>
+                            <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 16 }}>
+                                {confirmButton || 'Deletar'}
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </View>

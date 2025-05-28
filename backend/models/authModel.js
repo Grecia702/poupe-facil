@@ -1,8 +1,15 @@
 require('dotenv').config();
 const pool = require('../db.js')
 
-const createUser = async (nome, email, senha) => {
-    await pool.query("INSERT INTO usuario (nome, email, senha) VALUES ($1, $2, $3)", [nome, email, senha]);
+const createUser = async (name, email, password) => {
+    const query = `
+    INSERT INTO usuario 
+    (nome, email, senha) 
+    VALUES ($1, $2, $3) 
+    RETURNING id
+    `;
+    const { rows, rowCount } = await pool.query(query, [name, email, password]);
+    return { rows, exists: rowCount > 0, result: rows[0] };
 }
 
 const getUser = async (email) => {

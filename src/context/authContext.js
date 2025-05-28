@@ -43,7 +43,6 @@ export const AuthProvider = ({ children }) => {
             await SecureStore.setItemAsync('accessToken', data.accessToken);
             await SecureStore.setItemAsync('refreshToken', data.refreshToken);
             setIsAuthenticated(true);
-            console.log('Login bem-sucedido', data);
         },
 
         onError: (error) => {
@@ -57,7 +56,6 @@ export const AuthProvider = ({ children }) => {
             await SecureStore.setItemAsync('accessToken', data.accessToken);
             await SecureStore.setItemAsync('refreshToken', data.refreshToken);
             setIsAuthenticated(true);
-            console.log('Login bem-sucedido', data);
         },
 
         onError: (error) => {
@@ -68,9 +66,6 @@ export const AuthProvider = ({ children }) => {
 
     const signUpMutation = useMutation({
         mutationFn: postSignUp,
-        onSuccess: async (data) => {
-            console.log('Usuário Cadastrado com sucesso', data);
-        },
         onError: (error) => {
             console.error('Erro ao fazer cadastro', error.message);
         },
@@ -102,7 +97,6 @@ export const AuthProvider = ({ children }) => {
     });
 
 
-    // Função pra manter o usuario logado / renovar tokens de acessos
     useEffect(() => {
         const checkToken = async () => {
             try {

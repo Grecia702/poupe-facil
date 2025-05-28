@@ -1,5 +1,6 @@
 const {
     CreateTransactionService,
+    CreateManyTransactionService,
     ListTransactionsService,
     getTransactionByID,
     UpdateTransactionService,
@@ -10,7 +11,7 @@ const {
 } = require("../services/transactionService")
 
 
-const addTransaction = async (req, res) => {
+const createTransaction = async (req, res) => {
     try {
         const { userId } = req.user.decoded
         const dados = req.body
@@ -19,7 +20,38 @@ const addTransaction = async (req, res) => {
         return res.status(200).json({ message: 'Transação criada com sucesso' });
     } catch (error) {
         console.error('Erro na criação da transação:', error.message);
+        if (error.message.includes('Campos obrigatórios faltando')) {
+            return res.status(400).json({
+                message: 'Campos obrigatórios em branco',
+                campos_faltando: error.message.split(': ')[1]
+            });
+        }
+        if (error.message === 'Valor da receita tem que ser maior ou diferente de 0 ') {
+            return res.status(400).json({ message: error.message });
+        }
+        if (error.message === 'Valor da despesa tem que ser maior ou diferente de 0 ') {
+            return res.status(400).json({ message: error.message });
+        }
+        if (error.message === 'Transações fixas devem ter frequência definida') {
+            return res.status(400).json({ message: error.message });
+        }
+        if (error.message === 'Conta inválida') {
+            return res.status(400).json({ message: error.message });
+        }
 
+        res.status(500).json({ message: 'Erro interno no servidor', error: error.message });
+    }
+}
+
+const createManyTransaction = async (req, res) => {
+    try {
+        const { userId } = req.user.decoded
+        const { transactions } = req.body
+        await CreateManyTransactionService(transactions, userId);
+
+        return res.status(200).json({ message: 'Transações criada com sucesso' });
+    } catch (error) {
+        console.error('Erro na criação da transação:', error.message);
         if (error.message.includes('Campos obrigatórios faltando')) {
             return res.status(400).json({
                 message: 'Campos obrigatórios em branco',
@@ -144,7 +176,8 @@ const transactionSummary = async (req, res) => {
 
 
 module.exports = {
-    addTransaction,
+    createTransaction,
+    createManyTransaction,
     readTransaction,
     removeTransaction,
     listTransactions,

@@ -15,8 +15,8 @@ const createTransaction = async (transactionData) => {
 };
 
 const updateTransaction = async ({ id, ...transactionData }) => {
-    const res = await api.patch(`/profile/transaction/${id}`, transactionData);
-    return res.data
+    await api.patch(`/profile/transaction/${id}`, transactionData);
+    return
 };
 
 const deleteTransaction = async (id) => {
@@ -34,7 +34,7 @@ export const TransactionProvider = ({ children }) => {
     const queryClient = useQueryClient();
 
     const getInfinityTransaction = async ({ pageParam = 1, queryKey }) => {
-        const [, filters] = queryKey;
+        const [, filters = {}] = queryKey;
 
         const response = await api.get('/profile/transaction', {
             params: {
@@ -43,7 +43,7 @@ export const TransactionProvider = ({ children }) => {
                 orderBy: filters.orderBy,
                 orderDirection: filters.orderDirection,
                 page: pageParam,
-                limit: 15
+                limit: 10
             },
         });
 
@@ -51,39 +51,28 @@ export const TransactionProvider = ({ children }) => {
         return { data, meta };
     };
 
-    const useFilteredTransacoes = (filters = { orderBy: 'transaction_id', orderDirection: 'desc' }) => {
+
+    const useFilteredTransacoes = (serializedFilters, filters = {}) => {
         return useInfiniteQuery({
             queryKey: ['transacoes_infinite', filters],
-            queryFn: getInfinityTransaction,
+            queryFn: ({ pageParam = 1, queryKey }) => getInfinityTransaction({ pageParam, queryKey }),
             initialPageParam: 1,
             enabled: isAuthenticated,
-            getNextPageParam: (lastPage) => {
-                return lastPage?.meta?.hasNextPage ? lastPage?.meta?.page + 1 : undefined;
-            },
+            getNextPageParam: (lastPage) => lastPage?.meta?.hasNextPage ? lastPage?.meta?.page + 1 : undefined,
         });
     };
 
 
-
     const createTransactionMutation = useMutation({
         mutationFn: createTransaction,
-        onSuccess: () => {
-            queryClient.invalidateQueries(['transacoes_infinite']);
-        },
     });
 
     const updateTransactionMutation = useMutation({
         mutationFn: updateTransaction,
-        onSuccess: () => {
-            queryClient.invalidateQueries(['transacoes_infinite']);
-        },
     });
 
     const deleteTransactionMutation = useMutation({
         mutationFn: deleteTransaction,
-        onSuccess: () => {
-            queryClient.invalidateQueries(['transacoes_infinite']);
-        },
     });
 
     return (

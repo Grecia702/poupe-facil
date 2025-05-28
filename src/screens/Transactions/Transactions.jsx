@@ -4,32 +4,19 @@ import { MaterialIcons } from '@expo/vector-icons'
 import { colorContext } from '@context/colorScheme'
 import TransactionCard from '@components/transactions';
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
-import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
-// import { usePosts } from '@hooks/usePosts';
 import { useTransactionAuth } from '@context/transactionsContext';
-import { useQueryClient } from '@tanstack/react-query';
+import CustomLoader from '@components/contentLoader'
 
 // TODO:  refatorar e otimizar
 const Transactions = () => {
     const route = useRoute();
     const { params } = route.params || '';
-    const tipo = params
+    const tipo = params;
+    const { height, width } = useWindowDimensions();
     const [filters, setFilters] = useState({ tipo: tipo, orderBy: 'transaction_id', orderDirection: 'DESC' })
     const { useFilteredTransacoes } = useTransactionAuth();
-    const {
-        data,
-        refetch,
-        isLoading,
-        error,
-        hasNextPage,
-        fetchNextPage,
-        isFetchingNextPage
-    } = useFilteredTransacoes({
-        tipo: filters.tipo,
-        orderBy: filters.orderBy,
-        orderDirection: filters.orderDirection
-    });
-
+    const serializedFilters = `${filters.tipo}-${filters.orderBy}-${filters.orderDirection}`;
+    const { data, refetch, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } = useFilteredTransacoes(serializedFilters, filters);
     const sortOptions = [
         { label: 'Data (Mais recentes)', value: 'date_desc' },
         { label: 'Data (Mais antigos)', value: 'date_asc' },
@@ -44,33 +31,33 @@ const Transactions = () => {
     const [filtrosChips, setFiltrosChips] = useState([]);
     const allData = useMemo(() => data?.pages?.flatMap(page => page.data) || [], [data]);
     const toggleDropdown = () => setIsOpen(prev => !prev);
-    const { height, width } = useWindowDimensions();
-    const queryClient = useQueryClient();
     const navigation = useNavigation();
-    const onRefresh = async () => {
-        await queryClient.resetQueries(['posts', {
-            tipo: tipo,
-            // natureza: 'variavel',
-            orderBy: 'transaction_id',
-            orderDirection: 'DESC',
-        }]);
-        await refetch();
-    };
-
-
-
-    const rectHeight = 30;
-    const rectWidth = 100;
-    const radius = 18;
-    const priceWidth = 70;
-
     const handleLoadMore = () => {
         if (hasNextPage && !isFetchingNextPage) {
             fetchNextPage();
         }
     };
 
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try {
+            await Promise.all([
+                refetch(),
+                new Promise(resolve => setTimeout(resolve, 500))
+            ]);
+        } catch (err) {
+            console.error("Erro ao atualizar transações:", err);
+        } finally {
+            setRefreshing(false);
+        }
+    };
 
+
+    useFocusEffect(
+        useCallback(() => {
+            onRefresh();
+        }, [serializedFilters, filters])
+    );
 
     // console.log('IDs das transações:', allData.map(item => item.transaction_id));
     useLayoutEffect(() => {
@@ -102,63 +89,6 @@ const Transactions = () => {
         });
     }, [navigation, tipo, isDarkMode]);
 
-
-
-    if (isLoading) {
-        return (
-            <View style={{ flex: 1, backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E' }}>
-                <View style={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}>
-                    <View style={{ position: 'relative', width: '100%', height: height }}>
-                        <View style={{ position: 'relative', width: '100%', height: height, pointerEvents: 'none' }}>
-                            <ContentLoader
-                                speed={1.2}
-                                width={width}
-                                height={height}
-                                viewBox={`0 0 ${width} ${height}`}
-                                backgroundColor={isDarkMode ? "#333" : "#bcecc0"}
-                                foregroundColor={isDarkMode ? "#444" : "#a9dbad"}
-                            >
-                                <Rect x="60" y="65" rx="5" ry="5" width={rectWidth} height={rectHeight} />
-                                <Rect x="60" y="120" rx="5" ry="5" width={rectWidth} height={rectHeight} />
-                                <Rect x="60" y="175" rx="5" ry="5" width={rectWidth} height={rectHeight} />
-                                <Rect x="60" y="230" rx="5" ry="5" width={rectWidth} height={rectHeight} />
-                                <Rect x="60" y="285" rx="5" ry="5" width={rectWidth} height={rectHeight} />
-                                <Rect x="60" y="340" rx="5" ry="5" width={rectWidth} height={rectHeight} />
-                                <Rect x="60" y="395" rx="5" ry="5" width={rectWidth} height={rectHeight} />
-                                <Rect x="60" y="450" rx="5" ry="5" width={rectWidth} height={rectHeight} />
-                                <Rect x="60" y="505" rx="5" ry="5" width={rectWidth} height={rectHeight} />
-                                <Rect x="60" y="560" rx="5" ry="5" width={rectWidth} height={rectHeight} />
-
-                                <Rect x={width - 100} y="65" rx="5" ry="5" width={priceWidth} height={rectHeight} />
-                                <Rect x={width - 100} y="120" rx="5" ry="5" width={priceWidth} height={rectHeight} />
-                                <Rect x={width - 100} y="175" rx="5" ry="5" width={priceWidth} height={rectHeight} />
-                                <Rect x={width - 100} y="230" rx="5" ry="5" width={priceWidth} height={rectHeight} />
-                                <Rect x={width - 100} y="285" rx="5" ry="5" width={priceWidth} height={rectHeight} />
-                                <Rect x={width - 100} y="340" rx="5" ry="5" width={priceWidth} height={rectHeight} />
-                                <Rect x={width - 100} y="395" rx="5" ry="5" width={priceWidth} height={rectHeight} />
-                                <Rect x={width - 100} y="450" rx="5" ry="5" width={priceWidth} height={rectHeight} />
-                                <Rect x={width - 100} y="505" rx="5" ry="5" width={priceWidth} height={rectHeight} />
-                                <Rect x={width - 100} y="560" rx="5" ry="5" width={priceWidth} height={rectHeight} />
-
-
-                                <Circle cx="20" cy="80" r={radius} />
-                                <Circle cx="20" cy="135" r={radius} />
-                                <Circle cx="20" cy="190" r={radius} />
-                                <Circle cx="20" cy="245" r={radius} />
-                                <Circle cx="20" cy="300" r={radius} />
-                                <Circle cx="20" cy="355" r={radius} />
-                                <Circle cx="20" cy="410" r={radius} />
-                                <Circle cx="20" cy="465" r={radius} />
-                                <Circle cx="20" cy="520" r={radius} />
-                                <Circle cx="20" cy="575" r={radius} />
-                            </ContentLoader>
-                        </View>
-                    </View>
-                </View>
-            </View>
-        );
-    }
-
     if (error) {
         return (
             <View style={styles.centerContainer}>
@@ -167,22 +97,18 @@ const Transactions = () => {
         );
     }
 
-    if (!allData?.length) {
+    if (isLoading || refreshing) {
         return (
-            <View style={styles.centerContainer}>
-                <Text>Nenhuma transação encontrada</Text>
-            </View>
+            <CustomLoader
+                width={width}
+                height={height}
+                rectHeight={30}
+                rectWidth={150}
+                radius={25}
+                priceWidth={70}
+            />
         );
     }
-
-
-    const loadData = async () => {
-        try {
-            console.log('teste')
-        } catch (error) {
-            console.error("Erro ao carregar dados:", error);
-        }
-    };
 
     const orderTransactions = (order) => {
         setSelected(order);
@@ -209,7 +135,8 @@ const Transactions = () => {
                 iconName={item?.categoria}
                 color={item?.tipo === "despesa" ? '#dd6161' : '#2563EB'}
                 state={isDarkMode}
-                loadData={loadData}
+                name_transaction={item?.nome_transacao}
+                conta={item?.conta}
                 category={item?.categoria}
                 date={item?.data_transacao}
                 value={item?.valor}
@@ -217,7 +144,10 @@ const Transactions = () => {
                 type={item?.natureza}
                 id={item?.transaction_id}
                 isVisible={dropdownVisibleId === item?.transaction_id}
-                setVisibleId={setDropdownVisibleId} />
+                setVisibleId={setDropdownVisibleId}
+                onRefresh={onRefresh}
+            />
+
         );
     };
     return (

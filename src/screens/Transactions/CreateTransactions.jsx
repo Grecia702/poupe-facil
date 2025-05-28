@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, Modal, FlatList, Switch } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, Modal, FlatList, Platform, Switch } from 'react-native'
 import React, { useState, useEffect, useContext } from 'react'
 import CATEGORIAS from '@utils/categorias';
 import { MaterialIcons } from '@expo/vector-icons'
@@ -9,27 +9,39 @@ import ActionButtons from '@components/actionButtons';
 import api from '@context/axiosInstance'
 import CustomInput from '@components/customInput';
 import { useTransactionAuth } from '@context/transactionsContext';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
 
 const CreateTransactions = () => {
     const [selected, setSelected] = useState({ categoria: CATEGORIAS["Outros"], account: null, natureza: 'Variavel', type: 'despesa', recurrence_period: 'Mensal' });
     const [visible, setVisible] = useState({ categoria: false, account: false, natureza: false, type: false, recurring: false });
-    const [fields, setFields] = useState({ valor: '', categoria: CATEGORIAS["Outros"].label, natureza: selected.natureza, id_contabancaria: '', tipo: selected.type, recorrente: false, frequencia_recorrencia: null, });
+    const date = new Date();
+    const [fields, setFields] = useState({ valor: '', data_transacao: date, categoria: CATEGORIAS["Outros"].label, id_contabancaria: '', natureza: selected.natureza, tipo: selected.type, recorrente: false, frequencia_recorrencia: null, });
     const [accountData, setAccountData] = useState([{ id: '', nome: '', icone: '' }])
     const [formatado, setFormatado] = useState('R$ 0,00');
-    const { useFilteredTransacoes, createTransactionMutation } = useTransactionAuth();
-    const { refetch } = useFilteredTransacoes();
+    const { createTransactionMutation } = useTransactionAuth();
     const { isDarkMode } = useContext(colorContext);
     const navigation = useNavigation();
     const toast = useToast();
+    const [show, setShow] = useState(false);
     const [isAtivado, setIsAtivado] = useState(false);
     const toggleSwitch = () => setIsAtivado(previousState => !previousState);
-
+    const onChange = (event, selectedDate) => {
+        setShow(Platform.OS === 'ios');
+        if (selectedDate) {
+            setFields({ ...fields, data_transacao: selectedDate.toISOString() });
+        }
+    };
 
     const recurrence_period = [
         'Diario', 'Semanal', 'Quinzenal',
         'Mensal', 'Bimestral', 'Trimestral',
         'Quadrimestral', 'Semestral', 'Anual'
     ]
+
+    console.log(fields)
 
     const searchAccount = async () => {
         try {
@@ -46,17 +58,22 @@ const CreateTransactions = () => {
         searchAccount()
     }, []);
 
-
-
     const handleCreateTransaction = () => {
+        if (fields.nome_transacao === '') {
+            errorToast("Insira um nome para a transação")
+            return
+        }
         if (fields.valor === '') {
             errorToast("Insira um valor válido")
+            return
+        }
+        if (fields.valor <= 0) {
+            errorToast("Valor não pode ser menor ou igual a zero")
             return
         }
         createTransactionMutation.mutate(fields, {
             onSuccess: () => {
                 toastSuccess();
-                refetch();
             },
             onError: (error) => toastError(error),
         });
@@ -92,6 +109,14 @@ const CreateTransactions = () => {
 
         <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '	#e5e5ea' }]}>
             <CustomInput
+                description={'Nome da despesa*'}
+                type={'default'}
+                value={fields.nome_transacao}
+                onChangeText={(text) => setFields({ ...fields, nome_transacao: text })}
+                placeholder={"Ex.: Ifood, Uber, Conta de luz..."}
+                required
+            />
+            <CustomInput
                 description={'Valor*'}
                 type={'numeric-pad'}
                 value={formatado}
@@ -99,6 +124,22 @@ const CreateTransactions = () => {
                 placeholder={'Digite o valor...'}
                 required
             />
+            <CustomInput
+                description={'Data de transação'}
+                type={'date'}
+                value={date}
+                placeholder={format(fields.data_transacao, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                onPress={() => setShow(true)}
+            />
+            {show && (
+                <DateTimePicker
+                    value={date}
+                    mode="date"
+                    display="default"
+                    onChange={onChange}
+
+                />
+            )}
             <Text style={{ color: isDarkMode ? '#DDD' : "#333" }}>Categorias</Text>
             <View style={[styles.buttonInput, { backgroundColor: isDarkMode ? '#222' : '#fff', borderColor: isDarkMode ? '#333' : '#ccc' }]}>
                 <TouchableOpacity style={styles.selector} onPress={() => setVisible(prev => ({ ...prev, categoria: true }))}>

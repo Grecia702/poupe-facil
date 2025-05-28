@@ -8,12 +8,12 @@ import { useToast } from 'react-native-toast-notifications';
 const SignupScreen = () => {
     const toast = useToast();
     const navigation = useNavigation();
-    const [credentials, setCredentials] = useState({ nome: '', email: '', senha: '', confirmarSenha: '' });
+    const [credentials, setCredentials] = useState({});
     const [message, setMessage] = useState('');
     const { signUpMutation } = useAuth()
 
     const handleSignUp = async () => {
-        if (!credentials.nome || !credentials.email || !credentials.senha || !credentials.confirmarSenha) {
+        if (!credentials.name || !credentials.email || !credentials.password || !credentials.confirmPassword) {
             setMessage('Preencha todos os campos.');
             showError(message)
             return;
@@ -25,7 +25,7 @@ const SignupScreen = () => {
             return;
         }
 
-        if (credentials.senha != credentials.confirmarSenha) {
+        if (credentials.password !== credentials.confirmPassword) {
             setMessage('Senhas não coincidem.');
             showError(message)
             return;
@@ -71,8 +71,8 @@ const SignupScreen = () => {
                 <TextInput
                     style={styles.input}
                     placeholder='Insira Seu Nome'
-                    value={credentials.nome}
-                    onChangeText={(text) => setCredentials({ ...credentials, nome: text })}
+                    value={credentials.name}
+                    onChangeText={(text) => setCredentials({ ...credentials, name: text })}
                 />
 
                 <View style={styles.viewContainer}>
@@ -95,9 +95,9 @@ const SignupScreen = () => {
                 <TextInput
                     style={styles.input}
                     placeholder='Insira Sua Senha'
-                    value={credentials.senha}
+                    value={credentials.password}
                     secureTextEntry={true}
-                    onChangeText={(text) => setCredentials({ ...credentials, senha: text })}
+                    onChangeText={(text) => setCredentials({ ...credentials, password: text })}
                 />
 
                 <View style={styles.viewContainer}>
@@ -108,9 +108,9 @@ const SignupScreen = () => {
                 <TextInput
                     style={styles.input}
                     placeholder='Insira Sua Senha Novamente'
-                    value={credentials.confirmarSenha}
+                    value={credentials.confirmPassword}
                     secureTextEntry={true}
-                    onChangeText={(text) => setCredentials({ ...credentials, confirmarSenha: text })}
+                    onChangeText={(text) => setCredentials({ ...credentials, confirmPassword: text })}
                 />
 
                 <Pressable style={styles.button} onPress={handleSignUp}>

@@ -13,9 +13,9 @@
         "value": 200,
         "icon": "restaurant-menu"
     },
-    "Carro": {
+    "Transporte": {
         "id": "3",
-        "label": "Carro",
+        "label": "Transporte",
         "color": "rgb(34, 197, 94)",
         "value": 300,
         "icon": "directions-car"

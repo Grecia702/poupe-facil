@@ -1,5 +1,4 @@
-import { TouchableOpacity, View, Text, Pressable, StyleSheet, Modal } from "react-native";
-import { CardTransaction, Title, Date, IconCard, InfoView, Value } from "./styles";
+import { TouchableOpacity, View, Text, Pressable, StyleSheet } from "react-native";
 import { MaterialIcons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native';
 import { colorContext } from '@context/colorScheme'
@@ -9,7 +8,7 @@ import { useTransactionAuth } from "@context/transactionsContext";
 import { format } from 'date-fns';
 import DangerModal from '@components/dangerModal';
 
-export default function TransactionCard({ loadData, iconName, state, color, category, date, value, type, recurrence, isVisible, setVisibleId, id, hideOption }) {
+export default function TransactionCard({ loadData, iconName, name_transaction, state, color, category, date, value, type, recurrence, isVisible, setVisibleId, id, hideOption, conta, onRefresh }) {
     const navigation = useNavigation();
     const { isDarkMode } = useContext(colorContext)
     const [isOpen, setIsOpen] = useState(false)
@@ -17,13 +16,12 @@ export default function TransactionCard({ loadData, iconName, state, color, cate
     const { refetch } = useFilteredTransacoes();
     const toast = useToast();
 
-
     const handleDelete = () => {
         deleteTransactionMutation.mutate(id, {
             onSuccess: () => {
-                setIsOpen(prev => !prev);
                 toastSuccess();
-                refetch();
+                onRefresh();
+                setIsOpen(prev => !prev);
             },
             onError: (error) => toastError(error),
         });
@@ -50,7 +48,7 @@ export default function TransactionCard({ loadData, iconName, state, color, cate
     const categoriaIcons = {
         Contas: 'credit-card',
         Alimentação: 'restaurant-menu',
-        Carro: 'directions-car',
+        Transporte: 'directions-car',
         Internet: 'computer',
         Lazer: 'beach-access',
         Educação: 'menu-book',
@@ -110,39 +108,80 @@ export default function TransactionCard({ loadData, iconName, state, color, cate
     return (
         <View style={{ marginTop: 10, paddingBottom: 10, borderBottomWidth: 1, borderColor: isDarkMode ? '#dddddd8f' : '#7a7a7a8f' }}>
             {isVisible && <DropDown />}
-            <CardTransaction >
-                <IconCard color={color}>
+            <View style={styles.container}>
+                <View style={[styles.iconCard, { backgroundColor: color }]}>
                     <MaterialIcons
                         name={categoriaIcons[iconName] || 'help-outline'}
                         color="white"
-                        size={24}
+                        size={28}
                     />
-
-                </IconCard>
-
-                <InfoView>
-                    <View style={{ flexDirection: 'row' }}>
-                        <Title $state={state}>{category}</Title>
-                        {recurrence && (
-                            <MaterialIcons
-                                name='repeat'
-                                color={state ? "#EEE" : "#222"}
-                                size={20}
-                            />
-                        )}
+                </View>
+                <View style={styles.info}>
+                    <View>
+                        <View style={{ flexDirection: 'row' }}>
+                            <Text style={[styles.title, { color: state ? "#f1f1f1" : "#2e2e2e" }]}>{name_transaction}</Text>
+                            {recurrence && (
+                                <MaterialIcons
+                                    name='repeat'
+                                    color={state ? "#EEE" : "#222"}
+                                    size={20}
+                                />
+                            )}
+                        </View>
+                        <Text style={[styles.text, { color: state ? "#e9e7e7" : "#4e4e4e" }]}>{category} - {type}</Text>
+                        <Text style={[styles.text, { color: state ? "#e9e7e7" : "#4e4e4e" }]}>{conta} - {format(date, 'dd/MM/yyyy')}</Text>
                     </View>
-                    <Date $state={state}>{type.charAt(0).toUpperCase() + type.slice(1)} - {format(date, 'dd/MM/yyyy')}</Date>
-                </InfoView>
 
-                <Value $state={state}>{(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Value>
-                {!hideOption && (
-                    <TouchableOpacity onPress={handleToggleDropdown}>
-                        <MaterialIcons
-                            name="more-vert" size={24}
-                            color={state ? "white" : "black"} />
-                    </TouchableOpacity>)
-                }
-            </CardTransaction>
+                    <View style={{ flexDirection: 'row' }}>
+                        <Text style={[styles.value, { color: state ? '#FFF' : '#303131', }]}>
+                            {(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </Text>
+                        {!hideOption && (
+                            <TouchableOpacity onPress={handleToggleDropdown}>
+                                <MaterialIcons
+                                    name="more-vert" size={24}
+                                    color={state ? "white" : "black"} />
+                            </TouchableOpacity>)
+                        }
+                    </View>
+                </View>
+            </View>
         </View>
     )
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    iconCard: {
+        borderRadius: 30,
+        height: 48,
+        width: 48,
+        marginRight: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    info: {
+        justifyContent: 'space-between',
+        flexDirection: 'row',
+        flex: 1,
+        alignItems: 'center',
+    },
+    title: {
+        fontWeight: '500',
+        fontSize: 14,
+        marginRight: 5,
+
+    },
+    value: {
+        fontSize: 16,
+        fontWeight: '700',
+        textAlign: 'right',
+    },
+    text: {
+        fontSize: 12,
+        fontWeight: 400
+    },
+})

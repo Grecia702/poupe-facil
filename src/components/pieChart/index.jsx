@@ -3,21 +3,10 @@ import { View } from "react-native";
 import { colorContext } from '@context/colorScheme';
 import Svg from "react-native-svg";
 import { VictoryPie, VictoryLabel, VictoryTooltip, Flyout } from "victory-native";
+import { categoriaCores } from "@utils/categoriasCores";
 
 export default function PieChart({ data, total, selected, height, width, padAngle }) {
     const { isDarkMode } = useContext(colorContext)
-
-    const categoriaCores = {
-        Contas: "rgb(160, 48, 44)",
-        Alimentação: "rgb(204, 118, 38)",
-        Carro: "rgb(57, 184, 74)",
-        Internet: "rgb(64, 155, 230)",
-        Lazer: "rgb(114, 13, 109)",
-        Educação: "rgb(68, 59, 90)",
-        Compras: "rgb(148, 137, 37)",
-        Outros: "rgb(83, 87, 83)",
-    };
-
     const dadosFormatados = data?.length > 0
         ? data
         : [{ categoria: 'Sem dados', total: 1 }]
@@ -71,7 +60,7 @@ export default function PieChart({ data, total, selected, height, width, padAngl
                             fontWeight: "600",
                         }
                     }}
-                    // animate={{ duration: 500 }}
+                    animate={{ duration: 500, easing: "linear" }}
                     labels={({ datum }) => `Total: ${datum.ocorrencias} `}
                     colorScale={cores}
                 />

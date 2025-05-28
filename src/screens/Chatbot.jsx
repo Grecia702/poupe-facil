@@ -2,13 +2,15 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import api from '@context/axiosInstance';
 import { View, TextInput, Text, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, FlatList } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { colorContext } from '@context/colorScheme'
+import { colorContext } from '@context/colorScheme';
 
 const Chatbot = () => {
     const [message, setMessage] = useState({ message_user: '' });
     const [messages, setMessages] = useState([]);
+    const [isTyping, setIsTyping] = useState(false);
+    const [typingDots, setTypingDots] = useState('');
     const flatListRef = useRef(null);
-    const { isDarkMode, toggleDarkMode } = useContext(colorContext)
+    const { isDarkMode } = useContext(colorContext);
 
     useEffect(() => {
         const botReply = { text: 'Olá, sou seu assistente virtual, como posso ajudar?', from: 'bot' };
@@ -21,23 +23,40 @@ const Chatbot = () => {
         }
     }, [messages]);
 
+    useEffect(() => {
+        let interval;
+        if (isTyping) {
+            interval = setInterval(() => {
+                setTypingDots(prev => (prev.length < 3 ? prev + '.' : ''));
+            }, 500);
+        } else {
+            setTypingDots('');
+        }
+        return () => clearInterval(interval);
+    }, [isTyping]);
+
     const sendMessage = async () => {
         if (message.message_user.trim() === '') return;
-
         const newMessage = { text: message.message_user, from: 'user' };
         setMessages(prevMessages => [...prevMessages, newMessage]);
         setMessage({ message_user: '' });
+        setIsTyping(true);
+        setMessages(prevMessages => [...prevMessages, { text: 'Digitando', from: 'bot', isTypingIndicator: true }]);
+
         try {
             const { data } = await api.post('/gpt', {
                 prompt: message.message_user
-            })
-            const botReply = { text: `${data.message}`, from: 'bot' };
+            });
+            setMessages(prevMessages => prevMessages.filter(msg => !msg.isTypingIndicator));
+            const botReply = { text: data.message, from: 'bot' };
             setMessages(prevMessages => [...prevMessages, botReply]);
         } catch (error) {
-            console.log(error.message)
+            setMessages(prevMessages => prevMessages.filter(msg => !msg.isTypingIndicator));
+            console.log(error.message);
+        } finally {
+            setIsTyping(false);
         }
-
-    }
+    };
 
     return (
         <KeyboardAvoidingView
@@ -51,9 +70,12 @@ const Chatbot = () => {
                 renderItem={({ item }) => (
                     <View style={[
                         styles.messageBase,
-                        item.from === 'user' ? styles.messageUser : styles.messageBot
+                        item.from === 'user' ? styles.messageUser : styles.messageBot,
+                        item.isTypingIndicator && { fontStyle: 'italic', opacity: 0.7 }
                     ]}>
-                        <Text style={styles.messageText}>{item.text}</Text>
+                        <Text style={styles.messageText}>
+                            {item.isTypingIndicator ? `Digitando${typingDots}` : item.text}
+                        </Text>
                     </View>
                 )}
                 style={{ flex: 1 }}

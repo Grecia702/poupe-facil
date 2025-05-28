@@ -1,4 +1,5 @@
 const authModel = require("../models/authModel");
+const accountModel = require("../models/accountModel");
 const bcrypt = require('bcrypt')
 const { format } = require('date-fns');
 const { generateAccessToken, generateRefreshToken } = require('../Utils/tokenUtils');
@@ -17,12 +18,13 @@ const authQuerySchema = z.object({
 const signupService = async (query) => {
     const { name, email, password } = authQuerySchema.parse(query);
     const accountExists = await authModel.accountExists(email)
-    console.log(accountExists)
     if (accountExists) {
         throw new Error("Já existe uma conta com este e-mail")
     }
-    const hashPassword = bcrypt.hash(password, saltRounds)
-    await authModel.createUser(name, email, hashPassword)
+
+    const hashPassword = await bcrypt.hash(password, saltRounds)
+    const { result } = await authModel.createUser(name, email, hashPassword)
+    await accountModel.CreateAccount(result.id, 'Conta corrente', 0, 'Conta corrente', 'account-balance', null)
 }
 
 const loginService = async (query, agent, userIp) => {

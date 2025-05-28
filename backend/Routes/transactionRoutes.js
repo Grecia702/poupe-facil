@@ -3,7 +3,8 @@ const router = express.Router();
 const transactionController = require("../Controller/transactionController");
 const authMiddleware = require('../middleware/authMiddleware');
 
-router.post("/", authMiddleware, transactionController.addTransaction)
+router.post("/many", authMiddleware, transactionController.createManyTransaction)
+router.post("/", authMiddleware, transactionController.createTransaction)
 router.get("/group", authMiddleware, transactionController.groupTransactions)
 router.get("/categories", authMiddleware, transactionController.groupCategories)
 router.get("/summary", authMiddleware, transactionController.transactionSummary)
