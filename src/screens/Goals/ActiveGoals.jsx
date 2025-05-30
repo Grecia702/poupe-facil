@@ -10,8 +10,8 @@ import { useNavigation } from '@react-navigation/native';
 const ActiveGoals = () => {
     const { isDarkMode } = useContext(colorContext)
     const { data: goalsData } = useGoals()
-    const [visible, setVisible] = useState(false)
     const navigation = useNavigation();
+    const [dropdownVisibleId, setDropdownVisibleId] = useState(null);
 
     return (
         <Provider>
@@ -56,9 +56,11 @@ const ActiveGoals = () => {
                                         start_date={item?.data_inicio}
                                         end_date={item?.deadline}
                                         showOptions={true}
-                                        visible={visible}
                                         status_meta={'andamento'}
-                                        setVisible={setVisible}
+                                        id={item.id}
+                                        isVisible={dropdownVisibleId === item?.id}
+                                        setVisibleId={setDropdownVisibleId}
+                                        editButton={() => navigation.navigate('Edit Goal', { id: item.id, data: item })}
                                         deleteButton={() => console.log('hello')}
                                     />
                                 </View>

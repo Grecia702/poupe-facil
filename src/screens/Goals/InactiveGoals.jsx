@@ -12,6 +12,8 @@ const InactiveGoals = () => {
     const { data: goalsData, isLoading } = useGoals({ status_meta: 'pausada' })
     const [visible, setVisible] = useState(false)
     const navigation = useNavigation();
+    const [dropdownVisibleId, setDropdownVisibleId] = useState(null);
+
 
     return (
         <Provider>
@@ -56,10 +58,12 @@ const InactiveGoals = () => {
                                         start_date={item?.data_inicio}
                                         end_date={item?.deadline}
                                         showOptions={true}
-                                        visible={visible}
                                         status_meta={'parado'}
-                                        setVisible={setVisible}
-                                        deleteButton={() => console.log('hello')}
+                                        id={item.id}
+                                        isVisible={dropdownVisibleId === item?.id}
+                                        setVisibleId={setDropdownVisibleId}
+                                        editButton={() => navigation.navigate('Edit Goal', { id: item.id, data: item })}
+                                        deleteButton={() => { console.log('hello'); setDropdownVisibleId(null) }}
                                     />
                                 </View>
                             )}

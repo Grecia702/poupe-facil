@@ -55,10 +55,37 @@ async function processarTransacoesRecorrentes() {
     }
 }
 
+async function processarMetasVencimento() {
+    const hoje = format(new Date(), 'yyyy/MM/dd HH:mm:ss');
+
+    const query = `
+    SELECT * FROM metas
+    WHERE status_meta = 'ativa' AND deadline <= $1
+  `;
+    const { rows } = await pool.query(query, [hoje]);
+    for (const metas of rows) {
+        const {
+            id,
+            id_usuario
+        } = metas
+        await pool.query(
+            `UPDATE metas
+            SET status_meta = 'expirada'
+            WHERE id = $1`,
+            [id]
+        );
+        console.log(`Meta de id ${id} do usuario ${id_usuario} expirou. Marcando como expirada`);
+    }
+}
+
 function iniciarCron() {
     cron.schedule('* * * * *', async () => {
         console.log(`[${format(new Date(), 'yyyy-MM-dd HH:mm:ss')}] Verificando transações recorrentes...`);
-        await processarTransacoesRecorrentes();
+        console.log(`[${format(new Date(), 'yyyy-MM-dd HH:mm:ss')}] Verificando metas expiradas...`);
+        await Promise.all([
+            processarTransacoesRecorrentes(),
+            processarMetasVencimento()
+        ]);
     });
 }
 

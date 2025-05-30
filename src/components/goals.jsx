@@ -6,14 +6,12 @@ import { differenceInDays } from 'date-fns';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Menu } from 'react-native-paper';
 
-const Goals = ({ goal_desc, start_date, end_date, current_amount, status_meta, total_amount, showOptions, visible, setVisible, editButton, deleteButton }) => {
+const Goals = ({ goal_desc, start_date, end_date, current_amount, status_meta, total_amount, showOptions, isVisible, setVisibleId, id, editButton, deleteButton }) => {
     const { isDarkMode } = useContext(colorContext)
     const progress = current_amount / total_amount
     const valor_gasto = current_amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
     const valor_total = total_amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
     const deadline = differenceInDays(end_date, new Date())
-    const openMenu = () => setVisible(true);
-    const closeMenu = () => setVisible(false);
     let color = '#A0A0A0';
     let unfilledColor = '#E0E0E0';
 
@@ -40,6 +38,10 @@ const Goals = ({ goal_desc, start_date, end_date, current_amount, status_meta, t
         unfilledColor = '#D6EDD9'
     }
 
+    const handleToggleDropdown = () => {
+        setVisibleId(isVisible ? null : id);
+    };
+
     return (
 
         <View style={styles.container}>
@@ -49,15 +51,15 @@ const Goals = ({ goal_desc, start_date, end_date, current_amount, status_meta, t
                 </Text>
                 {showOptions && (
                     <Menu
-                        visible={visible}
-                        onDismiss={closeMenu}
+                        visible={isVisible}
+                        onDismiss={handleToggleDropdown}
                         anchor={
 
-                            <TouchableOpacity onPress={openMenu} style={{ marginRight: -13, margin: 0, padding: 0 }}>
+                            <TouchableOpacity onPress={handleToggleDropdown} style={{ marginRight: -13, margin: 0, padding: 0 }}>
                                 <MaterialIcons name="more-vert" size={24} color={isDarkMode ? '#cdcecd' : "#303030"} />
                             </TouchableOpacity>
                         }
-                        style={{ marginTop: -110, marginLeft: -10 }}
+                        style={{ marginTop: -80, marginLeft: -10 }}
                     >
                         <Menu.Item onPress={editButton} title="Editar" />
                         <Menu.Item onPress={deleteButton} title="Excluir" />
@@ -78,7 +80,7 @@ const Goals = ({ goal_desc, start_date, end_date, current_amount, status_meta, t
                 </Text>
             </View>
             <Text style={[styles.desc, { color: isDarkMode ? '#cdcecd' : "#303030" }]}>{valor_gasto} de {valor_total}</Text>
-            {status_meta != 'concluido' && (
+            {(status_meta != 'concluido' || status_meta != 'expirada') && (
                 <Text style={[styles.title, { marginTop: 16, color: isDarkMode ? '#cdcecd' : "#303030" }]}>
                     Restam: {deadline} dias
                 </Text>
