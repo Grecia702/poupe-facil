@@ -1,9 +1,10 @@
 require('dotenv').config();
 const cron = require('node-cron');
 const pool = require('../db.js')
+const { format } = require('date-fns');
 
 async function processarTransacoesRecorrentes() {
-    const hoje = moment().format('YYYY/MM/DD HH:mm:ss');
+    const hoje = format(new Date(), 'yyyy/MM/dd HH:mm:ss');
 
     const query = `
     SELECT * FROM transacoes
@@ -56,7 +57,7 @@ async function processarTransacoesRecorrentes() {
 
 function iniciarCron() {
     cron.schedule('* * * * *', async () => {
-        console.log(`[${moment().format('YYYY-MM-DD HH:mm:ss')}] Verificando transações recorrentes...`);
+        console.log(`[${format(new Date(), 'yyyy-MM-dd HH:mm:ss')}] Verificando transações recorrentes...`);
         await processarTransacoesRecorrentes();
     });
 }

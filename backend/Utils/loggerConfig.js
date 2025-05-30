@@ -1,12 +1,12 @@
 const winston = require('winston');
-const moment = require('moment');
+const { format } = require('date-fns');
 
 const logger = winston.createLogger({
     level: 'info',
     format: winston.format.combine(
 
         winston.format.printf(({ level, message }) => {
-            const timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+            const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
             return `${timestamp} ${level}: ${message}`;
         })
     ),

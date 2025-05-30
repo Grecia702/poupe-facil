@@ -1,10 +1,9 @@
 require('dotenv').config();
-const moment = require('moment');
 const logger = require('../Utils/loggerConfig')
 const { generateAccessToken } = require('../Utils/tokenUtils');
 const { loginService, googleService, signupService, logoutService } = require('../services/authService.js');
-const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
-
+const { format } = require('date-fns');
+const date = format(new Date(), 'dd/MM/yyyy HH:mm:ss');;
 
 // LOGIN
 const login = async (req, res) => {
@@ -47,8 +46,8 @@ const refresh = async (req, res) => {
         userId: userId,
     };
     const newAccessToken = generateAccessToken(payload);
-    console.log("Token renovado com sucesso às", timestamp);
-    logger.info(`Renovação de token feita pelo usuario ${userId} durante as ${timestamp}. IP: ${ipAddress}, User-Agent: ${userAgent}`);
+    console.log("Token renovado com sucesso às", date);
+    logger.info(`Renovação de token feita pelo usuario ${userId} durante as ${date}. IP: ${ipAddress}, User-Agent: ${userAgent}`);
     return res.status(200).json({ message: 'Token renovado com sucesso', newAccessToken });
 };
 
