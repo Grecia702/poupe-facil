@@ -144,6 +144,7 @@ const EditAccount = () => {
                             return (
                                 <TouchableOpacity
                                     style={styles.option}
+                                    key={index}
                                     onPress={() => {
                                         setSelectedIcon(item.icon);
                                         setFields({ ...fields, icone: item.icon });

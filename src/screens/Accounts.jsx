@@ -36,8 +36,8 @@ const ModalData = ({ isDarkMode, meses, open, setOpen }) => {
                             {meses.map((item, index) => {
                                 const isSelected = selectedMonth === index;
                                 return (
-                                    <TouchableOpacity onPress={() => setSelectedMonth(index)}>
-                                        <Text key={index}
+                                    <TouchableOpacity key={index} onPress={() => setSelectedMonth(index)}>
+                                        <Text
                                             style={{
                                                 padding: 5,
                                                 backgroundColor: isSelected ? (isDarkMode ? '#1e40af' : '#3b82f6')
@@ -109,8 +109,6 @@ const BankAccount = () => {
         );
     };
 
-    console.log(dadosContas)
-
     return (
         <View style={{ flex: 1 }}>
             <FlatList
@@ -132,6 +130,7 @@ const BankAccount = () => {
                                 color={isDarkMode ? "#222" : "#DDD"}
                                 textColor={isDarkMode ? "#CCC" : "#222"}
                                 id={item.id}
+                                key={item.id}
                                 isVisible={dropdownVisibleId === item.id}
                                 setVisibleId={setDropdownVisibleId}
                                 setRefreshing={setRefreshing}
