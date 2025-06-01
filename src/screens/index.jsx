@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, ScrollView, FlatList, Modal } from 'react-native';
 import { colorContext } from '@context/colorScheme';
 import { useContext, useState, useMemo } from 'react'
-import { categoriaCores } from '../utils/categoriasCores'
+import { categoriaCores } from '@utils/categoriasCores'
 import Wrapper from '@components/wrapper';
 import Card from '@components/card';
 import ContentLoader, { Rect } from 'react-content-loader/native'
@@ -17,13 +17,13 @@ import { useTransactionAuth } from '@context/transactionsContext';
 import { useBudgetAuth } from '@context/budgetsContext';
 import { useContasAuth } from '@context/contaContext';
 import { useGoals } from '@hooks/useGoals';
-import CalendarEmpty from '../assets/calendar-empty.svg';
-import TargetArrow from '../assets/target-arrow.svg';
-import TransactionEmpty from '../assets/empty-cart.svg';
-import AccountEmpty from '../assets/bank-account.svg';
+import CalendarEmpty from '@assets/calendar-empty.svg';
+import TargetArrow from '@assets/target-arrow.svg';
+import TransactionEmpty from '@assets/empty-cart.svg';
+import AccountEmpty from '@assets/bank-account.svg';
 import Budget from '@components/budgetBars';
 import CreateItem from '@components/createItem';
-import Goals from '../components/goals';
+import Goals from '@components/goals';
 import NavMonths from '@components/navMonths';
 import { startOfMonth, endOfMonth, set, format, addMonths, subMonths } from 'date-fns'
 import { useDonutchartData } from '@hooks/useDonutchartData';

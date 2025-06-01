@@ -14,7 +14,7 @@
         "buildType": "apk"
       },
       "env": {
-        "API_URL": "https://poupefacil.up.railway.app/api"
+        "API_URL": "http://192.168.100.211:3000/api"
       }
     },
     "production": {
@@ -22,7 +22,7 @@
         "buildType": "apk"
       },
       "env": {
-        "API_URL": "https://poupefacil.up.railway.app/api"
+        "API_URL": "http://192.168.100.211:3000/api"
       },
       "autoIncrement": true
     }

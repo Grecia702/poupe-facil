@@ -6,7 +6,7 @@ import { useAuth } from '@context/authContext';
 import { useNavigation } from '@react-navigation/native'
 import { useToast } from 'react-native-toast-notifications';
 import { GoogleSignin, isSuccessResponse } from '@react-native-google-signin/google-signin';
-
+const googleLogo = require('../../assets/images/google__g__logo.png');
 
 GoogleSignin.configure({
     iosClientId: '159358840833-asm7tcmu7b119g66b833qj5kf8f2gngu.apps.googleusercontent.com',
@@ -153,7 +153,7 @@ const LoginScreen = () => {
                 <TouchableOpacity style={[styles.button, { backgroundColor: '#f3f3f3', padding: 15, borderColor: '#555555', gap: 15 }]} onPress={handleGoogleSignIn}>
                     <Image
                         style={{ width: 24, height: 24 }}
-                        source={require('../assets/Android/Google__G__logo.png')}
+                        source={googleLogo}
                     />
 
                     <Text style={{ alignSelf: 'center', fontSize: 16, fontWeight: 400, color: '#3C4043' }}>Continue com o Google</Text>

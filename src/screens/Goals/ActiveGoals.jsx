@@ -10,6 +10,7 @@ import { useGoalsAuth } from '@context/goalsContext';
 import { useToast } from 'react-native-toast-notifications';
 import DangerModal from '@components/dangerModal';
 import AddBalanceModal from './AddBalanceModal';
+const NoData = require('@assets/no_data.png')
 
 const ActiveGoals = () => {
     const { isDarkMode } = useContext(colorContext)
@@ -132,7 +133,7 @@ const ActiveGoals = () => {
                 ) : (
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingBottom: 150 }}>
                         <Image
-                            source={require('../../assets/no_data.png')}
+                            source={NoData}
                             style={{ width: 250, height: 250 }}
                         />
                         <Text style={{ fontSize: 18, fontWeight: '500', color: isDarkMode ? '#a1a1a1' : '#555' }}> Nada por aqui...</Text>

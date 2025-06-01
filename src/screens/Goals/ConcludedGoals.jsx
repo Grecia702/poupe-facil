@@ -9,6 +9,7 @@ import { Provider } from 'react-native-paper';
 import { useToast } from 'react-native-toast-notifications';
 import DangerModal from '@components/dangerModal';
 import { useNavigation } from '@react-navigation/native';
+const NoData = require('@assets/no_data.png')
 
 const ConcludedGoals = () => {
     const { isDarkMode } = useContext(colorContext)
@@ -117,7 +118,7 @@ const ConcludedGoals = () => {
                 ) : (
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingBottom: 150 }}>
                         <Image
-                            source={require('../../assets/no_data.png')}
+                            source={NoData}
                             style={{ width: 250, height: 250 }}
                         />
                         <Text style={{ fontSize: 18, fontWeight: '500', color: isDarkMode ? '#a1a1a1' : '#555' }}> Nada por aqui...</Text>
