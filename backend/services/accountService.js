@@ -24,12 +24,17 @@ const CreateAccountService = async (dados, userId) => {
     await accountModel.CreateAccount(userId, dados.nome_conta, dados.data_criacao, dados.saldo, dados.tipo_conta, dados.icone, dados.desc_conta);
 }
 
-const UpdateAccountService = async (userId, account_id, queryParams) => {
+const UpdateAccountService = async (userId, account_id, query, params) => {
     const account = await accountModel.FindAccountByID(account_id, userId);
     if (!account.exists) {
         throw new Error('Conta não encontrada');
     }
-    await accountModel.UpdateAccount(userId, account_id, queryParams);
+    const { set_primary } = params
+    if (set_primary == true || set_primary === 'true') {
+        await accountModel.setAsPrimary(account_id, userId)
+        return
+    }
+    await accountModel.UpdateAccount(userId, account_id, query);
 }
 
 const RemoveAccountService = async (userId, id) => {

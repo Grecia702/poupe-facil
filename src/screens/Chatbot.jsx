@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import api from '@context/axiosInstance';
-import { View, TextInput, Text, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, ScrollView } from 'react-native';
+import { View, TextInput, Text, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { colorContext } from '@context/colorScheme'
 
@@ -9,7 +9,7 @@ const Chatbot = () => {
     const [messages, setMessages] = useState([]);
     const scrollViewRef = useRef(null);
     const { isDarkMode } = useContext(colorContext)
-
+    const [isTyping, setIsTyping] = useState(false)
     useEffect(() => {
         const botReply = { content: 'Olá, sou seu assistente virtual, como posso ajudar?', role: 'assistant' };
         setMessages([botReply]);
@@ -19,24 +19,26 @@ const Chatbot = () => {
         if (scrollViewRef.current && messages.length > 0) {
             scrollViewRef.current?.scrollToEnd({ animated: true });
         }
-    }, [messages]);
+    }, [messages, isTyping]);
 
     const sendMessage = async () => {
         if (message.message_user.trim() === '') return;
         const newMessage = { content: message.message_user, role: 'user' };
         setMessages(prevMessages => [...prevMessages, newMessage]);
         setMessage({ message_user: '' });
+        setIsTyping(true)
         try {
             const { data } = await api.post('/gpt', {
                 prompt: message.message_user,
                 memory: JSON.stringify(messages.slice(-5))
-            })
+            });
             const botReply = { content: `${data.message}`, role: 'assistant' };
             setMessages(prevMessages => [...prevMessages, botReply]);
         } catch (error) {
-            console.log(error.message)
+            console.log(error.message);
+        } finally {
+            setIsTyping(false);
         }
-
     }
 
     return (
@@ -59,6 +61,11 @@ const Chatbot = () => {
                         <Text style={styles.messageText}>{item.content}</Text>
                     </View>
                 ))}
+                {isTyping && (
+                    <View style={[styles.messageBase, styles.messageBot, { marginBottom: 24, flexDirection: 'row', alignItems: 'center' }]}>
+                        <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                    </View>
+                )}
             </ScrollView>
             <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#222' : '#fffefe', borderColor: isDarkMode ? '#444' : '#ccc' }]}>
                 <TextInput

@@ -1,11 +1,13 @@
 const fetch = require('node-fetch');
 const transactionModel = require('../models/transactionModel');
+const AccountModel = require('../models/accountModel');
 
 const promptBasic = async (req, res) => {
     const { prompt, memory } = req.body;
     const { userId } = req.user.decoded;
     const date = new Date();
-
+    const { result } = await AccountModel.listAccountsPrimary(userId)
+    console.log(result)
     try {
         const structuredResponse = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
@@ -18,37 +20,48 @@ const promptBasic = async (req, res) => {
                 messages: [
                     {
                         role: 'system',
-                        content: `A data de hoje é ${date} e você é um assistente financeiro que responde sempre com JSON válido para pedidos claros.
-                                1. Para criar várias transações, responda:
-                                {
-                                    "command": "createMany",
-                                    "transactions": [
-                                        {
-                                            "id_contabancaria": 19,
-                                            "nome_transacao": string,
-                                            "categoria": "Lazer","Transporte","Educação","Alimentação","Internet","Contas","Compras","Saúde","Outros"
-                                            "data_transacao": "timestamp ISO 8601",
-                                            "tipo": "despesa" ou "receita",
-                                            "valor": decimal,
-                                            "natureza": "Variavel" ou "Fixa",
-                                            "recorrente": booleano
-                                            "frequencia_recorrencia": diario, semanal, etc...
-                                            "proxima_ocorrencia": "timestamp ISO 8601",
-                                            "budget_id": null,
-                                        }, ...
-                                    ]
-                                }   
-                                2. Para resumo de transações, responda:
-                                    {
-                                        "command": "transactionSummary",
-                                        "first_day": "YYYY-MM-DD",
-                                        "last_day": "YYYY-MM-DD",
-                                        "period": "day"|"week"|"month"
-                                    }
-                                3. Para dúvidas, explicações ou perguntas fora do escopo, responda APENAS: {"command":"freeform"}.
+                        content: `
+A data de hoje é ${date} e você é um assistente financeiro que responde sempre com JSON válido para pedidos claros.
+Sempre que o usuário não especificar explicitamente o nome da conta, você DEVE procurar na lista de accounts qual conta possui 
+"is_primary": true e usar o "id" dessa conta no campo "id_contabancaria".
+Se o usuario omitir a data_transacao, use a data atual.
+
+IMPORTANTE:  
+- Se a categoria gerada for Contas, defina "natureza": "Fixa" e "recorrente": true.  
+- Para outras transações, defina "natureza": "Variavel" e "recorrente": false.
+
+1. Para criar várias transações, responda:
+{
+    "command": "createMany",
+    "transactions": [
+        {
+            "id_contabancaria": int,
+            "nome_transacao": string, // Insira com o que ele gastou
+            "categoria": "Lazer","Transporte","Educação","Alimentação","Internet","Contas","Compras","Saúde","Outros",
+            "data_transacao": "timestamp ISO 8601",
+            "tipo": "despesa" ou "receita",
+            "valor": decimal,
+            "natureza": "Variavel" ou "Fixa",
+            "recorrente": booleano,
+            "frequencia_recorrencia": "diario", "semanal", etc...,
+            "proxima_ocorrencia": "timestamp ISO 8601",
+            "budget_id": null,
+        }, ...
+    ]
+}
+
+2. Para resumo de transações, responda:
+{
+    "command": "transactionSummary",
+    "first_day": "YYYY-MM-DD",
+    "last_day": "YYYY-MM-DD",
+    "period": "day"|"week"|"month"
+}
+
+3. Para dúvidas, explicações ou perguntas fora do escopo, responda APENAS: {"command":"freeform"}.
 `
                     },
-                    { role: 'user', content: `Prompt: ${prompt}\nUltimas mensagens:\n${memory}` }
+                    { role: 'user', content: `Prompt: ${prompt}\nAccounts: ${JSON.stringify(result, null, 2)}` }
                 ],
                 max_tokens: 1000,
             }),
@@ -130,12 +143,12 @@ const promptBasic = async (req, res) => {
                         {
                             role: 'system',
                             content: `A data atual é ${date} e você é um assistente financeiro de um aplicativo de controle de finanças.
-                            responda no formato "Transação adicionada\nNome\n📌 Categoria\nTipo\nValor(em localestring pra reais)\n\nData (padrão dd-MM-YYYY HH:mm)\n
+                            responda no formato "Transação adicionada\nNome\n📌 Categoria\nValor(em localestring pra reais)\nTipo\nNatureza\n\nData (padrão dd-MM-YYYY HH:mm)\n
                             `
                         },
                         { role: 'user', content: JSON.stringify([queryResult.rows]) }
                     ],
-                    max_tokens: 500,
+                    max_tokens: 80,
                 }),
             });
 
@@ -161,7 +174,7 @@ const promptBasic = async (req, res) => {
                         {
                             role: 'system',
                             content: `
-Responda tudo que o usuario pedir.  
+                            Responda as dúvidas do usuario, mas que tenham a ver com economias, finanças, gerenciamento financeiro pessoal e tópicos parecidos.  
                             `
                         }, { role: 'user', content: `Prompt: ${prompt}\nUltimas Mensagens:\n${memory}` }
                     ],

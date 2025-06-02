@@ -20,7 +20,7 @@ const { iniciarCron } = require(path.join(__dirname, 'Utils', 'transacoesRecorre
 iniciarCron();
 
 const rateLimiter = new RateLimiterMemory({
-    points: 10,
+    points: 20,
     duration: 1,
     blockDuration: 10,
 });

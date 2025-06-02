@@ -31,7 +31,7 @@ const DangerModal = ({ open, setOpen, onPress, icon, title, text, confirmButton 
 
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch' }}>
                         <TouchableOpacity
-                            onPress={() => setOpen(false)}
+                            onPress={() => setOpen(false) || setOpen}
                             style={{ padding: 8, paddingHorizontal: 16, backgroundColor: '#b8b6b6', borderRadius: 5 }}
                         >
                             <Text style={{ fontWeight: '600', fontSize: 16 }}>Cancelar</Text>

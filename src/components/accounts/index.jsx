@@ -9,14 +9,15 @@ import { useContasAuth } from '@context/contaContext';
 import { colorContext } from '@context/colorScheme'
 import { useToast } from 'react-native-toast-notifications';
 import DangerModal from '@components/dangerModal';
+import { set } from 'date-fns';
 
 
-export default function Account({ name, value, icon, color, textColor, isVisible, setVisibleId, setRefreshing, id, hideOption }) {
+export default function Account({ name, value, icon, color, textColor, isVisible, setVisibleId, setRefreshing, id, hideOption, isPrimary }) {
     const { isDarkMode } = useContext(colorContext)
     const navigation = useNavigation();
     const [isOpen, setIsOpen] = useState(false)
     const toast = useToast();
-    const { deleteConta, refetch } = useContasAuth();
+    const { deleteConta, refetch, setAccountPrimaryMutation } = useContasAuth();
     const handleToggleDropdown = () => {
         setVisibleId(isVisible ? null : id);
     };
@@ -39,6 +40,13 @@ export default function Account({ name, value, icon, color, textColor, isVisible
         }, 3500);
     }
 
+    const handleSetPrimary = (id) => {
+        setAccountPrimaryMutation.mutate(id, {
+            onSuccess: () => { refetch(); handleClose() },
+            onError: (error) => console.log(error)
+        })
+    }
+
     const DropDown = () => {
         return (
             <>
@@ -54,19 +62,24 @@ export default function Account({ name, value, icon, color, textColor, isVisible
                     }}
                 />
 
-                <View style={[styles.dropdown, { backgroundColor: isDarkMode ? '#3b3b3b' : '#cceed9', }]}>
+                <View style={[styles.dropdown, { backgroundColor: isDarkMode ? '#3b3b3b' : '#ebeaea', }]}>
+                    <TouchableOpacity
+                        onPress={() => handleSetPrimary(id)}
+                        style={{ paddingVertical: 15, paddingHorizontal: 15 }}
+                    >
+                        <Text style={{ fontSize: 16, color: isDarkMode ? '#EEE' : '#222', textAlign: 'left' }}>Marcar como principal</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => navigation.navigate('EditAccount', { accountId: id })}
-                        style={{ paddingVertical: 10, paddingHorizontal: 20 }}
+                        style={{ paddingVertical: 15, paddingHorizontal: 15 }}
                     >
-                        <Text style={{ color: isDarkMode ? '#EEE' : '#222', textAlign: 'left' }}>Editar</Text>
+                        <Text style={{ fontSize: 16, color: isDarkMode ? '#EEE' : '#222', textAlign: 'left' }}>Editar</Text>
                     </TouchableOpacity>
-                    <View style={{ backgroundColor: "#22222288", height: 1, width: '100 %' }} />
                     <TouchableOpacity
                         onPress={() => setIsOpen(prev => !prev)}
-                        style={{ paddingVertical: 10, paddingHorizontal: 20 }}
+                        style={{ paddingVertical: 15, paddingHorizontal: 15 }}
                     >
-                        <Text style={{ color: isDarkMode ? '#EEE' : '#222', textAlign: 'left' }}>Apagar</Text>
+                        <Text style={{ fontSize: 16, color: isDarkMode ? '#EEE' : '#222', textAlign: 'left' }}>Apagar</Text>
                     </TouchableOpacity>
                     <DangerModal
                         open={isOpen}
@@ -92,6 +105,12 @@ export default function Account({ name, value, icon, color, textColor, isVisible
                 </IconCard>
                 <TextContainer>
                     <Title color={textColor}>{name}</Title>
+                    {isPrimary && (
+                        <MaterialIcons
+                            name="star" size={24}
+                            color={textColor}
+                        />
+                    )}
                 </TextContainer>
                 <InfoView>
                     <Balance color={textColor}>{value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Balance>
@@ -111,11 +130,11 @@ const styles = StyleSheet.create({
     dropdown: {
         position: 'absolute',
         top: 0,
+        width: 200,
         right: 20,
         elevation: 10,
-        borderWidth: 1,
-        borderRadius: 6,
         height: 'auto',
+        borderRadius: 5,
         zIndex: 1,
     }
 })

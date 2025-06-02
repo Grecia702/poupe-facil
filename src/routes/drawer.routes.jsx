@@ -40,7 +40,7 @@ export default function DrawerRoutes() {
                     drawerActiveTintColor: isDarkMode ? "#b9b9b9" : 'green',
                     drawerInactiveTintColor: isDarkMode ? "#5a5757" : '#1a3523',
                     drawerActiveBackgroundColor: isDarkMode ? '#3a3939' : '#c7eec7',
-                    // title: '',
+                    title: '',
                     headerRight: () =>
                         <TouchableOpacity
                             onPress={() => toggleDarkMode(true)}

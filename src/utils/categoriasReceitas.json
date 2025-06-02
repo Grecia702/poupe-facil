@@ -1,0 +1,44 @@
+{
+    "Salário": {
+        "id": "1",
+        "label": "Salário",
+        "color": "rgb(16, 185, 129)",
+        "icon": "attach-money"
+    },
+    "Benefícios": {
+        "id": "2",
+        "label": "Benefícios",
+        "color": "rgb(96, 165, 250)",
+        "icon": "card-giftcard"
+    },
+    "Comissão": {
+        "id": "3",
+        "label": "Comissão",
+        "color": "rgb(234, 179, 8)",
+        "icon": "trending-up"
+    },
+    "Rendimentos": {
+        "id": "4",
+        "label": "Rendimentos",
+        "color": "rgb(139, 92, 246)",
+        "icon": "savings"
+    },
+    "Serviços": {
+        "id": "5",
+        "label": "Serviços",
+        "color": "rgb(71, 85, 105)",
+        "icon": "build"
+    },
+    "Vendas": {
+        "id": "6",
+        "label": "Vendas",
+        "color": "rgb(244, 63, 94)",
+        "icon": "point-of-sale"
+    },
+    "Outros": {
+        "id": "7",
+        "label": "Outros",
+        "color": "rgb(156, 163, 175)",
+        "icon": "more-horiz"
+    }
+}

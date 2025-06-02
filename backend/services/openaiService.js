@@ -1,5 +1,6 @@
 
 const promptOCR = async (prompt) => {
+    const data = new Date()
     const structuredResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -15,9 +16,13 @@ const promptOCR = async (prompt) => {
 Para cada valor extraído, gere um objeto JSON com:
 {
   "nome_transacao": string,   // gere o nome com base na categoria, se não for possível identificar um nome específico, use "Pagamento"
-  "data": string,                // data no formato dd/MM/yyyy, ou null se não encontrar data próxima
+  "data": timestamp ISO,                // ${data} formatada em timestamp iso se não tiver data informada
   "categoria": string,           // uma das categorias fixas abaixo, escolhida a partir do texto e pistas contextuais
-  "valor": string                // valor em R$, ex: "R$80,00"
+  "valor": decimal
+  "natureza": "Fixa" ou "Varíavel" // com base no tipo de categoria
+  "recorrente": boolean // se for Fixa é true
+  "frequencia_recorrencia": 'Diario', 'Semanal', 'Quinzenal','Mensal', 'Bimestral', 'Trimestral','Quadrimestral', 'Semestral', 'Anual'
+  "proxima_ocorrencia": timestamp ISO ou NULL
 }
 
 Categorias possíveis e palavras-chave para inferência (priorize sempre que encontrar estas palavras):
@@ -36,7 +41,7 @@ Para o campo "nome da transacao":
 - Se a categoria for "Contas" e o texto indicar palavras relacionadas à energia ou "kWh", gere "Conta de Luz".
 - Se a categoria for "Contas" e o texto indicar palavras relacionadas à água ou saneamento, gere "Conta de Água".
 Se a data estiver próxima do valor (antes ou depois, até algumas linhas de distância), considere essa data para o campo "data". Caso contrário, use null.
-Retorne uma lista JSON com o objeto extraídos.
+Retorne uma lista JSON VALIDA com o objeto extraídos, e nadam ais que isso.
 Gere apenas um json, se encontrar mais de dois valores em reais, some eles
 Agora, analise o texto abaixo e faça a extração conforme solicitado:
                             `
@@ -48,11 +53,15 @@ Agora, analise o texto abaixo e faça a extração conforme solicitado:
     });
 
     const structuredData = await structuredResponse.json();
-    const jsonResponse = structuredData.choices[0].message.content;
+    // const jsonResponse = structuredData.choices[0].message.content;
 
-    console.log(jsonResponse)
 
-    return JSON.parse(jsonResponse)
+
+    const rawResponse = structuredData.choices[0].message.content;
+    // Remove bloco markdown se existir
+    const cleanedResponse = rawResponse.replace(/```json|```/g, '').trim();
+    console.log(cleanedResponse)
+    return JSON.parse(cleanedResponse);
 }
 
 module.exports = { promptOCR }

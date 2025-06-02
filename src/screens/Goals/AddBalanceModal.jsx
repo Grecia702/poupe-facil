@@ -30,14 +30,18 @@ const AddBalanceModal = ({ data, open, setOpen, onPress, confirmButton }) => {
     };
 
     const AddSaldo = (id, saldo) => {
-        if (saldo <= 0) {
+        if (saldo <= 0 || saldo === '') {
             toastError('Valor inserido tem que ser maior que zero.');
             return
         }
 
         const updateData = { id: id, saldo: saldo };
         AddSaldoMutation.mutate(updateData, {
-            onSuccess: () => toastSuccess('Saldo atualizado'),
+            onSuccess: () => {
+                toastSuccess('Saldo atualizado');
+                setFields(null);
+                setFormatado((0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }))
+            },
             onError: (error) => toastError(error),
         });
     }
@@ -81,10 +85,18 @@ const AddBalanceModal = ({ data, open, setOpen, onPress, confirmButton }) => {
                     </View>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                         <Text style={[styles.title, { fontWeight: '600', color: isDarkMode ? '#ddd' : '#333' }]}>
-                            Saldo Atual:
+                            Valor da meta:
                         </Text>
                         <Text style={[styles.title, { color: isDarkMode ? '#ddd' : '#333' }]}>
                             {data.valor_meta.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
+                        <Text style={[styles.title, { fontWeight: '600', color: isDarkMode ? '#ddd' : '#333' }]}>
+                            Quantia Atual:
+                        </Text>
+                        <Text style={[styles.title, { color: isDarkMode ? '#ddd' : '#333' }]}>
+                            {data.saldo_meta.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </Text>
                     </View>
                     <CustomInput

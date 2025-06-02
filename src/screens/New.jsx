@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { Button, View, Text, Image } from 'react-native';
+import React, { useState, useContext } from 'react';
+import { colorContext } from '@context/colorScheme';
+import { View, Text, Image, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import api from '@context/axiosInstance';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 async function pickImage() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -20,12 +22,14 @@ async function pickImage() {
     return result.assets[0]
 }
 
-export default function UploadImageScreen() {
+export default function UploadImageScreen({ fields, setFields, selected, setSelected, categorias }) {
     const [photo, setPhoto] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
-    const [data, setData] = useState();
+    const { isDarkMode } = useContext(colorContext);
+
+
 
     const createFormData = (photo) => {
         const data = new FormData();
@@ -36,7 +40,7 @@ export default function UploadImageScreen() {
         data.append('image', {
             uri,
             name: photo.uri.split('/').pop(),
-            type: 'image/jpeg',  // Força pra não dar undefined
+            type: 'image/jpeg',
         });
 
         return data;
@@ -50,15 +54,9 @@ export default function UploadImageScreen() {
 
         const picked = await pickImage();
         if (!picked) return;
-
-        console.log(photo)
         setPhoto(picked);
-        console.log('teste')
         setLoading(true);
-        console.log('teste2 ')
         const formData = createFormData(picked);
-
-        console.log('teste3')
 
         try {
             const { data } = await api.post('/ocr/', formData, {
@@ -66,10 +64,9 @@ export default function UploadImageScreen() {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            // console.log(data)
             setSuccess(true);
-            setData({ nome: data.nome_transacao, categoria: data.categoria, valor: data.valor, data_conta: data.data })
-            // console.log('Upload response:', data);
+            setFields({ ...fields, nome_transacao: data.nome_transacao, categoria: data.categoria, valor: data.valor, data_transacao: data.data, natureza: data.natureza })
+            setSelected({ ...selected, categoria: categorias[data.categoria], natureza: data.natureza })
         } catch (err) {
             setError(err.message || 'Erro no upload');
             console.error('Upload error:', err);
@@ -79,28 +76,52 @@ export default function UploadImageScreen() {
     };
 
     return (
-        <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-            <Button title="Selecionar e Enviar Imagem" onPress={handlePickAndUpload} />
+        <View style={{ marginTop: 8 }}>
 
-            {photo && (
-                <Image
-                    source={{ uri: photo.uri }}
-                    style={{ width: 200, height: 200, marginVertical: 20 }}
-                    resizeMode="contain"
-                />
-            )}
 
-            {loading && <Text>Enviando imagem...</Text>}
-            {error && <Text style={{ color: 'red' }}>Erro: {error}</Text>}
-            {success && <Text style={{ color: 'green' }}>Upload concluído!</Text>}
-            {data && (
-                <>
-                    <Text style={{ color: 'blue' }}>{data.nome}</Text>
-                    <Text style={{ color: 'blue' }}>{data.categoria}</Text>
-                    <Text style={{ color: 'blue' }}>{data.valor}</Text>
-                    <Text style={{ color: 'blue' }}>{data.data}</Text>
-                </>
-            )}
+            <View style={{ alignItems: 'center' }}>
+                {!photo && (
+                    <TouchableOpacity style={{ gap: 8 }} onPress={handlePickAndUpload}>
+                        <Text style={{ color: isDarkMode ? '#aaa' : '#202020', fontSize: 18, fontWeight: 'bold', textAlign: 'center' }}>
+                            Toque para {'\n'}selecionar imagem
+                        </Text>
+                        <View style={[styles.ocrView, { backgroundColor: isDarkMode ? '#444' : '#c4c4c4' }]}>
+                            <MaterialIcons name="document-scanner" size={24} color={isDarkMode ? '#aaa' : '#444'} />
+                            <Text style={{ color: isDarkMode ? '#aaa' : '#333', fontWeight: '600' }}>
+                                OCR
+                            </Text>
+                        </View>
+                        <Text style={{ color: isDarkMode ? '#aaa' : '#202020', fontSize: 14, textAlign: 'center', marginVertical: 12 }}>
+                            Após a seleção da imagem do comprovante, as informações serão extraídas automaticamente
+                        </Text>
+                    </TouchableOpacity>
+                )}
+                {loading ? (
+                    <ActivityIndicator size="large" color="#0000ff" />
+                ) : (
+                    photo && (
+                        <View style={{ flexDirection: 'row', marginLeft: 30 }}>
+                            <Image
+                                source={{ uri: photo.uri }}
+                                style={{ width: 100, height: 200 }}
+                                resizeMode="contain"
+                            />
+                            <TouchableOpacity onPress={() => setPhoto(null)}>
+                                <View style={{ borderColor: isDarkMode ? '#aaa' : '#444', borderWidth: 2, borderRadius: 30, padding: 2 }}>
+                                    <MaterialIcons name="close" size={24} color={isDarkMode ? '#aaa' : '#444'} />
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    )
+                )}
+
+            </View>
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    ocrView: {
+        flexDirection: 'row', alignItems: 'center', alignSelf: 'center', padding: 5, borderRadius: 10, gap: 8
+    }
+})

@@ -38,7 +38,8 @@ const UpdateAccount = async (req, res) => {
         const { userId } = req.user.decoded
         const { id } = req.params;
         const query = req.body
-        await UpdateAccountService(userId, id, query)
+        const params = req.query
+        await UpdateAccountService(userId, id, query, params)
         return res.status(200).json({ message: 'Conta atualizada com sucesso' })
     }
     catch (error) {

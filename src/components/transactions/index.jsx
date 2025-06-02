@@ -13,7 +13,6 @@ export default function TransactionCard({ loadData, iconName, name_transaction, 
     const { isDarkMode } = useContext(colorContext)
     const [isOpen, setIsOpen] = useState(false)
     const { useFilteredTransacoes, deleteTransactionMutation } = useTransactionAuth();
-    const { refetch } = useFilteredTransacoes();
     const toast = useToast();
 
     const handleDelete = () => {
@@ -68,31 +67,29 @@ export default function TransactionCard({ loadData, iconName, name_transaction, 
                     onPress={handleClose}
                     style={{
                         zIndex: 1,
+                        position: 'absolute',
+                        top: 0,
+                        right: 20,
+                        left: 0,
+                        bottom: 0,
                     }}
                 />
 
-                <View style={{
-                    position: 'absolute',
-                    top: 0,
-                    right: 20,
-                    backgroundColor: isDarkMode ? '#3b3b3b' : "#d2ecd4",
-                    elevation: 10,
-                    borderWidth: 1,
-                    borderRadius: 6,
-                    height: 'auto',
-                    zIndex: 1,
-                }}>
-                    <TouchableOpacity onPress={() => {
-                        navigation.navigate('EditTransactions', { transactionId: id });
-                        setVisibleId(null)
-                    }
-                    } style={{ paddingVertical: 10, paddingHorizontal: 20 }}>
-                        <Text style={{ color: isDarkMode ? '#EEE' : '#222', textAlign: 'center' }}>Editar</Text>
+                <View style={[styles.dropdown, { backgroundColor: isDarkMode ? '#414141' : '#ebeaea', }]}>
+                    <TouchableOpacity
+                        onPress={() => {
+                            navigation.navigate('EditTransactions', { transactionId: id });
+                            setVisibleId(null)
+                        }}
+                        style={{ paddingVertical: 15, paddingHorizontal: 15 }}
+                    >
+                        <Text style={{ color: isDarkMode ? '#EEE' : '#222', fontSize: 16, textAlign: 'left' }}>Editar</Text>
                     </TouchableOpacity>
-                    <View style={{ backgroundColor: "#222", height: 2, width: '100%' }} />
-                    <TouchableOpacity onPress={() => setIsOpen(prev => !prev)}
-                        style={{ paddingVertical: 10, paddingHorizontal: 20 }}>
-                        <Text style={{ color: isDarkMode ? '#EEE' : '#222', textAlign: 'center' }}>Apagar</Text>
+                    <TouchableOpacity
+                        onPress={() => setIsOpen(prev => !prev)}
+                        style={{ paddingVertical: 15, paddingHorizontal: 15 }}
+                    >
+                        <Text style={{ color: isDarkMode ? '#EEE' : '#222', fontSize: 16, textAlign: 'left' }}>Apagar</Text>
                     </TouchableOpacity>
                     <DangerModal
                         open={isOpen}
@@ -154,6 +151,16 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
+    },
+    dropdown: {
+        position: 'absolute',
+        top: 0,
+        width: 100,
+        right: 20,
+        elevation: 10,
+        height: 'auto',
+        borderRadius: 5,
+        zIndex: 1,
     },
     iconCard: {
         borderRadius: 30,

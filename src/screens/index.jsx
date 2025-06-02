@@ -131,6 +131,7 @@ export default function HomeScreen() {
                   name={item.nome_conta}
                   value={item.saldo}
                   icon={item.icone}
+                  isPrimary={item.is_primary}
                   color={isDarkMode ? "#222" : "#DDD"}
                   textColor={isDarkMode ? "#CCC" : "#222"}
                   hideOption

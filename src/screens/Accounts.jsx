@@ -130,7 +130,7 @@ const BankAccount = () => {
                                 color={isDarkMode ? "#222" : "#DDD"}
                                 textColor={isDarkMode ? "#CCC" : "#222"}
                                 id={item.id}
-                                key={item.id}
+                                isPrimary={item.is_primary}
                                 isVisible={dropdownVisibleId === item.id}
                                 setVisibleId={setDropdownVisibleId}
                                 setRefreshing={setRefreshing}

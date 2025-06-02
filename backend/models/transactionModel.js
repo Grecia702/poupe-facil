@@ -44,7 +44,7 @@ const CreateManyTransactions = async (transactions) => {
     INSERT INTO transacoes 
     (id_contabancaria, nome_transacao, categoria, data_transacao, tipo, valor, natureza , recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id)   
     VALUES ${placeholders}
-    RETURNING categoria, nome_transacao, tipo, valor, data_transacao;
+    RETURNING categoria, nome_transacao, tipo, natureza, valor, data_transacao;
   `;
 
   const { rows, rowCount } = await pool.query(query, values);

@@ -46,6 +46,9 @@ const updateAccount = async ({ id, ...transactionData }) => {
     return res.data
 };
 
+const setAccountPrimary = async (id) => {
+    await api.patch(`/profile/account/${id}?set_primary=true`);
+};
 
 const deleteAccount = async (id) => {
     try {
@@ -81,21 +84,28 @@ export const ContasProvider = ({ children }) => {
     const createAccountMutation = useMutation({
         mutationFn: createAccount,
         onSuccess: () => {
-            queryClient.invalidateQueries(['account_id']);
+            queryClient.invalidateQueries({ queryKey: ['account_id'] });
         },
     });
 
     const updateAccountMutation = useMutation({
         mutationFn: updateAccount,
         onSuccess: () => {
-            queryClient.invalidateQueries(['account_id']);
+            queryClient.invalidateQueries({ queryKey: ['account_id'] });
+        },
+    });
+
+    const setAccountPrimaryMutation = useMutation({
+        mutationFn: setAccountPrimary,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['account_id'] });
         },
     });
 
     const deleteContaMutation = useMutation({
         mutationFn: deleteAccount,
         onSuccess: () => {
-            queryClient.invalidateQueries(['account_id']);
+            queryClient.invalidateQueries({ queryKey: ['account_id'] });
         },
     });
 
@@ -112,6 +122,7 @@ export const ContasProvider = ({ children }) => {
             lastDate,
             setLastDate,
             refetch,
+            setAccountPrimaryMutation,
             createAccountMutation,
             updateAccountMutation,
             deleteConta

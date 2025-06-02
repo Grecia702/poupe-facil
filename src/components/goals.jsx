@@ -68,7 +68,7 @@ const Goals = ({
                         }
                         style={{ marginTop: -80, marginLeft: -10 }}
                     >
-                        {status_meta !== 'concluida' && (<Menu.Item onPress={addBalanceButton} title='Adicionar Saldo' />)}
+                        {status_meta === 'andamento' && (<Menu.Item onPress={addBalanceButton} title='Adicionar Saldo' />)}
                         <Menu.Item onPress={archiveButton} title={archiveLabel || 'Pausar Meta'} />
                         {status_meta !== 'concluida' && (<Menu.Item onPress={completeButton} title='Concluir Meta' />)}
                         <Menu.Item onPress={editButton} title="Editar" />

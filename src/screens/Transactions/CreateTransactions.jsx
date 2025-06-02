@@ -1,6 +1,7 @@
-import { StyleSheet, Text, View, TouchableOpacity, Modal, FlatList, Platform, Switch } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, Modal, FlatList, Platform, Switch, ScrollView } from 'react-native'
 import React, { useState, useEffect, useContext, useLayoutEffect } from 'react'
 import CATEGORIAS from '@utils/categorias';
+import CategoriasReceitas from '@utils/categoriasReceitas';
 import { MaterialIcons } from '@expo/vector-icons'
 import { useToast } from 'react-native-toast-notifications';
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -12,24 +13,27 @@ import { useTransactionAuth } from '@context/transactionsContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-
+import New from '@screens/New'
+import UploadImageScreen from '../New';
 
 const CreateTransactions = () => {
-    const [selected, setSelected] = useState({ categoria: CATEGORIAS["Outros"], account: null, natureza: 'Variavel', recurrence_period: 'Mensal' });
-    const [visible, setVisible] = useState({ categoria: false, account: false, natureza: false, recurring: false });
-    const date = new Date();
     const route = useRoute()
     const { tipo } = route.params
-    const [fields, setFields] = useState({ data_transacao: date, categoria: CATEGORIAS["Outros"].label, id_contabancaria: '', natureza: selected.natureza, tipo: tipo, recorrente: false, frequencia_recorrencia: null, });
+    const [selected, setSelected] = useState({ categoria: tipo === 'despesa' ? CATEGORIAS["Outros"] : CategoriasReceitas["Outros"], account: null, natureza: 'Variavel', recurrence_period: 'Mensal' });
+    const [visible, setVisible] = useState({ categoria: false, account: false, natureza: false, recurring: false });
+    const date = new Date();
+    const [fields, setFields] = useState({ valor: 0, data_transacao: date, categoria: tipo === 'despesa' ? CATEGORIAS["Outros"].label : CategoriasReceitas["Outros"].label, natureza: selected.natureza, recorrente: false, tipo: tipo });
     const [accountData, setAccountData] = useState([{ id: '', nome: '', icone: '' }])
-    const [formatado, setFormatado] = useState('R$ 0,00');
+    const valorFormatado = (fields.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }))
     const { createTransactionMutation } = useTransactionAuth();
     const { isDarkMode } = useContext(colorContext);
     const navigation = useNavigation();
     const toast = useToast();
     const [show, setShow] = useState(false);
-    const [isAtivado, setIsAtivado] = useState(false);
-    const toggleSwitch = () => setIsAtivado(previousState => !previousState);
+    const toggleSwitch = () => setFields(prev => ({
+        ...prev,
+        recorrente: !prev.recorrente
+    }));
     const onChange = (event, selectedDate) => {
         setShow(Platform.OS === 'ios');
         if (selectedDate) {
@@ -110,46 +114,43 @@ const CreateTransactions = () => {
         })
     }
 
-    const handleChange = (field, text) => {
+    const handleChange = (text) => {
         const clean = text.replace(/\D/g, '');
         const valor = parseFloat(clean) / 100;
-        setFields({ ...fields, [field]: isNaN(valor) ? 0 : valor });
-        const f = (!isNaN(valor) ? valor : 0).toLocaleString('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-        });
-        setFormatado(f);
+        setFields({ ...fields, valor: isNaN(valor) ? 0 : valor });
     };
+
+    console.log(fields)
 
     return (
 
-        <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '	#e5e5ea' }]}>
+        <ScrollView style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#e5e5ea' }]} contentContainerStyle={{ gap: 12, paddingBottom: 48 }}>
             <CustomInput
-                description={'Nome da despesa*'}
+                description={tipo === 'despesa' ? 'Nome da despesa*' : 'Nome da receita*'}
                 type={'default'}
                 value={fields.nome_transacao}
                 onChangeText={(text) => setFields({ ...fields, nome_transacao: text })}
-                placeholder={"Ex.: Ifood, Uber, Conta de luz..."}
+                placeholder={tipo === 'despesa' ? "Ex.: Ifood, Uber, Conta de luz..." : "Ex.: Salário, Investimentos, Vendas..."}
                 required
             />
             <CustomInput
                 description={'Valor*'}
-                type={'numeric-pad'}
-                value={formatado}
-                onChangeText={(text) => handleChange('valor', text)}
+                type={'decimal-pad'}
+                value={valorFormatado}
+                onChangeText={handleChange}
                 placeholder={'Digite o valor...'}
                 required
             />
             <CustomInput
                 description={'Data de transação'}
                 type={'date'}
-                value={date}
+                value={fields.data_transacao}
                 placeholder={format(fields.data_transacao, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
                 onPress={() => setShow(true)}
             />
             {show && (
                 <DateTimePicker
-                    value={date}
+                    value={new Date(fields.data_transacao)}
                     mode="date"
                     display="default"
                     onChange={onChange}
@@ -175,7 +176,7 @@ const CreateTransactions = () => {
                     <TouchableOpacity style={styles.overlay} onPress={() => setVisible(prev => ({ ...prev, categoria: false }))}>
                         <View style={[styles.modal, { backgroundColor: isDarkMode ? '#333' : '#EEE' }]}>
                             <FlatList
-                                data={Object.values(CATEGORIAS)}
+                                data={Object.values(tipo === 'despesa' ? CATEGORIAS : CategoriasReceitas)}
                                 keyExtractor={(item) => item.id}
                                 renderItem={({ item }) => (
                                     <TouchableOpacity
@@ -340,16 +341,28 @@ const CreateTransactions = () => {
                         <View style={styles.switch}>
                             <Text style={{ color: isDarkMode ? "#EEE" : "#222", fontSize: 16, fontWeight: '500' }}>Recorrente</Text>
                             <Switch
-                                trackColor={{ false: '#767577', true: '#81b0ff' }}
-                                thumbColor={isAtivado ? '#f5dd4b' : '#f4f3f4'}
+                                trackColor={{ false: '#767577', true: '#3d74d3' }}
+                                thumbColor={fields.recorrente ? '#b1b1b1' : '#f4f3f4'}
                                 ios_backgroundColor="#3e3e3e"
                                 onValueChange={toggleSwitch}
-                                value={isAtivado}
+                                value={fields.recorrente}
                             />
                         </View>
                     </>
                 )
             }
+            <Text style={{ color: isDarkMode ? '#ccc' : "#333", fontSize: 16, fontWeight: '500', marginTop: 16 }}>
+                Ler Comprovante
+            </Text>
+            <View style={{ borderRadius: 10, borderWidth: 1, padding: 10, backgroundColor: isDarkMode ? '#222' : '#fff', borderColor: isDarkMode ? '#333' : '#ccc' }}>
+                <UploadImageScreen
+                    fields={fields}
+                    setFields={setFields}
+                    selected={selected}
+                    setSelected={setSelected}
+                    categorias={CATEGORIAS}
+                />
+            </View>
             <ActionButtons
                 onCancel={() => navigation.goBack()}
                 onCreate={() => handleCreateTransaction()}
@@ -357,7 +370,7 @@ const CreateTransactions = () => {
                 createLabel="Criar"
                 cancelColor="#8d8d8d"
             />
-        </View>
+        </ScrollView>
     )
 }
 
@@ -367,7 +380,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        gap: 10,
     },
     iconWrapper: {
         flexDirection: 'row',

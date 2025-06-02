@@ -1,7 +1,6 @@
 require('dotenv').config();
 const pool = require('../db.js')
 
-
 const CreateAccount = async (id_usuario, nome_conta, saldo, tipo_conta, icone, desc_conta) => {
     const query = `
     INSERT INTO contasBancarias 
@@ -49,7 +48,8 @@ const ListAllAccounts = async (userId) => {
 	saldo,
 	desc_conta,
 	icone,
-	tipo_conta
+	tipo_conta,
+    is_primary
     FROM contasBancarias 
     WHERE id_usuario = $1 
     ORDER BY id
@@ -57,6 +57,16 @@ const ListAllAccounts = async (userId) => {
     const { rows, rowCount } = await pool.query(query, [userId]);
     return { rows, total: rowCount, firstResult: rows[0] };
 }
+
+const setAsPrimary = async (id, userId) => {
+    const query = `
+    UPDATE contasBancarias
+    SET is_primary = (id = $1)
+    WHERE id_usuario = $2
+    `;
+    await pool.query(query, [id, userId]);
+}
+
 
 const getSumAccounts = async (userId, first_date, last_date) => {
     const query = `
@@ -90,13 +100,28 @@ const AccountExists = async (account_name, userId) => {
     return rows[0].exists;
 }
 
+const listAccountsPrimary = async (userId) => {
+    const query = `
+    SELECT 
+    id, 
+    nome_conta,
+    is_primary
+    FROM contasBancarias
+    WHERE id_usuario = $1 
+    `;
+    const { rows, rowCount } = await pool.query(query, [userId]);
+    return { rows, total: rowCount, result: rows };
+}
+
 module.exports = {
     CreateAccount,
     FindAccountByID,
     UpdateAccount,
     DeleteAccount,
     ListAllAccounts,
+    setAsPrimary,
     ListTransactionsByAccount,
     getSumAccounts,
-    AccountExists
+    AccountExists,
+    listAccountsPrimary
 };

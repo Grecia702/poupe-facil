@@ -116,8 +116,8 @@ const ActiveGoals = () => {
                                         />
                                     </View>
                                     <DangerModal
-                                        open={isOpen}
-                                        setOpen={setIsOpen}
+                                        open={isOpen.delete_modal}
+                                        setOpen={() => setIsOpen({ ...isOpen, delete_modal: false })}
                                         onPress={() => { handleDelete(item.id); setIsOpen({ ...isOpen, delete_modal: false }) }}
                                     />
                                     <AddBalanceModal

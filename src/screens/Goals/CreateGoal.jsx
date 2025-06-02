@@ -33,7 +33,7 @@ const CreateGoals = () => {
     };
 
     const handleGoals = async () => {
-        if (!fields.valor_meta || !fields.valor_meta || !fields.deadline) {
+        if (!fields.valor_meta || !fields.desc_meta || !fields.deadline) {
             toastError('Preencha os campos obrigatórios');
             return;
         }
