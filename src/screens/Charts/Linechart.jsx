@@ -17,10 +17,6 @@ export default function Linechart() {
         period: 'day'
     });
 
-
-    console.log(firstDate, lastDate)
-
-
     const total = lineChartData?.filter(item => item.tipo === 'despesa')
         .reduce((acc, item) => {
             return acc += item.valor

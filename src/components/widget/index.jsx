@@ -1,5 +1,5 @@
 import { SectionTitle } from "./styles";
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import { colorContext } from '@context/colorScheme';
 import { useContext } from 'react'
 
@@ -9,12 +9,17 @@ export default function WidgetTeste({ Color, Title, TextColor, children, align, 
         <View style={[styles.widget, { backgroundColor: Color }]}>
             <View style={styles.title}>
                 <SectionTitle color={TextColor}>{Title}</SectionTitle>
-                <Text
+                <TouchableOpacity
+                    style={{ alignSelf: 'flex-end' }}
                     onPress={onPressDetails}
-                    style={[styles.link, { color: isDarkMode ? '#3d91d6' : '#1675c2' }]}
                 >
-                    Ver mais
-                </Text>
+                    <Text
+
+                        style={[styles.link, { color: isDarkMode ? '#3d91d6' : '#1675c2' }]}
+                    >
+                        Ver mais
+                    </Text>
+                </TouchableOpacity>
             </View>
 
             <View style={{ alignItems: align }} >

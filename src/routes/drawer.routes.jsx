@@ -10,7 +10,6 @@ import CreditCards from '@screens/CreditCards'
 import Budget from '@screens/Budget'
 import Chatbot from '@screens/Chatbot'
 import Overview from '@screens/Overview'
-import Goals from '@screens/Goals/ActiveGoals'
 import Logout from '@screens/Logout'
 import Settings from '@screens/Settings'
 import Profile from '@screens/Profile';
@@ -41,7 +40,7 @@ export default function DrawerRoutes() {
                     drawerActiveTintColor: isDarkMode ? "#b9b9b9" : 'green',
                     drawerInactiveTintColor: isDarkMode ? "#5a5757" : '#1a3523',
                     drawerActiveBackgroundColor: isDarkMode ? '#3a3939' : '#c7eec7',
-                    title: '',
+                    // title: '',
                     headerRight: () =>
                         <TouchableOpacity
                             onPress={() => toggleDarkMode(true)}
@@ -105,13 +104,14 @@ export default function DrawerRoutes() {
                     options={{
                         drawerIcon: ({ color, size }) => <MaterialIcons name="pie-chart" size={size} color={color} />,
                         drawerLabel: 'Gráficos',
+                        headerShown: false
                     }}
                 />
                 <Drawer.Screen
                     name="Assistente Virtual"
                     component={Chatbot}
                     options={{
-                        drawerIcon: ({ color, size }) => <MaterialIcons name="smart-toy" size={size} color={color} />,
+                        drawerIcon: ({ color, size }) => <MaterialIcons name="message" size={size} color={color} />,
                         drawerLabel: 'Assistente Virtual',
                         headerShown: true
                     }}

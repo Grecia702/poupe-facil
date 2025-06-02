@@ -50,8 +50,6 @@ export default function Barchart() {
 
         }
     }
-    console.log(getDate(lastDate))
-
     const { data: barChartData, isLoading } = useTransactionSummary({
         first_day: firstDate,
         last_day: lastDate,
@@ -80,9 +78,6 @@ export default function Barchart() {
     if (barChartData?.percent.receita < 0) {
         porcentagem_receita = <Text style={styles.percentDown}> -({Math.abs(barChartData?.percent.receita)})%</Text>
     }
-
-
-
 
     return (
         <ScrollView contentContainerStyle={{ gap: 16, marginTop: 16 }} style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#f7f7f8' }]}>

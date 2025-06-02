@@ -199,55 +199,36 @@ export default function HomeScreen() {
           }
         </WidgetTeste>
 
-        <WidgetTeste Color={isDarkMode ? "#2e2e2e" : "#ffffff"} Title={"Gráficos"} TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"} >
-
+        <WidgetTeste
+          Color={isDarkMode ? "#2e2e2e" : "#ffffff"}
+          Title={"Gráficos"}
+          TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"}
+          onPressDetails={() => navigation.navigate('Gráficos')}
+        >
           <TouchableOpacity onPress={() => navigation.navigate('Gráficos')} >
             {donutData && <PieChart height={350} width={350} data={donutData} total={total} padAngle={3} selected={selectedItem} />}
           </TouchableOpacity>
-
-
         </WidgetTeste>
-
-        <View style={{}}>
-          {isLoading ? (
-
-            <ContentLoader
-              speed={1}
-              width={400}
-              height={400}
-              viewBox={`0 0 300 300`}
-              backgroundColor={isDarkMode ? "#292929" : "rgb(224, 224, 224)"}
-              foregroundColor={isDarkMode ? "#1b1b1b" : "rgb(190, 190, 190)"}
-            >
-              <Rect x="0" y="0" width="93%" height="60" />
-              <Rect x="0" y="70" width="93%" height="60" />
-              <Rect x="0" y="140" width="93%" height="60" />
-              <Rect x="0" y="210" width="93%" height="60" />
-              <Rect x="0" y="280" width="93%" height="60" />
-            </ContentLoader>
-          ) : (
-            <FlatList
-              data={donutData}
-              keyExtractor={(item) => item.categoria}
-              refreshing={refreshing}
-              scrollEnabled={false}
-              initialNumToRender={10}
-              maxToRenderPerBatch={5}
-              windowSize={5}
-              renderItem={({ item }) => (
-                <Card
-                  color={categoriaCores[item.categoria]}
-                  title={item.categoria}
-                  text={(item.total).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  selectedItem={selectedItem}
-                  selected={selectedItem === item.categoria ? selectedItem : 'none'}
-                  onPress={() => handleSelectItem(item.categoria)}
-                />
-              )}
+        <FlatList
+          data={donutData}
+          keyExtractor={(item) => item.categoria}
+          refreshing={refreshing}
+          scrollEnabled={false}
+          initialNumToRender={10}
+          maxToRenderPerBatch={5}
+          windowSize={5}
+          renderItem={({ item }) => (
+            <Card
+              color={categoriaCores[item.categoria]}
+              title={item.categoria}
+              text={(item.total).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              selectedItem={selectedItem}
+              selected={selectedItem === item.categoria ? selectedItem : 'none'}
+              onPress={() => handleSelectItem(item.categoria)}
             />
-          )
-          }
-        </View>
+          )}
+        />
+
 
         <WidgetTeste
           direction={'column'} gap={5}

@@ -6,6 +6,7 @@ import TransactionCard from '@components/transactions';
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import { useTransactionAuth } from '@context/transactionsContext';
 import CustomLoader from '@components/contentLoader'
+import CreateTransaction from '@components/createTransaction'
 
 // TODO:  refatorar e otimizar
 const Transactions = () => {
@@ -17,6 +18,7 @@ const Transactions = () => {
     const { useFilteredTransacoes } = useTransactionAuth();
     const serializedFilters = `${filters.tipo}-${filters.orderBy}-${filters.orderDirection}`;
     const { data, refetch, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } = useFilteredTransacoes(serializedFilters, filters);
+    const [showTransactionModal, setShowTransactionModal] = useState(false);
     const sortOptions = [
         { label: 'Data (Mais recentes)', value: 'date_desc' },
         { label: 'Data (Mais antigos)', value: 'date_asc' },
@@ -52,14 +54,12 @@ const Transactions = () => {
         }
     };
 
-
     useFocusEffect(
         useCallback(() => {
             onRefresh();
         }, [serializedFilters, filters])
     );
 
-    // console.log('IDs das transações:', allData.map(item => item.transaction_id));
     useLayoutEffect(() => {
         let title;
 
@@ -77,7 +77,7 @@ const Transactions = () => {
                 title = 'Cartão de Crédito';
                 break;
             default:
-                title = 'Detalhes';
+                title = 'Transações';
         }
 
         navigation.setOptions({
@@ -191,13 +191,11 @@ const Transactions = () => {
                                         [styles.optionsButton, { borderColor: isDarkMode ? "#DDD" : "#111", }]
                                     }>
                                         <MaterialIcons name="filter-alt" size={24} color={isDarkMode ? "#DDD" : "#111"} />
-                                        {/* <Text style={{ fontWeight: 500, color: isDarkMode ? "#DDD" : "#111" }}>Filtrar por</Text> */}
                                     </TouchableOpacity>
                                     <TouchableOpacity onPressIn={toggleDropdown} style={
                                         [styles.optionsButton, { borderColor: isDarkMode ? "#DDD" : "#111", }]
                                     }>
                                         <MaterialIcons name="sort" size={24} color={isDarkMode ? "#DDD" : "#111"} />
-                                        {/* <Text style={{ fontWeight: 500, color: isDarkMode ? "#DDD" : "#111" }}>Ordenar por</Text> */}
                                     </TouchableOpacity>
                                 </View>
                                 {
@@ -214,20 +212,22 @@ const Transactions = () => {
                                             <TouchableOpacity onPress={() => { setFiltrosChips([]); loadData() }} style={{ backgroundColor: '#c44343', alignSelf: 'flex-start', padding: 10, borderRadius: 5 }} >
                                                 <Text style={{ color: "white", fontSize: 14, fontWeight: 500 }}>Resetar Filtros!</Text>
                                             </TouchableOpacity>
-
                                         </>
                                         : null
                                 }
                             </View>
-
                         </>
                     }
                 />
-                <TouchableOpacity onPress={() => navigation.navigate('CreateTransaction')}>
+                <TouchableOpacity onPress={() => setShowTransactionModal(true)}>
                     <MaterialIcons name="add-circle" size={64} color={"#1b90df"}
                         style={{ position: 'absolute', bottom: 10, right: 10 }}
                     />
                 </TouchableOpacity>
+                <CreateTransaction
+                    isOpen={showTransactionModal}
+                    setIsOpen={() => setShowTransactionModal(false)}
+                />
             </>
 
         </>

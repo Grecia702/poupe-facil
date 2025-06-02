@@ -106,7 +106,7 @@ export default function TransactionCard({ loadData, iconName, name_transaction, 
     }
 
     return (
-        <View style={{ marginTop: 10, paddingBottom: 10, borderBottomWidth: 1, borderColor: isDarkMode ? '#dddddd8f' : '#7a7a7a8f' }}>
+        <View style={{ marginTop: 10, paddingBottom: 10, borderBottomWidth: hideOption ? 0 : 1, borderColor: isDarkMode ? '#dddddd8f' : '#7a7a7a8f' }}>
             {isVisible && <DropDown />}
             <View style={styles.container}>
                 <View style={[styles.iconCard, { backgroundColor: color }]}>
