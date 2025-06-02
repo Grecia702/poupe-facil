@@ -141,7 +141,7 @@ const CreateBudget = () => {
                 </TouchableOpacity>
                 <CustomModal visible={visible} setVisible={setVisible} handleAction={() => console.log('oi')}>
                     <FlatList
-                        data={categorias}
+                        data={Object.values(categorias)}
                         keyExtractor={(item) => item.id}
                         renderItem={({ item }) => (
                             <TouchableOpacity
@@ -168,7 +168,7 @@ const CreateBudget = () => {
 
                     />
                     <ActionButtons
-                        onCancel={() => setVisible(false)}
+                        onCancel={() => { categoriasLimites.clear(); setVisible(false) }}
                         onCreate={() => setVisible(false)}
                         createLabel={'Salvar'}
                     />

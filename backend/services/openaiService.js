@@ -1,3 +1,4 @@
+const { getAllActiveService } = require('../services/budgetServices')
 
 const promptOCR = async (prompt) => {
     const data = new Date()
@@ -53,15 +54,73 @@ Agora, analise o texto abaixo e faça a extração conforme solicitado:
     });
 
     const structuredData = await structuredResponse.json();
-    // const jsonResponse = structuredData.choices[0].message.content;
-
-
-
     const rawResponse = structuredData.choices[0].message.content;
-    // Remove bloco markdown se existir
     const cleanedResponse = rawResponse.replace(/```json|```/g, '').trim();
-    console.log(cleanedResponse)
     return JSON.parse(cleanedResponse);
 }
 
-module.exports = { promptOCR }
+const promptReport = async (prompt) => {
+    const data = new Date()
+    const structuredResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${process.env.API_KEY_OPENAI}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [
+                {
+                    role: 'system',
+                    content: `A data atual é ${data}Você recebe um JSON com dados financeiros.
+                            NUNCA invente ou altere dados do JSON recebido.
+                            Use os valores do JSON como estão.
+Sua tarefa é gerar SOMENTE três campos:
+1. "status" → 'DENTRO_DO_ORCAMENTO', 'LIMITE_ATINGIDO', 'LIMITE_EXCEDIDO', com base APENAS na COMPARAÇÃO entre "limite" e "quantia_gasta".
+   - Se quantia_gasta < limite → 'DENTRO_DO_ORCAMENTO'
+   - Se quantia_gasta === limite → 'LIMITE_ATINGIDO'
+   - Se quantia_gasta > limite → 'LIMITE_EXCEDIDO'
+NÃO considere os limites e gastos por categoria para definir o status.
+2. "analise_textual" → uma análise da sua situação financeira, falando DIRETAMENTE COMIGO, usando "você". NÃO fale na terceira pessoa.
+Além de analisar o orçamento total, também leve em conta os limites de cada categoria (limites_categorias e quantia_gasta_categorias). 
+Aponte se alguma categoria está acima, próxima ou muito abaixo do limite.
+
+3. "recomendacoes" → recomendações financeiras baseadas nesses dados, também falando DIRETAMENTE COMIGO, usando "você". NÃO fale na terceira pessoa.
+Inclua sugestões específicas se alguma categoria estiver com gasto elevado ou estourando o limite.
+                            Responda EXCLUSIVAMENTE neste formato:
+                            {
+                                "status": 'DENTRO_DO_ORCAMENTO', 'LIMITE_ATINGIDO', 'LIMITE_EXCEDIDO'
+                                "analise_textual": "Sua análise aqui.",
+                                "recomendacoes": "Suas recomendações aqui."
+                            }
+                            `
+                },
+                { role: 'user', content: `Prompt: ${JSON.stringify(prompt)} ` }
+            ],
+            max_tokens: 500,
+        }),
+    });
+
+    const structuredData = await structuredResponse.json();
+    const rawResponse = structuredData.choices[0].message.content;
+    const cleanedResponse = rawResponse.replace(/```json|```/g, '').trim();
+    const { status, analise_textual, recomendacoes } = JSON.parse(cleanedResponse);
+
+    const result = {
+        id: prompt.id,
+        id_usuario: prompt.id_usuario,
+        periodo_inicio: prompt.data_inicio,
+        periodo_fim: prompt.data_termino,
+        limite_total: prompt.limite,
+        limites_categorias: prompt.limites_categorias,
+        quantia_gasta: prompt.quantia_gasta,
+        quantia_gasta_categorias: prompt.quantia_gasta_categorias,
+        status,
+        analise_textual,
+        recomendacoes
+    };
+
+    return result;
+}
+
+module.exports = { promptOCR, promptReport }

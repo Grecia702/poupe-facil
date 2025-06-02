@@ -100,9 +100,9 @@ export default function HomeScreen() {
           TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"}
           onPressDetails={() => navigation.navigate('CreateBudget')}
         >
-          {budgetData?.length > 0 ? (
+          {budgetData ? (
             <>
-              <Budget data={budgetData[0]} />
+              <Budget data={budgetData} />
             </>
           ) : (
             <>

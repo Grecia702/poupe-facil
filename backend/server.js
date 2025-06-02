@@ -15,8 +15,7 @@ const logger = require(path.join(__dirname, 'Utils', 'loggerConfig'));
 const requestTimeLogger = require(path.join(__dirname, 'Utils', 'requestTime'));
 const cookieParser = require('cookie-parser');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
-const { iniciarCron } = require(path.join(__dirname, 'Utils', 'transacoesRecorrentes'));
-
+const { iniciarCron } = require(path.join(__dirname, 'Utils', 'cronTasks'));
 iniciarCron();
 
 const rateLimiter = new RateLimiterMemory({

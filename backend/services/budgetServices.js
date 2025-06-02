@@ -71,8 +71,46 @@ const getActiveService = async (userId) => {
         return []
     }
     const budget = await budgetModel.getBudgetById(result.id, userId)
-    return budget.result
+
+    const limites_categorias = budget.result.limites_categorias ?? {}
+    const quantia_gasta_categorias = budget.result.quantia_gasta_categorias ?? {}
+
+    const processedBudget = {
+        ...budget.result,
+        limite: Math.abs(parseFloat(budget.result.limite)),
+        quantia_gasta: Math.abs(parseFloat(budget.result.quantia_gasta)),
+        limites_categorias: Object.fromEntries(
+            Object.entries(limites_categorias).map(([key, val]) => [key, Math.abs(val)])
+        ),
+        quantia_gasta_categorias: Object.fromEntries(
+            Object.entries(quantia_gasta_categorias).map(([key, val]) => [key, Math.abs(val)])
+        )
+    }
+    return processedBudget
 }
+
+const getAllActiveService = async () => {
+    const budgets = await budgetModel.getAllActiveBudgets()
+
+    const processedBudgets = budgets.result.map(budget => {
+        const limites_categorias = budget.limites_categorias ?? {}
+        const quantia_gasta_categorias = budget.quantia_gasta_categorias ?? {}
+        return {
+            ...budget,
+            limite: Math.abs(parseFloat(budget.limite)),
+            quantia_gasta: Math.abs(parseFloat(budget.quantia_gasta)),
+            limites_categorias: Object.fromEntries(
+                Object.entries(limites_categorias).map(([key, val]) => [key, Math.abs(val)])
+            ),
+            quantia_gasta_categorias: Object.fromEntries(
+                Object.entries(quantia_gasta_categorias).map(([key, val]) => [key, Math.abs(val)])
+            )
+        }
+    })
+    return processedBudgets
+}
+
+
 
 const updateBudgetService = async (userId, budgetId, queryParams) => {
     const { quantia_limite, limites_categorias, data_inicio, data_termino } = queryParams
@@ -118,5 +156,6 @@ module.exports = {
     getBudgetByIdService,
     getActiveService,
     updateBudgetService,
-    deleteBudgetService
+    deleteBudgetService,
+    getAllActiveService
 }

@@ -89,6 +89,8 @@ const CreateTransactionService = async (dados, userId) => {
         budget_id = result.id
     }
 
+    console.log(budget_id, exists)
+
     await transactionModel.CreateTransaction(
         dados.id_contabancaria,
         dados.nome_transacao,

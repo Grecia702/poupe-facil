@@ -6,7 +6,7 @@ import { useContext } from 'react'
 export default function WidgetTeste({ Color, Title, TextColor, children, align, onPressDetails }) {
     const { isDarkMode } = useContext(colorContext)
     return (
-        <View style={[styles.widget, { backgroundColor: Color }]}>
+        <View style={[styles.widget, { backgroundColor: isDarkMode ? '#292929' : '#f7f7f8' }]}>
             <View style={styles.title}>
                 <SectionTitle color={TextColor}>{Title}</SectionTitle>
                 <TouchableOpacity

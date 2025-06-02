@@ -12,15 +12,13 @@ import { useBudgetAuth } from '@context/budgetsContext'
 
 const Budget = ({ data }) => {
     const toast = useToast();
-    const quantia_gasta = parseFloat(data?.quantia_gasta)
-    const limite = parseFloat(data?.limite)
-    const progress = quantia_gasta != 0 ? (quantia_gasta / limite) : 0
+    const progress = (data.quantia_gasta / data.limite)
     const navigation = useNavigation()
     const { deleteBudgetMutation, refetchBudget } = useBudgetAuth();
     const [visible, setVisible] = useState(false)
     const { isDarkMode } = useContext(colorContext)
-    const gasto_moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(quantia_gasta);
-    const limite_moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(limite);
+    const gasto_moeda = data.quantia_gasta.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+    const limite_moeda = data.limite.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
     const categorias = Object.keys(data?.limites_categorias);
     const limite_categorias = categorias?.map((categoria) => ({
         categoria,
@@ -57,7 +55,7 @@ const Budget = ({ data }) => {
 
     return (
         <>
-            <View style={styles.container}>
+            <View style={[styles.container]}>
                 {data?.desc_budget && (<Text style={[styles.desc, { color: isDarkMode ? '#DDD' : '#383838' }]}>{data?.desc_budget}</Text>)}
                 <View style={styles.container}>
                     <Circle
@@ -77,26 +75,43 @@ const Budget = ({ data }) => {
                     </View>
                 </View>
             </View>
-            <View style={{ alignItems: 'center' }}>
+            <View >
                 {limite_categorias &&
                     (
                         <>
-                            {limite_categorias?.map(({ categoria, gasto, limite }, index) => (
+                            {limite_categorias.map(({ categoria, gasto, limite }, index) => (
                                 <ProgressBar
                                     key={index}
                                     data={(gasto / limite)}
-                                    size={355}
+                                    size={350}
                                     label={categoria}
                                     value={'R$' + gasto + '/' + limite}
                                     unfilledColor={isDarkMode ? "#494949" : "#d6d6d6"}
                                     textColor={isDarkMode ? '#e6e6e6' : '#282c30'}
                                     event={() => console.log('teste')}
                                 />
+
                             )
                             )}
                         </>
                     )
                 }
+                <View style={[styles.viewAlert, { backgroundColor: isDarkMode ? '#3d3d3d' : '#fff', borderColor: isDarkMode ? '#202020' : '#ccc' }]}>
+                    {data.quantia_gasta < data.limite * 0.6 ? (
+                        <Text style={[styles.textAlert, { color: isDarkMode ? '#ddd' : '#111' }]}>
+                            Você está controlando bem seus gastos! Ainda há margem dentro do seu orçamento.
+                        </Text>
+                    ) : data.quantia_gasta < data.limite * 0.9 ? (
+                        <Text style={[styles.textAlert, { color: isDarkMode ? '#ddd' : '#111' }]}>
+                            Atenção: você já utilizou mais de 60% do seu orçamento. Considere ajustar seus gastos.
+                        </Text>
+                    ) : (
+                        <Text style={[styles.textAlert, { color: isDarkMode ? '#ddd' : '#111' }]}>
+                            Alerta: você já ultrapassou 90% do seu orçamento. É recomendável interromper novos gastos.
+                        </Text>
+                    )}
+
+                </View>
                 <View style={{ flexDirection: 'row', gap: 16, alignSelf: 'flex-end' }}>
                     <TouchableOpacity
                         onPress={() => navigation.navigate('Edit Budget', { data: data })}
@@ -104,6 +119,7 @@ const Budget = ({ data }) => {
                     >
                         <Text style={styles.buttonEdit}>Editar</Text>
                     </TouchableOpacity>
+
                     <DeleteButton visible={visible} setVisible={() => setVisible(true)}>
                         <DangerModal
                             open={visible}
@@ -112,6 +128,7 @@ const Budget = ({ data }) => {
                         />
                     </DeleteButton>
                 </View>
+
             </View>
         </>
     )
@@ -162,4 +179,6 @@ const styles = StyleSheet.create({
         lineHeight: 30,
         textAlign: 'center'
     },
+    viewAlert: { borderWidth: 1, borderRadius: 10, padding: 12, marginTop: 24, marginBottom: 12 },
+    textAlert: { fontSize: 16, fontWeight: '500', textAlign: 'justify', lineHeight: 20 }
 })

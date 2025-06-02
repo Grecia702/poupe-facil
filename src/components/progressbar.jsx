@@ -24,7 +24,6 @@ const ProgressBar = ({ data, size, label, textColor, unfilledColor, value, event
                 borderRadius={10}
                 color={colorProgress()}
                 unfilledColor={unfilledColor}
-                borderWidth={4}
             />
         </TouchableOpacity>
     )

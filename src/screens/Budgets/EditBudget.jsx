@@ -138,13 +138,13 @@ const CreateBudget = () => {
                     })
                 )
                 }
-                <TouchableOpacity onPress={() => setVisible(prev => !prev)} style={styles.newCategory}>
+                <TouchableOpacity onPress={() => setVisible(true)} style={styles.newCategory}>
                     <MaterialIcons name="add" size={24} color={isDarkMode ? '#ddd' : "#132d83"} />
                     <Text style={[styles.title, { color: isDarkMode ? '#ddd' : "#132d83" }]}>Adicionar categorias</Text>
                 </TouchableOpacity>
                 <CustomModal visible={visible} setVisible={setVisible}>
                     <FlatList
-                        data={categorias}
+                        data={Object.values(categorias)}
                         keyExtractor={(item) => item.id}
                         renderItem={({ item }) => (
                             <TouchableOpacity
@@ -168,6 +168,11 @@ const CreateBudget = () => {
                             </TouchableOpacity>
 
                         )}
+                    />
+                    <ActionButtons
+                        onCancel={() => { categoriasLimites.clear(); setVisible(false) }}
+                        onCreate={() => setVisible(false)}
+                        createLabel={'Salvar'}
                     />
                 </CustomModal>
             </View>
