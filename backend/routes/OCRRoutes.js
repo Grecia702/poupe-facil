@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const multer = require('multer');
 // const upload = multer({ dest: 'uploads/' });
-const ocrController = require("../Controller/ocrController");
+const ocrController = require("../controller/ocrController");
 const authMiddleware = require('../middleware/authMiddleware');
 
 const storage = multer.diskStorage({

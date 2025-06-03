@@ -2,11 +2,11 @@ const authModel = require("../models/authModel");
 const accountModel = require("../models/accountModel");
 const bcrypt = require('bcrypt')
 const { format } = require('date-fns');
-const { generateAccessToken, generateRefreshToken } = require('../Utils/tokenUtils');
+const { generateAccessToken, generateRefreshToken } = require('../utils/tokenUtils');
 const { z } = require("zod");
 const { OAuth2Client } = require('google-auth-library');
 const saltRounds = 12;
-const logger = require('../Utils/loggerConfig');
+const logger = require('../utils/loggerConfig');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const authQuerySchema = z.object({
     name: z.string().nonempty(),

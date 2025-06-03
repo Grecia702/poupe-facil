@@ -4,7 +4,7 @@ const pool = require('../db.js')
 const { format } = require('date-fns');
 const { getAllActiveService } = require('../services/budgetServices')
 const { promptReport } = require('../services/openaiService')
-const logger = require('../Utils/loggerCronJob.js');
+const logger = require('../utils/loggerCronJob.js');
 
 async function processarTransacoesRecorrentes() {
     try {

@@ -1,7 +1,7 @@
 
 const transactionModel = require("../models/transactionModel");
 const budgetModel = require("../models/budgetModel");
-const { calcularProximaOcorrencia } = require("../Utils/calcularOcorrencia")
+const { calcularProximaOcorrencia } = require("../utils/calcularOcorrencia")
 const { z } = require('zod');
 const { startOfMonth, subDays, subMonths, endOfMonth } = require('date-fns');
 

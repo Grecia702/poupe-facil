@@ -1,6 +1,6 @@
 require('dotenv').config();
-const logger = require('../Utils/loggerConfig')
-const { generateAccessToken } = require('../Utils/tokenUtils');
+const logger = require('../utils/loggerConfig')
+const { generateAccessToken } = require('../utils/tokenUtils');
 const { loginService, googleService, signupService, logoutService } = require('../services/authService.js');
 const { format } = require('date-fns');
 const date = format(new Date(), 'dd/MM/yyyy HH:mm:ss');;

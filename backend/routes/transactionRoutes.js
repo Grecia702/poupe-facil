@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const transactionController = require("../Controller/transactionController");
+const transactionController = require("../controller/transactionController");
 const authMiddleware = require('../middleware/authMiddleware');
 
 router.post("/many", authMiddleware, transactionController.createManyTransaction)

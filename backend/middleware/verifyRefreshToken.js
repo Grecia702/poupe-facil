@@ -2,7 +2,7 @@ require('dotenv').config();
 const pool = require('../db.js')
 const authModel = require("../models/authModel");
 
-const { verifyRefreshToken } = require('../Utils/tokenUtils');
+const { verifyRefreshToken } = require('../utils/tokenUtils');
 
 module.exports = async (req, res, next) => {
     try {
