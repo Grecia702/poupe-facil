@@ -3,19 +3,21 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const app = express();
-const userRoutes = require(path.join(__dirname, 'Routes', 'userRoutes'));
-const accountRoutes = require(path.join(__dirname, 'Routes', 'accountRoutes'));
-const authRoutes = require(path.join(__dirname, 'Routes', 'authRoutes'));
-const transactionRoutes = require(path.join(__dirname, 'Routes', 'transactionRoutes'));
-const budgetRoutes = require(path.join(__dirname, 'Routes', 'budgetRoutes'));
-const goalsRoutes = require(path.join(__dirname, 'Routes', 'goalsRoutes'));
-const gptRoutes = require(path.join(__dirname, 'Routes', 'gptRoutes'));
-const ocrRoutes = require(path.join(__dirname, 'Routes', 'OCRRoutes'));
-const logger = require(path.join(__dirname, 'Utils', 'loggerConfig'));
-const requestTimeLogger = require(path.join(__dirname, 'Utils', 'requestTime'));
 const cookieParser = require('cookie-parser');
+const userRoutes = require(path.join(__dirname, 'routes', 'userRoutes'));
+const accountRoutes = require(path.join(__dirname, 'routes', 'accountRoutes'));
+const authRoutes = require(path.join(__dirname, 'routes', 'authRoutes'));
+const transactionRoutes = require(path.join(__dirname, 'routes', 'transactionRoutes'));
+const budgetRoutes = require(path.join(__dirname, 'routes', 'budgetRoutes'));
+const goalsRoutes = require(path.join(__dirname, 'routes', 'goalsRoutes'));
+const gptRoutes = require(path.join(__dirname, 'routes', 'gptRoutes'));
+const ocrRoutes = require(path.join(__dirname, 'routes', 'OCRRoutes'));
+const financialReportRoutes = require(path.join(__dirname, 'routes', 'financial-report-routes'));
+const logger = require(path.join(__dirname, 'utils', 'loggerConfig'));
+const requestTimeLogger = require(path.join(__dirname, 'utils', 'requestTime'));
+const { iniciarCron } = require(path.join(__dirname, 'utils', 'cronTasks'));
 const { RateLimiterMemory } = require('rate-limiter-flexible');
-const { iniciarCron } = require(path.join(__dirname, 'Utils', 'cronTasks'));
+
 iniciarCron();
 
 const rateLimiter = new RateLimiterMemory({
@@ -75,6 +77,7 @@ app.use("/api/profile/account", accountRoutes);
 app.use("/api/profile/transaction", transactionRoutes);
 app.use("/api/budget", budgetRoutes);
 app.use("/api/goals", goalsRoutes);
+app.use("/api/reports", financialReportRoutes);
 
 app.use((req, res, next) => {
     res.status(404).sendFile(path.join(__dirname, 'views', 'index.html'));
