@@ -61,7 +61,6 @@ export default function HomeScreen() {
     setSelectedItem(label);
   };
 
-
   return (
     <ScrollView style={{ backgroundColor: isDarkMode ? "rgb(26, 26, 26)" : "#c6ebe9" }}>
 
@@ -100,7 +99,7 @@ export default function HomeScreen() {
           TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"}
           onPressDetails={() => navigation.navigate('CreateBudget')}
         >
-          {budgetData ? (
+          {budgetData?.length > 0 ? (
             <>
               <Budget data={budgetData} />
             </>

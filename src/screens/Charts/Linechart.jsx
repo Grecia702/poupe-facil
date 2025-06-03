@@ -95,7 +95,7 @@ export default function Linechart() {
                         theme={VictoryTheme.material}
                         height={350}
                         width={screenWidth}
-                        padding={{ left: 65, right: 65, bottom: 90, top: 50 }}
+                        padding={{ left: 75, right: 65, bottom: 90, top: 50 }}
                         domain={{ y: [0, (maiorValor?.valor || 0) + 100] }}
                     >
                         <VictoryLine

@@ -12,19 +12,20 @@ import { useBudgetAuth } from '@context/budgetsContext'
 
 const Budget = ({ data }) => {
     const toast = useToast();
-    const progress = (data.quantia_gasta / data.limite)
+    const progress = (data.quantia_gasta ?? 0) / (data.limite ?? 1);
     const navigation = useNavigation()
     const { deleteBudgetMutation, refetchBudget } = useBudgetAuth();
     const [visible, setVisible] = useState(false)
     const { isDarkMode } = useContext(colorContext)
-    const gasto_moeda = data.quantia_gasta.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-    const limite_moeda = data.limite.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-    const categorias = Object.keys(data?.limites_categorias);
-    const limite_categorias = categorias?.map((categoria) => ({
+    const gasto_moeda = (data?.quantia_gasta || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+    const limite_moeda = (data?.limite || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+    const categorias = Object.keys(data?.limites_categorias ?? {});
+    const limite_categorias = categorias.map((categoria) => ({
         categoria,
-        limite: data?.limites_categorias[categoria],
-        gasto: data?.quantia_gasta_categorias[categoria] || 0,
+        limite: data?.limites_categorias?.[categoria] ?? 0,
+        gasto: data?.quantia_gasta_categorias?.[categoria] ?? 0,
     }));
+
 
     const handleDelete = (data) => {
         if (!data?.id) {
@@ -97,11 +98,11 @@ const Budget = ({ data }) => {
                     )
                 }
                 <View style={[styles.viewAlert, { backgroundColor: isDarkMode ? '#3d3d3d' : '#fff', borderColor: isDarkMode ? '#202020' : '#ccc' }]}>
-                    {data.quantia_gasta < data.limite * 0.6 ? (
+                    {data?.quantia_gasta < data?.limite * 0.6 ? (
                         <Text style={[styles.textAlert, { color: isDarkMode ? '#ddd' : '#111' }]}>
                             Você está controlando bem seus gastos! Ainda há margem dentro do seu orçamento.
                         </Text>
-                    ) : data.quantia_gasta < data.limite * 0.9 ? (
+                    ) : data?.quantia_gasta < data?.limite * 0.9 ? (
                         <Text style={[styles.textAlert, { color: isDarkMode ? '#ddd' : '#111' }]}>
                             Atenção: você já utilizou mais de 60% do seu orçamento. Considere ajustar seus gastos.
                         </Text>
