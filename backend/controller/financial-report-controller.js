@@ -4,7 +4,8 @@ const logger = require("../utils/loggerConfig")
 const getReport = async (req, res) => {
     try {
         const { userId } = req.user.decoded
-        const reports = await getReportsService(userId)
+        const { period } = req.query
+        const reports = await getReportsService(userId, period)
         return res.status(200).json(reports)
     } catch (error) {
         logger.error(`Erro inesperado: ${error.message}`)

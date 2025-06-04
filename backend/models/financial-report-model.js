@@ -1,6 +1,6 @@
 const pool = require('../db.js')
 
-const list_reports = async (userId) => {
+const list_reports = async (userId, period) => {
     const query = `
     SELECT 
     id,
@@ -15,9 +15,10 @@ const list_reports = async (userId) => {
     recomendacoes
     FROM relatorios
     WHERE id_usuario = $1
+    AND $2 BETWEEN periodo_inicio AND periodo_fim
     `;
-    const { rows } = await pool.query(query, [userId]);
-    return { result: rows }
+    const { rows, rowCount } = await pool.query(query, [userId, period]);
+    return { result: rows[0], exists: rowCount > 0 }
 }
 
 const get_report_by_id = async (userId, reportId) => {
