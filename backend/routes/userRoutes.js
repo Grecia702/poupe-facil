@@ -4,6 +4,7 @@ const userController = require("../controller/userController");
 const authMiddleware = require('../middleware/authMiddleware');
 
 router.delete("/", authMiddleware, userController.deleteAccount)
+router.get("/", authMiddleware, userController.listProfile)
 
 router.get("/protected", authMiddleware, (req, res) => {
     let clientIP = req.ip || req.connection.remoteAddress;

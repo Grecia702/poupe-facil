@@ -1,87 +1,138 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Pressable, Image } from 'react-native'
+import React from 'react'
+const NoData = require('@assets/no_data.png')
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useProfile } from '@hooks/useProfile'
+import UserIcon from '@assets/user-icon.svg'
+import UploadImageScreen from '@screens/New';
+import { useNavigation } from '@react-navigation/native';
 
-const sortOptions = [
-    { label: 'Data (Mais recentes)', value: 'date_desc' },
-    { label: 'Data (Mais antigos)', value: 'date_asc' },
-    { label: 'Valor (Maior primeiro)', value: 'value_desc' },
-    { label: 'Valor (Menor primeiro)', value: 'value_asc' },
-];
-
-const SortDropdown = () => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selected, setSelected] = useState(sortOptions[0]);
-
-    const toggleDropdown = () => setIsOpen(prev => !prev);
-    const handleOptionSelect = (option) => {
-        setSelected(option);
-        setIsOpen(false);
-        console.log('Ordenar por:', option.value); // aqui você aplicaria a lógica de ordenação real
-    };
-    const handleOutsidePress = () => setIsOpen(false);
+const Profile = () => {
+    const navigation = useNavigation()
+    const { data } = useProfile()
+    console.log(data)
 
     return (
-        <TouchableWithoutFeedback onPress={handleOutsidePress}>
-            <View style={styles.overlay}>
-                <View style={styles.dropdownWrapper}>
-                    <TouchableOpacity onPress={toggleDropdown} style={styles.button}>
-                        <Text style={styles.buttonText}>{selected.label} ▼</Text>
-                    </TouchableOpacity>
+        <View style={styles.container}>
 
-                    {isOpen && (
-                        <View style={styles.dropdown}>
-                            {sortOptions.map((option, index) => (
-                                <TouchableOpacity key={index} style={styles.item} onPress={() => handleOptionSelect(option)}>
-                                    <Text>{option.label}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                    )}
+            <View style={{ alignItems: 'center', paddingTop: 40, padding: 20 }}>
+                <View style={{ borderWidth: 2, borderRadius: 400, alignItems: 'center', marginBottom: 24, overflow: 'hidden' }}>
+
+                    <View>
+                        <UserIcon width={96} height={96} />
+                    </View>
+                </View>
+                <Text style={styles.name}>
+                    {data?.nome}
+                </Text>
+                <View style={styles.email}>
+                    <Text style={styles.emailText}>
+                        {data?.email}
+                    </Text>
                 </View>
             </View>
-        </TouchableWithoutFeedback>
-    );
-};
+
+            <View style={styles.widget}>
+                <Pressable style={({ pressed }) => [
+                    styles.field,
+                    {
+                        opacity: pressed ? 0.4 : 1,
+                        transform: [{ scale: pressed ? 1.01 : 1 }],
+                        backgroundColor: pressed ? '#aaa' : '#eee'
+                    }
+                ]}>
+                    <Text style={styles.fieldsTitle}>
+                        Editar Perfil
+                    </Text>
+                    <MaterialIcons name="navigate-next" size={24} color="black" />
+                </Pressable>
+
+                <Pressable style={({ pressed }) => [
+                    styles.field,
+                    {
+                        opacity: pressed ? 0.6 : 1,
+                        transform: [{ scale: pressed ? 1.01 : 1 }],
+                        backgroundColor: pressed ? '#aaa' : '#eee'
+                    }
+                ]}>
+                    <Text style={styles.fieldsTitle}>
+                        Notificações
+                    </Text>
+                    <MaterialIcons name="navigate-next" size={24} color="black" />
+                </Pressable>
+                <Pressable style={({ pressed }) => [
+                    styles.field,
+                    {
+                        opacity: pressed ? 0.3 : 1,
+                        transform: [{ scale: pressed ? 1.01 : 1 }],
+                        backgroundColor: pressed ? '#aaa' : '#eee'
+                    }
+                ]}>
+                    <Text style={styles.fieldsTitle}>
+                        Segurança
+                    </Text>
+                    <MaterialIcons name="navigate-next" size={24} color="black" />
+                </Pressable>
+
+                <Pressable style={({ pressed }) => [
+                    styles.field,
+                    {
+                        opacity: pressed ? 0.6 : 1,
+                        transform: [{ scale: pressed ? 1.01 : 1 }],
+                        backgroundColor: pressed ? '#aaa' : '#eee'
+                    }
+                ]}>
+                    <Text style={styles.fieldsTitle}>
+                        Aparencia
+                    </Text>
+                    <MaterialIcons name="navigate-next" size={24} color="black" />
+                </Pressable>
+
+            </View>
+        </View>
+    )
+}
+
+export default Profile
 
 const styles = StyleSheet.create({
-    overlay: {
+    container: {
         flex: 1,
-        backgroundColor: 'transparent',
-        paddingTop: 60,
+        padding: 20,
+        backgroundColor: '#e9e9e9',
     },
-    dropdownWrapper: {
-        position: 'relative',
-        marginLeft: 20,
+    name: {
+        fontSize: 24,
+        fontWeight: 400,
+        marginBottom: 8
     },
-    button: {
+    email: {
+        backgroundColor: '#6983d850',
+        borderRadius: 10,
         padding: 10,
-        backgroundColor: '#3498db',
-        borderRadius: 5,
+        paddingHorizontal: 30,
+        marginTop: 12
+    },
+    emailText: {
+        fontWeight: 600,
+        color: '#155ee4'
+    },
+    widget: {
+        backgroundColor: '#eeeeee',
+        borderRadius: 10,
+        elevation: 2,
+        marginTop: 32,
+    },
+    field: {
+        flexDirection: 'row',
         alignItems: 'center',
-        width: 200,
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 16,
-    },
-    dropdown: {
-        marginTop: 5,
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
-        width: 200,
-    },
-    item: {
-        padding: 10,
+        justifyContent: 'space-between',
+        paddingVertical: 15,
+        paddingHorizontal: 20,
         borderBottomWidth: 1,
-        borderBottomColor: '#eee',
+        borderBottomColor: '#ccc'
     },
-});
-
-export default SortDropdown;
+    fieldsTitle: {
+        fontSize: 16,
+    }
+})
