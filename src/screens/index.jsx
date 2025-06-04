@@ -106,7 +106,7 @@ export default function HomeScreen() {
           ) : (
             <>
               <CreateItem
-                text={'Nenhum orçamento encontrado.'}
+                text={'Nenhum Orçamento ativo neste mês.'}
                 buttonText={'Criar orçamento'}
                 screen={'CreateBudget'}
                 icon={

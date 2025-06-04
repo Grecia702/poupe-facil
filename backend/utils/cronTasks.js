@@ -77,9 +77,9 @@ async function processarMetasVencimento() {
             } = metas
             await pool.query(
                 `UPDATE metas
-                SET status_meta = 'expirada'
-                WHERE id = $1`,
-                [id]
+                SET status_meta = 'concluida', data_concluida = $1
+                WHERE id = $2`,
+                [hoje, id]
             );
             console.log(`Meta de id ${id} do usuario ${id_usuario} expirou. Marcando como expirada`);
             logger.info(`Meta de id ${id} do usuario ${id_usuario} expirou. Marcando como expirada`)
