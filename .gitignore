@@ -43,12 +43,12 @@ yarn-error.*
 # 🧠 macOS lixo
 .DS_Store
 
-# ⚙️ Gradle e builds nativos
-/android
-/ios
+# Android
 android/.gradle/
+android/app/build/
 android/build/
-ios/build/
+android/local.properties
+android/app/google-services.json
 
 # 👨‍💻 IDEs
 .vscode/

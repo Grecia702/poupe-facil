@@ -1,8 +1,12 @@
-# Ignorar diretórios de builds
+# Ignorar diretórios de builds gerados
 android/build/
+android/.gradle/
+android/local.properties
+android/app/build/
+android/app/google-services.json
+
 ios/build/
-android/
-ios/
+
 # Ignorar diretórios e arquivos de dependências
 node_modules/
 .npm/

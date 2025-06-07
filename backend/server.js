@@ -17,6 +17,7 @@ const logger = require(path.join(__dirname, 'utils', 'loggerConfig'));
 const requestTimeLogger = require(path.join(__dirname, 'utils', 'requestTime'));
 const { iniciarCron } = require(path.join(__dirname, 'utils', 'cronTasks'));
 const { RateLimiterMemory } = require('rate-limiter-flexible');
+app.use('/api/users/uploads', express.static(path.join(__dirname, 'uploads')))
 
 iniciarCron();
 

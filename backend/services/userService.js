@@ -8,4 +8,8 @@ const getUserService = async (id) => {
     return result
 }
 
-module.exports = { getUserService }
+const changePictureService = async (imagePath, userId) => {
+    await userModel.change_profile_pic(imagePath, userId)
+}
+
+module.exports = { getUserService, changePictureService }

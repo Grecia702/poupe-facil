@@ -40,7 +40,6 @@ export default function DrawerRoutes() {
                     drawerActiveTintColor: isDarkMode ? "#b9b9b9" : 'green',
                     drawerInactiveTintColor: isDarkMode ? "#5a5757" : '#1a3523',
                     drawerActiveBackgroundColor: isDarkMode ? '#3a3939' : '#c7eec7',
-                    title: '',
                     headerRight: () =>
                         <TouchableOpacity
                             onPress={() => toggleDarkMode(true)}
@@ -130,7 +129,7 @@ export default function DrawerRoutes() {
                     options={{
                         drawerIcon: ({ color, size }) => <Feather name="user" color={color} size={size} />,
                         drawerLabel: 'Perfil',
-                        headerShown: false
+                        headerShown: true
                     }}
                 />
                 <Drawer.Screen

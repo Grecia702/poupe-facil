@@ -32,8 +32,6 @@ const Overview = () => {
         setSelectedItem(label);
     };
 
-    console.log(reportData)
-
     return (
         <ScrollView contentContainerStyle={{ paddingBottom: 48, justifyContent: 'center' }} style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#f7f7f8' }]}>
 

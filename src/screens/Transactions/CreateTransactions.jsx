@@ -119,9 +119,6 @@ const CreateTransactions = () => {
         const valor = parseFloat(clean) / 100;
         setFields({ ...fields, valor: isNaN(valor) ? 0 : valor });
     };
-
-    console.log(fields)
-
     return (
 
         <ScrollView style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#e5e5ea' }]} contentContainerStyle={{ gap: 12, paddingBottom: 48 }}>
