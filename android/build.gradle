@@ -23,6 +23,8 @@ buildscript {
 }
 
 apply plugin: "com.facebook.react.rootproject"
+apply plugin: 'com.google.gms.google-services'
+
 
 allprojects {
     repositories {

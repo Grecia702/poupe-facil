@@ -12,7 +12,9 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~4.0.1",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-community/datetimepicker": "^8.3.0",
+    "@react-native-firebase/app": "^22.2.0",
     "@react-native-google-signin/google-signin": "^14.0.0",
     "@react-native-picker/picker": "2.9.0",
     "@react-navigation/bottom-tabs": "7.3.3",
@@ -26,7 +28,10 @@
     "expo": "~52.0.42",
     "expo-build-properties": "~0.13.2",
     "expo-dev-client": "~5.0.20",
+    "expo-device": "~7.0.3",
     "expo-font": "~13.0.4",
+    "expo-image-picker": "~16.0.6",
+    "expo-notifications": "~0.29.14",
     "expo-optimize": "^0.2.20",
     "expo-secure-store": "~14.0.1",
     "expo-status-bar": "~2.0.1",
@@ -50,11 +55,7 @@
     "react-native-tab-view": "^4.1.0",
     "react-native-toast-notifications": "^3.4.0",
     "styled-components": "^6.1.16",
-    "victory-native": "^37.3.6",
-    "expo-image-picker": "~16.0.6",
-    "@react-native-async-storage/async-storage": "1.23.1",
-    "expo-notifications": "~0.29.14",
-    "expo-device": "~7.0.3"
+    "victory-native": "^37.3.6"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
