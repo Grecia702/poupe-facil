@@ -10,7 +10,7 @@ const googleLogo = require('../../assets/images/google__g__logo.png');
 
 GoogleSignin.configure({
     iosClientId: '159358840833-asm7tcmu7b119g66b833qj5kf8f2gngu.apps.googleusercontent.com',
-    webClientId: '159358840833-f1fglng1p7cj0ov37gsadijp70hlvc7p.apps.googleusercontent.com',
+    webClientId: '159358840833-0r4bov8kj1rrin0f3mu5c1trl99od9qt.apps.googleusercontent.com',
     offlineAccess: true,
 })
 
