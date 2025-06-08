@@ -5,7 +5,7 @@ import { useContasAuth } from '@context/contaContext';
 import { colorContext } from '@context/colorScheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Separator } from '../components/accounts/styles';
-import { format } from 'date-fns';
+import { startOfMonth, endOfMonth, set, format, addMonths, subMonths } from 'date-fns'
 import { useNavigation } from '@react-navigation/native';
 import { useToast } from 'react-native-toast-notifications';
 
@@ -76,7 +76,7 @@ const BankAccount = () => {
         "Set", "Out", "Nov", "Dec",
     ]
     const navigation = useNavigation();
-    const { dadosContas, refetch } = useContasAuth();
+    const { dadosContas, refetch, lastDate, setLastDate } = useContasAuth();
     const { isDarkMode } = useContext(colorContext);
     const [monthIndex, setMonthIndex] = useState(new Date().getMonth());
     const [dropdownVisibleId, setDropdownVisibleId] = useState(null);
@@ -87,17 +87,17 @@ const BankAccount = () => {
     const HeaderComponent = () => {
         return (
             <View style={{ flexDirection: 'row', alignSelf: 'center', gap: 5 }}>
-                <TouchableOpacity onPress={() => setMonthIndex(prev => (prev - 1 + 12) % 12)}>
-                    <MaterialIcons name="arrow-back-ios" size={24} color={isDarkMode ? "#CCC" : "#222"} />
+                <TouchableOpacity onPress={() => setLastDate(prev => set(endOfMonth(subMonths(prev, 1)), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }))}>
+                    <MaterialIcons name="arrow-back-ios" size={24} color={isDarkMode ? "#CCC" : "#333"} />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => setOpen(true)}>
-                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: isDarkMode ? "#CCC" : "#222" }}>
-                        {currentMonth}
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: isDarkMode ? "#CCC" : "#333" }}>
+                        {lastDate.toLocaleDateString('pt-BR', { month: 'long' }) + ' ' + lastDate.getFullYear()}
                     </Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setMonthIndex(prev => (prev + 1) % 12)}>
-                    <MaterialIcons name="arrow-forward-ios" size={24} color={isDarkMode ? "#CCC" : "#222"} />
+                <TouchableOpacity onPress={() => setLastDate(prev => set(endOfMonth(addMonths(prev, 1)), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }))}>
+                    <MaterialIcons name="arrow-forward-ios" size={24} color={isDarkMode ? "#CCC" : "#333"} />
                 </TouchableOpacity>
                 <ModalData
                     isDarkMode={isDarkMode}

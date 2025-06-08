@@ -21,7 +21,9 @@ const CreateAccountService = async (dados, userId) => {
     if (ContaValida) {
         throw new Error('Já existe uma conta com este nome')
     }
-    await accountModel.CreateAccount(userId, dados.nome_conta, dados.data_criacao, dados.saldo, dados.tipo_conta, dados.icone, dados.desc_conta);
+
+    console.log(dados)
+    await accountModel.CreateAccount(userId, dados.nome_conta, dados.saldo, dados.tipo_conta, dados.icone, dados.desc_conta);
 }
 
 const UpdateAccountService = async (userId, account_id, query, params) => {
@@ -51,8 +53,10 @@ const RemoveAccountService = async (userId, id) => {
     }
 }
 
-const ListAccountService = async (userId, first_date, last_date) => {
-    const account = await accountModel.ListAllAccounts(userId, first_date, last_date);
+const ListAccountService = async (userId, last_date) => {
+    const account = await accountModel.ListAllAccounts(userId, last_date);
+    console.log(last_date)
+
     const data = account.rows.map(item => ({
         ...item,
         saldo: parseFloat(item.saldo)

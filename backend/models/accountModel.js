@@ -40,21 +40,24 @@ const DeleteAccount = async (id, userId) => {
     await pool.query("DELETE FROM contasBancarias WHERE id = $1 AND id_usuario = $2", [id, userId])
 }
 
-const ListAllAccounts = async (userId) => {
+const ListAllAccounts = async (userId, last_date) => {
     const query = `
     SELECT 
-    id,
-	nome_conta,
-	saldo,
-	desc_conta,
-	icone,
-	tipo_conta,
-    is_primary
-    FROM contasBancarias 
-    WHERE id_usuario = $1 
-    ORDER BY id
+    c.id,
+    c.nome_conta,
+    c.desc_conta,
+    c.icone,
+    c.tipo_conta,
+    c.is_primary,
+    c.saldo - COALESCE(SUM(t.valor), 0) AS saldo
+    FROM contasBancarias AS c
+    LEFT JOIN transacoes AS t 
+    ON t.id_contabancaria = c.id 
+    AND t.data_transacao BETWEEN c.created_at AND $2
+    WHERE c.id_usuario = $1
+    GROUP BY c.id, c.saldo, c.created_at
     `;
-    const { rows, rowCount } = await pool.query(query, [userId]);
+    const { rows, rowCount } = await pool.query(query, [userId, last_date]);
     return { rows, total: rowCount, firstResult: rows[0] };
 }
 

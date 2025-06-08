@@ -5,9 +5,12 @@ import { useAuth } from '@context/authContext';
 
 export const ContasContext = createContext();
 
-const getContas = async () => {
+const getContas = async ({ queryKey }) => {
+    const [_key, { last_date }] = queryKey;
     try {
-        const { data } = await api.get('/profile/account/');
+        const { data } = await api.get('/profile/account/', {
+            params: { last_date }
+        });
         return data;
     } catch (error) {
         console.log('Erro ao fazer a requisição:', error);
@@ -64,7 +67,7 @@ export const ContasProvider = ({ children }) => {
     const queryClient = useQueryClient();
     const [lastDate, setLastDate] = useState(new Date());
     const { data: dadosContas, isLoading, error, refetch } = useQuery({
-        queryKey: ['account_id'],
+        queryKey: ['account_id', { last_date: lastDate }],
         queryFn: getContas,
         enabled: isAuthenticated,
         onSuccess: (data) => {

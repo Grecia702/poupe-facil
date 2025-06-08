@@ -17,12 +17,12 @@ const CreateAccount = () => {
     const [visible, setVisible] = useState(false);
     const navigation = useNavigation();
     const [formatado, setFormatado] = useState('R$ 0,00');
-    const [fields, setFields] = useState({ saldo: '', nome_conta: '', icone: `${selected.icon}`, tipo_conta: `${selected.icon}`, desc_conta: '' });
+    const [fields, setFields] = useState({ saldo: '', nome_conta: '', icone: `${selected.icon}`, tipo_conta: `${selected.label}`, desc_conta: '' });
     const { createAccountMutation, refetch } = useContasAuth()
     const toast = useToast();
 
     const handleCreate = async () => {
-        if (fields.saldo === '' || fields.nome_conta === '') {
+        if (fields.saldo === '' || fields.nome_conta === '' || !fields.saldo) {
             errorToast("Campos obrigatórios em branco")
             return
         }
@@ -50,6 +50,8 @@ const CreateAccount = () => {
         })
     }
 
+
+
     const handleChange = (field, text) => {
         const clean = text.replace(/\D/g, '');
         const valor = parseFloat(clean) / 100;
@@ -60,6 +62,10 @@ const CreateAccount = () => {
         });
         setFormatado(f);
     };
+
+    console.log(fields)
+
+    console.log(selected.icon)
 
     return (
         <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '	#e5e5ea' }]}>

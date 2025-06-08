@@ -28,8 +28,6 @@ import NavMonths from '@components/navMonths';
 import { startOfMonth, endOfMonth, set, format, addMonths, subMonths } from 'date-fns'
 import { useDonutchartData } from '@hooks/useDonutchartData';
 
-
-
 export default function HomeScreen() {
   const { useFilteredTransacoes } = useTransactionAuth();
   const { data: transactionData, refetch, isLoading } = useFilteredTransacoes();
@@ -65,7 +63,7 @@ export default function HomeScreen() {
     <ScrollView style={{ backgroundColor: isDarkMode ? "rgb(26, 26, 26)" : "#c6ebe9" }}>
 
       <VisaoGeral
-        saldo={(balanceAccount?.saldo_total || 0)}
+        saldo={(saldo || 0)}
         balanco_geral={(balanceAccount?.balanco_geral || 0)}
         despesa={(balanceAccount?.despesa || 0)}
         receita={(balanceAccount?.receita || 0)}
@@ -99,7 +97,7 @@ export default function HomeScreen() {
           TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"}
           onPressDetails={() => navigation.navigate('CreateBudget')}
         >
-          {budgetData?.length > 0 ? (
+          {budgetData ? (
             <>
               <Budget data={budgetData} />
             </>

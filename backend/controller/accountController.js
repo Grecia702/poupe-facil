@@ -72,8 +72,8 @@ const RemoveAccount = async (req, res) => {
 const ListAccount = async (req, res) => {
     try {
         const { userId } = req.user.decoded
-        const { first_date, last_date } = req.body
-        const accounts = await ListAccountService(userId, first_date, last_date);
+        const { last_date } = req.query
+        const accounts = await ListAccountService(userId, last_date);
         return res.status(200).json(accounts)
     }
     catch (err) {
