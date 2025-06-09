@@ -65,14 +65,26 @@ export const TransactionProvider = ({ children }) => {
 
     const createTransactionMutation = useMutation({
         mutationFn: createTransaction,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['budget_id'] });
+            queryClient.invalidateQueries({ queryKey: ['transacoes_infinite'] });
+        }
     });
 
     const updateTransactionMutation = useMutation({
         mutationFn: updateTransaction,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['budget_id'] });
+            queryClient.invalidateQueries({ queryKey: ['transacoes_infinite'] });
+        }
     });
 
     const deleteTransactionMutation = useMutation({
         mutationFn: deleteTransaction,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['budget_id'] });
+            queryClient.invalidateQueries({ queryKey: ['transacoes_infinite'] });
+        }
     });
 
     return (

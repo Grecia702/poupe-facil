@@ -23,7 +23,7 @@ export default function TransactionCard({ loadData, iconName, name_transaction, 
             onSuccess: () => {
                 toastSuccess();
                 onRefresh();
-                setIsOpen(prev => !prev);
+                // setIsOpen(prev => !prev);
             },
             onError: (error) => toastError(error),
         });
@@ -85,7 +85,7 @@ export default function TransactionCard({ loadData, iconName, name_transaction, 
                             borderRadius: 2,
                             paddingVertical: 10,
                             elevation: 10,
-                            zIndex: 99,
+                            zIndex: 1,
                         }}
                     >
                         <TouchableOpacity
@@ -98,22 +98,28 @@ export default function TransactionCard({ loadData, iconName, name_transaction, 
                             <Text style={{ color: isDarkMode ? '#EEE' : '#222', fontSize: 16 }}>Editar</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={() => setIsOpen(true)}
+                            onPress={() => { setIsOpen(true); setVisibleId(null) }}
                             style={{ paddingVertical: 10, paddingHorizontal: 15 }}
                         >
                             <Text style={{ color: isDarkMode ? '#EEE' : '#222', fontSize: 16 }}>Apagar</Text>
                         </TouchableOpacity>
+
                     </View>
                 </Pressable>
+
             </Modal>
-
-
         );
     }
 
     return (
         <>
             {isVisible && <DropDown />}
+            <DangerModal
+                open={isOpen}
+                setOpen={setIsOpen}
+                loadData={loadData}
+                onPress={() => handleDelete()}
+            />
             <View style={{ marginTop: 10, paddingBottom: 10, borderBottomWidth: hideOption ? 0 : 1, borderColor: isDarkMode ? '#dddddd8f' : '#7a7a7a8f' }}>
 
                 <View style={styles.container}>

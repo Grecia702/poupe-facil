@@ -63,11 +63,11 @@ const Transactions = () => {
         }
     };
 
-    useFocusEffect(
-        useCallback(() => {
-            onRefresh();
-        }, [serializedFilters, filters])
-    );
+    // useFocusEffect(
+    //     useCallback(() => {
+    //         onRefresh();
+    //     }, [serializedFilters, filters])
+    // );
 
     useLayoutEffect(() => {
         let title;
