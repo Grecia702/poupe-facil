@@ -98,20 +98,46 @@ const Budget = ({ data }) => {
                     )
                 }
                 <View style={[styles.viewAlert, { backgroundColor: isDarkMode ? '#3d3d3d' : '#fff', borderColor: isDarkMode ? '#202020' : '#ccc' }]}>
-                    {data?.quantia_gasta < data?.limite * 0.6 ? (
-                        <Text style={[styles.textAlert, { color: isDarkMode ? '#ddd' : '#111' }]}>
-                            Você está controlando bem seus gastos! Ainda há margem dentro do seu orçamento.
-                        </Text>
-                    ) : data?.quantia_gasta < data?.limite * 0.9 ? (
-                        <Text style={[styles.textAlert, { color: isDarkMode ? '#ddd' : '#111' }]}>
-                            Atenção: você já utilizou mais de 60% do seu orçamento. Considere ajustar seus gastos.
-                        </Text>
-                    ) : (
-                        <Text style={[styles.textAlert, { color: isDarkMode ? '#ddd' : '#111' }]}>
-                            Alerta: você já ultrapassou 90% do seu orçamento. É recomendável interromper novos gastos.
-                        </Text>
-                    )}
+                    <Text style={[styles.textAlert, { color: isDarkMode ? '#ddd' : '#111' }]}>
+                        {data?.quantia_gasta < data?.limite * 0.6
+                            ? 'Você está controlando bem seus gastos! Ainda há margem dentro do seu orçamento.'
+                            : data?.quantia_gasta < data?.limite * 0.9
+                                ? 'Atenção: você já utilizou mais de 60% do seu orçamento. Considere ajustar seus gastos.'
+                                : 'Alerta: você já ultrapassou 90% do seu orçamento. É recomendável interromper novos gastos.'}
+                    </Text>
 
+                    {limite_categorias.map(({ categoria, gasto, limite }, index) => {
+                        const progressCategoria = limite > 0 ? gasto / limite : 0;
+                        let mensagem = '';
+
+                        if (progressCategoria < 0.6) {
+                            mensagem = `✔️ ${categoria}: Dentro do orçamento.`;
+                        } else if (progressCategoria < 0.9) {
+                            mensagem = `⚠️ ${categoria}: Mais de 60% do limite usado.`;
+                        } else {
+                            mensagem = `🚨 ${categoria}: Mais de 90% do limite usado.`;
+                        }
+
+                        const cor = progressCategoria < 0.6
+                            ? (isDarkMode ? '#bfffcf' : '#2f8132')
+                            : progressCategoria < 0.9
+                                ? (isDarkMode ? '#fcd98e' : '#a66f00')
+                                : (isDarkMode ? '#ffb3b3' : '#a10000');
+
+                        return (
+                            <Text
+                                key={index}
+                                style={{
+                                    color: cor,
+                                    fontSize: 14,
+                                    fontWeight: '500',
+                                    marginTop: 4
+                                }}
+                            >
+                                {mensagem}
+                            </Text>
+                        );
+                    })}
                 </View>
                 <View style={{ flexDirection: 'row', gap: 16, alignSelf: 'flex-end' }}>
                     <TouchableOpacity
