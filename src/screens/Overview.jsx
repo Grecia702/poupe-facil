@@ -77,7 +77,7 @@ const Overview = () => {
                             style={{
                                 labels: { fontSize: 16, fill: "black" }
                             }}
-                            labels={({ datum }) => `Porcentagem: ${((datum.y / reportData.limite_total) * 100).toFixed(2)}%`}
+                            labels={({ datum }) => `Porcentagem: ${((datum.y / reportData.quantia_gasta) * 100).toFixed(2)}%`}
                             labelComponent={
                                 <VictoryTooltip renderInPortal={false}
                                     active={({ datum }) => datum.x === selectedItem ? true : false}

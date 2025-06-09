@@ -1,11 +1,13 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { colorContext } from '@context/colorScheme';
-import { Feather } from '@expo/vector-icons'
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons'
 import React, { useContext, useState } from 'react';
 import HomeScreen from '@screens/index'
 import CreateTransaction from '@components/createTransaction'
-import Logout from '@screens/Logout'
+import Transactions from '@screens/Transactions/Transactions'
 const Tab = createBottomTabNavigator();
+import GoalsTabsRoutes from './goals_tabs.routes';
+
 
 export default function TabRoutes() {
     const [showTransactionModal, setShowTransactionModal] = useState(false);
@@ -55,33 +57,35 @@ export default function TabRoutes() {
                 </Tab.Screen>
 
                 <Tab.Screen
-                    name="Logout"
+                    name="Transações"
+                    component={Transactions}
                     options={{
-                        tabBarIcon: ({ color, size }) => <Feather name="log-out" color={color} size={size} />,
+                        tabBarIcon: ({ color, size }) => <Feather name="trending-down" color={color} size={size} />,
                         tabBarActiveTintColor: 'rgb(250,250,250)',
                         tabBarLabelStyle: {
                             fontSize: 16
                         },
                         headerShown: false
                     }}
-                    listeners={{
-                        tabPress: e => {
-                            e.preventDefault();
-                            setShowLogoutModal(true);
-                        }
+                />
+                <Tab.Screen
+                    name="Metas"
+                    component={GoalsTabsRoutes}
+                    options={{
+                        tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="piggy-bank" size={size} color={color} />,
+                        tabBarActiveTintColor: 'rgb(250,250,250)',
+                        tabBarLabelStyle: {
+                            fontSize: 16
+                        },
+                        headerShown: false
                     }}
-                >
-                    {() => null}
-                </Tab.Screen>
+                />
             </Tab.Navigator>
             <CreateTransaction
                 isOpen={showTransactionModal}
                 setIsOpen={() => setShowTransactionModal(false)}
             />
-            <Logout
-                isOpen={showLogoutModal}
-                setIsOpen={() => setShowLogoutModal(false)}
-            />
+
         </>
     )
 }

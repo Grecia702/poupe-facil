@@ -1,8 +1,8 @@
-import { TouchableOpacity, View, Text, Pressable, StyleSheet } from "react-native";
+import { TouchableOpacity, View, Text, Pressable, StyleSheet, Modal } from "react-native";
 import { MaterialIcons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native';
 import { colorContext } from '@context/colorScheme'
-import { useContext, useState } from "react";
+import { useContext, useState, useRef } from "react";
 import { useToast } from 'react-native-toast-notifications';
 import { useTransactionAuth } from "@context/transactionsContext";
 import { format } from 'date-fns';
@@ -14,6 +14,9 @@ export default function TransactionCard({ loadData, iconName, name_transaction, 
     const [isOpen, setIsOpen] = useState(false)
     const { useFilteredTransacoes, deleteTransactionMutation } = useTransactionAuth();
     const toast = useToast();
+    const [dropdownPosition, setDropdownPosition] = useState({ x: 0, y: 0 });
+    const moreButtonRef = useRef(null);
+
 
     const handleDelete = () => {
         deleteTransactionMutation.mutate(id, {
@@ -41,7 +44,14 @@ export default function TransactionCard({ loadData, iconName, name_transaction, 
     }
 
     const handleToggleDropdown = () => {
-        setVisibleId(isVisible ? null : id);
+        if (!isVisible) {
+            moreButtonRef.current?.measureInWindow((x, y, width, height) => {
+                setDropdownPosition({ x, y: y + height });
+                setVisibleId(id);
+            });
+        } else {
+            setVisibleId(null);
+        }
     };
 
     const categoriaIcons = {
@@ -56,94 +66,95 @@ export default function TransactionCard({ loadData, iconName, name_transaction, 
         Outros: 'more-horiz',
     };
 
-    const handleClose = () => {
-        setVisibleId(null);
-    };
-
     const DropDown = () => {
         return (
-            <>
-                <Pressable
-                    onPress={handleClose}
-                    style={{
-                        zIndex: 1,
-                        position: 'absolute',
-                        top: 0,
-                        right: 20,
-                        left: 0,
-                        bottom: 0,
-                    }}
-                />
-
-                <View style={[styles.dropdown, { backgroundColor: isDarkMode ? '#414141' : '#ebeaea', }]}>
-                    <TouchableOpacity
-                        onPress={() => {
-                            navigation.navigate('EditTransactions', { transactionId: id });
-                            setVisibleId(null)
+            <Modal
+                visible={isVisible}
+                transparent
+                animationType="none"
+                onRequestClose={() => setVisibleId(null)}
+            >
+                <Pressable style={{ flex: 1 }} onPress={() => setVisibleId(null)}>
+                    <View
+                        style={{
+                            position: 'absolute',
+                            top: dropdownPosition.y - 25,
+                            left: dropdownPosition.x - 130,
+                            width: 130,
+                            backgroundColor: isDarkMode ? '#414141' : '#ebeaea',
+                            borderRadius: 2,
+                            paddingVertical: 10,
+                            elevation: 10,
+                            zIndex: 99,
                         }}
-                        style={{ paddingVertical: 15, paddingHorizontal: 15 }}
                     >
-                        <Text style={{ color: isDarkMode ? '#EEE' : '#222', fontSize: 16, textAlign: 'left' }}>Editar</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => setIsOpen(prev => !prev)}
-                        style={{ paddingVertical: 15, paddingHorizontal: 15 }}
-                    >
-                        <Text style={{ color: isDarkMode ? '#EEE' : '#222', fontSize: 16, textAlign: 'left' }}>Apagar</Text>
-                    </TouchableOpacity>
-                    <DangerModal
-                        open={isOpen}
-                        setOpen={setIsOpen}
-                        loadData={loadData}
-                        onPress={() => handleDelete()}
-                    />
-                </View>
-            </>
+                        <TouchableOpacity
+                            onPress={() => {
+                                navigation.navigate('EditTransactions', { transactionId: id });
+                                setVisibleId(null);
+                            }}
+                            style={{ paddingVertical: 10, paddingHorizontal: 15 }}
+                        >
+                            <Text style={{ color: isDarkMode ? '#EEE' : '#222', fontSize: 16 }}>Editar</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => setIsOpen(true)}
+                            style={{ paddingVertical: 10, paddingHorizontal: 15 }}
+                        >
+                            <Text style={{ color: isDarkMode ? '#EEE' : '#222', fontSize: 16 }}>Apagar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </Pressable>
+            </Modal>
+
+
         );
     }
 
     return (
-        <View style={{ marginTop: 10, paddingBottom: 10, borderBottomWidth: hideOption ? 0 : 1, borderColor: isDarkMode ? '#dddddd8f' : '#7a7a7a8f' }}>
+        <>
             {isVisible && <DropDown />}
-            <View style={styles.container}>
-                <View style={[styles.iconCard, { backgroundColor: color }]}>
-                    <MaterialIcons
-                        name={categoriaIcons[iconName] || 'help-outline'}
-                        color="white"
-                        size={28}
-                    />
-                </View>
-                <View style={styles.info}>
-                    <View>
-                        <View style={{ flexDirection: 'row' }}>
-                            <Text style={[styles.title, { color: state ? "#f1f1f1" : "#2e2e2e" }]}>{name_transaction}</Text>
-                            {recurrence && (
-                                <MaterialIcons
-                                    name='repeat'
-                                    color={state ? "#EEE" : "#222"}
-                                    size={20}
-                                />
-                            )}
-                        </View>
-                        <Text style={[styles.text, { color: state ? "#e9e7e7" : "#4e4e4e" }]}>{category} - {type}</Text>
-                        <Text style={[styles.text, { color: state ? "#e9e7e7" : "#4e4e4e" }]}>{conta} - {format(date, 'dd/MM/yyyy')}</Text>
-                    </View>
+            <View style={{ marginTop: 10, paddingBottom: 10, borderBottomWidth: hideOption ? 0 : 1, borderColor: isDarkMode ? '#dddddd8f' : '#7a7a7a8f' }}>
 
-                    <View style={{ flexDirection: 'row' }}>
-                        <Text style={[styles.value, { color: state ? '#FFF' : '#303131', }]}>
-                            {(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                        </Text>
-                        {!hideOption && (
-                            <TouchableOpacity onPress={handleToggleDropdown}>
-                                <MaterialIcons
-                                    name="more-vert" size={24}
-                                    color={state ? "white" : "black"} />
-                            </TouchableOpacity>)
-                        }
+                <View style={styles.container}>
+                    <View style={[styles.iconCard, { backgroundColor: color }]}>
+                        <MaterialIcons
+                            name={categoriaIcons[iconName] || 'help-outline'}
+                            color="white"
+                            size={28}
+                        />
+                    </View>
+                    <View style={styles.info}>
+                        <View>
+                            <View style={{ flexDirection: 'row' }}>
+                                <Text style={[styles.title, { color: state ? "#f1f1f1" : "#2e2e2e" }]}>{name_transaction}</Text>
+                                {recurrence && (
+                                    <MaterialIcons
+                                        name='repeat'
+                                        color={state ? "#EEE" : "#222"}
+                                        size={20}
+                                    />
+                                )}
+                            </View>
+                            <Text style={[styles.text, { color: state ? "#e9e7e7" : "#4e4e4e" }]}>{category} - {type}</Text>
+                            <Text style={[styles.text, { color: state ? "#e9e7e7" : "#4e4e4e" }]}>{conta} - {format(date, 'dd/MM/yyyy')}</Text>
+                        </View>
+
+                        <View style={{ flexDirection: 'row' }}>
+                            <Text style={[styles.value, { color: state ? '#FFF' : '#303131', }]}>
+                                {(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                            </Text>
+                            {!hideOption && (
+                                <TouchableOpacity ref={moreButtonRef} onPress={handleToggleDropdown}>
+                                    <MaterialIcons name="more-vert" size={24} color={state ? "white" : "black"} />
+                                </TouchableOpacity>
+                            )
+                            }
+                        </View>
                     </View>
                 </View>
             </View>
-        </View>
+        </>
     )
 }
 
@@ -156,11 +167,10 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 0,
         width: 100,
-        right: 20,
+        right: 25,
         elevation: 10,
-        height: 'auto',
         borderRadius: 5,
-        zIndex: 1,
+        zIndex: 4,
     },
     iconCard: {
         borderRadius: 30,

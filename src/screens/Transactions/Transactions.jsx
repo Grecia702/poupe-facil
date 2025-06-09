@@ -25,21 +25,43 @@ const Transactions = () => {
         { label: 'Valor (Maior primeiro)', value: 'value_desc' },
         { label: 'Valor (Menor primeiro)', value: 'value_asc' },
     ];
+    const filterOptions = [
+        { label: 'Valor', value: 'value' },
+        { label: 'Data', value: 'date' },
+        { label: 'Categorias', value: 'categories' },
+    ];
+    const [selectedFilterOption, setSelectedFilterOption] = useState(null);
+    const categoriasDisponiveis = [
+        { label: 'Alimentação', value: 'Alimentacao' },
+        { label: 'Transporte', value: 'Transporte' },
+        { label: 'Saúde', value: 'Saude' },
+        { label: 'Educação', value: 'Educacao' },
+    ];
+    const handleCategoriaFiltro = (categoria) => {
+        setFiltrosChips(prev => [...prev, categoria.label]);
+        setFilters(prev => ({ ...prev, categoria: categoria.value }));
+        setSelectedFilterOption(null);
+        setIsOpen({ sort: false, filters: false });
+    };
     const [refreshing, setRefreshing] = useState(false);
     const [dropdownVisibleId, setDropdownVisibleId] = useState(null);
     const [selected, setSelected] = useState(sortOptions[0]);
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState({ sort: false, filters: false });
     const { isDarkMode } = useContext(colorContext);
     const [filtrosChips, setFiltrosChips] = useState([]);
     const allData = useMemo(() => data?.pages?.flatMap(page => page.data) || [], [data]);
-    const toggleDropdown = () => setIsOpen(prev => !prev);
+    const toggleDropdown = (key) => {
+        setIsOpen(prev => ({
+            ...prev,
+            [key]: !prev[key]
+        }));
+    };
     const navigation = useNavigation();
     const handleLoadMore = () => {
         if (hasNextPage && !isFetchingNextPage) {
             fetchNextPage();
         }
     };
-
 
     useFocusEffect(
         useCallback(() => {
@@ -146,18 +168,51 @@ const Transactions = () => {
             case "value_desc":
                 setFilters(item => ({ ...item, orderBy: 'valor', orderDirection: 'DESC' }))
                 break;
+
         }
     }
 
     return (
         <>
-            {isOpen && (
+            {isOpen.sort && (
                 <View style={[styles.dropdown, { backgroundColor: isDarkMode ? '#333' : '#fff', }]}>
                     {sortOptions.map((option, index) => (
                         <TouchableOpacity key={index} style={styles.item} onPress={() => orderTransactions(option)}>
                             <Text style={{ color: isDarkMode ? '#fff' : '#333' }}>{option.label}</Text>
                         </TouchableOpacity>
                     ))}
+                </View>
+            )}
+            {isOpen.filters && (
+                <View style={[styles.dropdown, { backgroundColor: isDarkMode ? '#333' : '#fff', }]}>
+                    {filterOptions.map((option, index) => (
+                        <TouchableOpacity
+                            key={index}
+                            style={styles.item}
+                            onPress={() => {
+                                if (option.value === 'categories') {
+                                    setSelectedFilterOption('categories');
+                                } else {
+                                    orderTransactions(option);
+                                }
+                            }}>
+                            <Text style={{ color: isDarkMode ? '#fff' : '#333' }}>{option.label}</Text>
+                        </TouchableOpacity>
+                    ))}
+
+                    {selectedFilterOption === 'categories' && (
+                        <View style={{ borderTopWidth: 1, borderColor: '#ccc' }}>
+                            {categoriasDisponiveis.map((categoria, idx) => (
+                                <TouchableOpacity
+                                    key={idx}
+                                    style={[styles.item, { paddingLeft: 20 }]}
+                                    onPress={() => handleCategoriaFiltro(categoria)}>
+                                    <Text style={{ color: isDarkMode ? '#fff' : '#333' }}>{categoria.label}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    )}
+
                 </View>
             )}
             <FlatList
@@ -185,12 +240,12 @@ const Transactions = () => {
                     <>
                         <View style={[styles.ListHeader, { position: 'relative' }]}>
                             <View style={styles.dropdownWrapper}>
-                                <TouchableOpacity style={
+                                <TouchableOpacity onPressIn={() => toggleDropdown('filters')} style={
                                     [styles.optionsButton, { borderColor: isDarkMode ? "#DDD" : "#111", }]
                                 }>
                                     <MaterialIcons name="filter-alt" size={24} color={isDarkMode ? "#DDD" : "#111"} />
                                 </TouchableOpacity>
-                                <TouchableOpacity onPressIn={toggleDropdown} style={
+                                <TouchableOpacity onPressIn={() => toggleDropdown('sort')} style={
                                     [styles.optionsButton, { borderColor: isDarkMode ? "#DDD" : "#111", }]
                                 }>
                                     <MaterialIcons name="sort" size={24} color={isDarkMode ? "#DDD" : "#111"} />
@@ -234,7 +289,6 @@ export default Transactions
 
 const styles = StyleSheet.create({
     Container: {
-        // flex: 1,
         minHeight: '100%',
         borderTopRightRadius: 50,
         borderTopLeftRadius: 50,

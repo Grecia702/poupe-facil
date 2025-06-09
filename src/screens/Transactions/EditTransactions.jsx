@@ -153,7 +153,7 @@ const EditTransactions = () => {
 
                 />
             )}
-            <Text style={{ color: isDarkMode ? '#DDD' : "#333" }}>Categorias</Text>
+            <Text style={{ fontSize: 16, fontWeight: 500, color: isDarkMode ? '#DDD' : "#333" }}>Categorias</Text>
             <View style={[styles.buttonInput, { backgroundColor: isDarkMode ? '#222' : '#fff', borderColor: isDarkMode ? '#333' : '#ccc' }]}>
                 <TouchableOpacity style={styles.selector} onPress={() => setVisible(prev => ({ ...prev, categoria: true }))}>
                     <View style={styles.iconWrapper}>
@@ -195,7 +195,7 @@ const EditTransactions = () => {
                 </Modal>
             </View>
             <View style={styles.selectorRow}>
-                <Text style={{ color: isDarkMode ? '#DDD' : "#333" }}>Tipo</Text>
+                <Text style={{ fontSize: 16, fontWeight: 500, color: isDarkMode ? '#DDD' : "#333" }}>Tipo</Text>
                 <TouchableOpacity
                     style={[styles.buttonInput, { backgroundColor: isDarkMode ? '#222' : '#fff', borderColor: isDarkMode ? '#333' : '#ccc' }]}
                     onPress={() => setVisible(prev => ({ ...prev, type: true }))}
@@ -237,7 +237,7 @@ const EditTransactions = () => {
             </View>
 
             <View style={styles.selectorRow}>
-                <Text style={{ color: isDarkMode ? '#DDD' : "#333" }}>Natureza</Text>
+                <Text style={{ fontSize: 16, fontWeight: 500, color: isDarkMode ? '#DDD' : "#333" }}>Natureza</Text>
                 <TouchableOpacity
                     style={[styles.buttonInput, { backgroundColor: isDarkMode ? '#222' : '#fff', borderColor: isDarkMode ? '#333' : '#ccc' }]}
                     onPress={() => setVisible(prev => ({ ...prev, natureza: true }))}
@@ -282,7 +282,7 @@ const EditTransactions = () => {
                 (
                     <>
                         <View style={styles.selectorRow}>
-                            <Text style={{ width: 60, color: isDarkMode ? '#DDD' : "#333" }}>
+                            <Text style={{ fontSize: 16, fontWeight: 500, width: 60, color: isDarkMode ? '#DDD' : "#333" }}>
                                 Período
                             </Text>
                             <>
@@ -329,7 +329,7 @@ const EditTransactions = () => {
                         </View>
 
                         <View style={styles.switch}>
-                            <Text style={{ color: isDarkMode ? "#EEE" : "#222" }}>
+                            <Text style={{ fontSize: 16, fontWeight: 500, color: isDarkMode ? "#EEE" : "#222" }}>
                                 Recorrente
                             </Text>
                             <Switch

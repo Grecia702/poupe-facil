@@ -72,7 +72,7 @@ export default function DrawerRoutes() {
                         drawerLabel: 'Contas',
                     }}
                 />
-                <Drawer.Screen
+                {/* <Drawer.Screen
                     name="Cartões de Crédito"
                     component={CreditCards}
                     options={{
@@ -87,7 +87,7 @@ export default function DrawerRoutes() {
                         drawerIcon: ({ color, size }) => <MaterialIcons name="account-balance-wallet" size={size} color={color} />,
                         drawerLabel: 'Orçamento',
                     }}
-                />
+                /> */}
                 <Drawer.Screen
                     name="Metas"
                     component={GoalsTabsRoutes}
@@ -132,7 +132,7 @@ export default function DrawerRoutes() {
                         headerShown: true
                     }}
                 />
-                <Drawer.Screen
+                {/* <Drawer.Screen
                     name="Configurações"
                     component={Settings}
                     options={{
@@ -140,7 +140,7 @@ export default function DrawerRoutes() {
                         drawerLabel: 'Configurações',
                         headerShown: false
                     }}
-                />
+                /> */}
                 <Drawer.Screen
                     name="Logout"
                     options={{
