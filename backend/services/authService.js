@@ -24,7 +24,7 @@ const signupService = async (query) => {
 
     const hashPassword = await bcrypt.hash(password, saltRounds)
     const { result } = await authModel.createUser(name, email, hashPassword)
-    await accountModel.CreateAccount(result.id, 'Conta corrente', 0, 'Conta corrente', 'account-balance', null)
+    await accountModel.CreateAccount(result.id, 'Conta corrente', 0, 'Conta corrente', 'account-balance', null, true)
 }
 
 const loginService = async (query, agent, userIp) => {

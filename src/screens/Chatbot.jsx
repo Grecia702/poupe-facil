@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import api from '@context/axiosInstance';
 import { View, TextInput, Text, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { colorContext } from '@context/colorScheme'
 
@@ -9,9 +10,16 @@ const Chatbot = () => {
     const [messages, setMessages] = useState([]);
     const scrollViewRef = useRef(null);
     const { isDarkMode } = useContext(colorContext)
+    const inputRef = useRef(null)
     const [isTyping, setIsTyping] = useState(false)
     useEffect(() => {
-        const botReply = { content: 'Olá, sou seu assistente virtual, como posso ajudar?', role: 'assistant' };
+        const botReply = {
+            content: `Olá! Sou seu assistente virtual e estou aqui pra te ajudar a cuidar das suas finanças.\n
+Veja o que eu posso fazer por você:
+            \n1- Criar novas transações - é só digitar algo como: "ifood 50 hoje" ou "Conta de luz 500 ontem"
+            \n2- Mostrar seus gastos - por exemplo: "Quanto gastei na última semana?"
+            \n3- Responder dúvidas gerais - tipo: "Como calculo juros simples?"`, role: 'assistant'
+        };
         setMessages([botReply]);
     }, []);
 
@@ -20,6 +28,13 @@ const Chatbot = () => {
             scrollViewRef.current?.scrollToEnd({ animated: true });
         }
     }, [messages, isTyping]);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            // Quando a tela ganhar foco, foca o input
+            inputRef.current?.focus();
+        }, [])
+    );
 
     const sendMessage = async () => {
         if (message.message_user.trim() === '') return;
@@ -40,6 +55,8 @@ const Chatbot = () => {
             setIsTyping(false);
         }
     }
+
+    console.log(messages)
 
     return (
         <KeyboardAvoidingView
@@ -73,7 +90,8 @@ const Chatbot = () => {
                     placeholder="Digite sua mensagem..."
                     placeholderTextColor={isDarkMode ? '#aaa' : '#222'}
                     value={message.message_user}
-                    autoFocus={true}
+                    // autoFocus={true}
+                    ref={inputRef}
                     onSubmitEditing={sendMessage}
                     returnKeyType="send"
                     onChangeText={(text) => setMessage({ message_user: text })}
@@ -116,7 +134,7 @@ const styles = StyleSheet.create({
         borderColor: '#aaa',
     },
     messageBase: {
-        maxWidth: '70%',
+        maxWidth: '80%',
         minHeight: 48,
         padding: 12,
         borderRadius: 15,
@@ -132,5 +150,6 @@ const styles = StyleSheet.create({
     messageText: {
         fontSize: 16,
         color: '#fff',
+        textAlign: 'justify'
     },
 });

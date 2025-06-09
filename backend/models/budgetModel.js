@@ -92,7 +92,11 @@ const deleteBudget = async (budgetId, userId) => {
 
 const checkValidDate = async (date, userId) => {
   const query = `
-        SELECT * FROM planejamento
+        SELECT 
+        id,
+        quantia_limite,
+        limites_categorias
+        FROM planejamento
         WHERE $1::timestamp
         BETWEEN data_inicio 
         AND data_termino

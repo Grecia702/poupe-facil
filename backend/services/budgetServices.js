@@ -68,7 +68,7 @@ const getBudgetByIdService = async (userId, budgetId) => {
 const getActiveService = async (userId) => {
     const { result, exists } = await budgetModel.getActiveBudget(userId)
     if (!exists) {
-        return []
+        return undefined
     }
     const budget = await budgetModel.getBudgetById(result.id, userId)
 

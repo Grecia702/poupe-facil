@@ -1,13 +1,13 @@
 require('dotenv').config();
 const pool = require('../db.js')
 
-const CreateAccount = async (id_usuario, nome_conta, saldo, tipo_conta, icone, desc_conta) => {
+const CreateAccount = async (id_usuario, nome_conta, saldo, tipo_conta, icone, desc_conta, is_primary) => {
     const query = `
     INSERT INTO contasBancarias 
-    (id_usuario , nome_conta, saldo, tipo_conta, icone, desc_conta) 
-    VALUES ($1, $2, $3, $4, $5, $6)`;
+    (id_usuario , nome_conta, saldo, tipo_conta, icone, desc_conta, is_primary) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7)`;
 
-    await pool.query(query, [id_usuario, nome_conta, saldo, tipo_conta, icone, desc_conta]);
+    await pool.query(query, [id_usuario, nome_conta, saldo, tipo_conta, icone, desc_conta, is_primary]);
 }
 
 const FindAccountByID = async (accountId, userId) => {
