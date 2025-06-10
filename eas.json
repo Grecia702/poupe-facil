@@ -14,7 +14,7 @@
         "buildType": "apk"
       },
       "env": {
-        "API_URL": "http://192.168.100.211:3000/api"
+        "API_URL": "https://projeto-tcc-1xhk.onrender.com/api"
       }
     },
     "production": {
@@ -22,7 +22,7 @@
         "buildType": "apk"
       },
       "env": {
-        "API_URL": "http://192.168.100.211:3000/api"
+        "API_URL": "https://projeto-tcc-1xhk.onrender.com/api"
       },
       "autoIncrement": true
     }
