@@ -44,7 +44,7 @@ const SignupScreen = () => {
     const showNotif = () => {
         toast.show('Usuário cadastrado com sucesso', {
             type: 'success',
-            duration: 1500,
+            duration: 3000,
         });
         navigation.navigate('login');
     }
@@ -111,9 +111,19 @@ const SignupScreen = () => {
                     onChangeText={(text) => setCredentials({ ...credentials, confirmPassword: text })}
                 />
 
-                <Pressable style={styles.button} onPress={handleSignUp}>
+                <Pressable
+                    onPress={handleSignUp}
+                    style={({ pressed }) => [
+                        styles.button,
+                        {
+                            opacity: pressed ? 0.7 : 1,
+                            transform: [{ scale: pressed ? 0.98 : 1 }],
+                        },
+                    ]}
+                >
                     <Text style={styles.buttonText}>Cadastrar</Text>
                 </Pressable>
+
                 {/* <Text style={styles.message}>{message}</Text> */}
                 <Pressable style={{ alignSelf: "center" }} onPress={() => {
                     navigation.navigate('login');
