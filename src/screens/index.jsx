@@ -97,7 +97,7 @@ export default function HomeScreen() {
             Color={isDarkMode ? "#2e2e2e" : "#fff"}
             Title={"Orçamento"}
             TextColor={isDarkMode ? "#e9e9e9" : "#3a3a3a"}
-            onPressDetails={() => navigation.navigate('CreateBudget')}
+            hide
           >
             {budgetData ? (
               <>

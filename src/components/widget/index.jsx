@@ -3,23 +3,25 @@ import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import { colorContext } from '@context/colorScheme';
 import { useContext } from 'react'
 
-export default function WidgetTeste({ Color, Title, TextColor, children, align, onPressDetails }) {
+export default function WidgetTeste({ Color, Title, TextColor, children, align, onPressDetails, hide }) {
     const { isDarkMode } = useContext(colorContext)
     return (
         <View style={[styles.widget, { backgroundColor: isDarkMode ? '#292929' : '#f7f7f8' }]}>
             <View style={styles.title}>
                 <SectionTitle color={TextColor}>{Title}</SectionTitle>
-                <TouchableOpacity
-                    style={{ alignSelf: 'flex-end' }}
-                    onPress={onPressDetails}
-                >
-                    <Text
-
-                        style={[styles.link, { color: isDarkMode ? '#3d91d6' : '#1675c2' }]}
+                {!hide && (
+                    <TouchableOpacity
+                        style={{ alignSelf: 'flex-end' }}
+                        onPress={onPressDetails}
                     >
-                        Ver mais
-                    </Text>
-                </TouchableOpacity>
+                        <Text
+
+                            style={[styles.link, { color: isDarkMode ? '#3d91d6' : '#1675c2' }]}
+                        >
+                            Ver mais
+                        </Text>
+                    </TouchableOpacity>
+                )}
             </View>
 
             <View style={{ alignItems: align }} >
