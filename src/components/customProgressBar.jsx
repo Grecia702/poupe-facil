@@ -4,10 +4,9 @@ import { Animated, View } from 'react-native';
 export default function CustomProgressBar({
   progress = 0,
   height = 8,
-  width = 200,
   color = '#007AFF',
   unfilledColor = '#eee',
-  borderRadius = 999, // máximo arredondamento
+  borderRadius = 999,
   borderColor,
   borderWidth,
   duration = 500,
@@ -25,14 +24,13 @@ export default function CustomProgressBar({
 
   const animatedWidth = progressAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, width],
+    outputRange: ['0%', '100%'],
   });
 
   return (
     <View
       style={[
         {
-          width,
           height,
           backgroundColor: unfilledColor,
           borderColor,
