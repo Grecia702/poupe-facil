@@ -3,7 +3,7 @@ import { colorContext } from '@context/colorScheme';
 import { useContext } from 'react'
 import { useNavigation } from '@react-navigation/native';
 
-const CreateItem = ({ text, buttonText, screen, icon }) => {
+const CreateItem = ({ text, buttonText, screen, icon, onPress }) => {
     const { isDarkMode } = useContext(colorContext)
     const navigation = useNavigation();
     return (
@@ -12,7 +12,10 @@ const CreateItem = ({ text, buttonText, screen, icon }) => {
             <Text style={[styles.text, { color: isDarkMode ? '#DDD' : 'black', }]}>
                 {text}
             </Text>
-            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate(screen)}>
+            <TouchableOpacity
+                style={styles.button}
+                onPress={() => onPress ? onPress() : navigation.navigate(screen)}
+            >
                 <Text style={styles.buttonText}>{buttonText}</Text>
             </TouchableOpacity>
         </View>

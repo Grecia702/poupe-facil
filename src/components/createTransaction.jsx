@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
 
     modal: {
         borderRadius: 15,
-        marginTop: 450,
+        // marginTop: 450,
         backgroundColor: '#fff',
         elevation: 10,
         shadowColor: '#000',
