@@ -46,9 +46,7 @@ const SignupScreen = () => {
             type: 'success',
             duration: 1500,
         });
-        setTimeout(() => {
-            navigation.navigate('login');
-        }, 500);
+        navigation.navigate('login');
     }
 
     const showError = (text) => {
