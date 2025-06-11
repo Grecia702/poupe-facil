@@ -69,19 +69,14 @@ export default function Account({ name, value, icon, color, textColor, isVisible
                     <View style={{
                         position: 'absolute',
                         top: dropdownPosition.y - 25,
-                        left: dropdownPosition.x - 190,
+                        left: isPrimary ? dropdownPosition.x - 70 : dropdownPosition.x - 190,
                         backgroundColor: isDarkMode ? '#414141' : '#ebeaea',
                         borderRadius: 2,
-                        paddingVertical: 10,
+                        paddingVertical: 5,
                         elevation: 10,
                         zIndex: 99
                     }}>
-                        <TouchableOpacity
-                            onPress={() => { handleSetPrimary(id); handleClose(); }}
-                            style={{ paddingVertical: 15, paddingHorizontal: 15 }}
-                        >
-                            <Text style={{ fontSize: 16, color: isDarkMode ? '#EEE' : '#222', textAlign: 'left' }}>Marcar como principal</Text>
-                        </TouchableOpacity>
+
                         <TouchableOpacity
                             onPress={() => {
                                 handleClose();
@@ -91,12 +86,23 @@ export default function Account({ name, value, icon, color, textColor, isVisible
                         >
                             <Text style={{ fontSize: 16, color: isDarkMode ? '#EEE' : '#222', textAlign: 'left' }}>Editar</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => { setIsOpen(true); handleClose(); }}
-                            style={{ paddingVertical: 15, paddingHorizontal: 15 }}
-                        >
-                            <Text style={{ fontSize: 16, color: isDarkMode ? '#EEE' : '#222', textAlign: 'left' }}>Apagar</Text>
-                        </TouchableOpacity>
+                        {!isPrimary && (
+                            <>
+                                <TouchableOpacity
+                                    onPress={() => { handleSetPrimary(id); handleClose(); }}
+                                    style={{ paddingVertical: 15, paddingHorizontal: 15 }}
+                                >
+                                    <Text style={{ fontSize: 16, color: isDarkMode ? '#EEE' : '#222', textAlign: 'left' }}>Marcar como principal</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    onPress={() => { setIsOpen(true); handleClose(); }}
+                                    style={{ paddingVertical: 15, paddingHorizontal: 15 }}
+                                >
+                                    <Text style={{ fontSize: 16, color: isDarkMode ? '#EEE' : '#222', textAlign: 'left' }}>Apagar</Text>
+                                </TouchableOpacity>
+                            </>
+                        )}
                         <DangerModal
                             open={isOpen}
                             setRefreshing={setRefreshing}
