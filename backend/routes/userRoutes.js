@@ -3,16 +3,7 @@ const router = express.Router();
 const userController = require("../controller/userController");
 const authMiddleware = require('../middleware/authMiddleware');
 const multer = require('multer');
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/profile-picture');
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + '.png');
-    }
-});
-const upload = multer({ storage: storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.delete("/", authMiddleware, userController.deleteAccount)
 router.get("/", authMiddleware, userController.listProfile)
