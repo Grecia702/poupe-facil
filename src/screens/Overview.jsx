@@ -68,6 +68,26 @@ const Overview = () => {
                             </Text>
                         </View>
                     </View>
+                    {reportData?.limite_categorias && (
+                        <>
+                            <Text style={{ fontSize: 18, fontWeight: 500, marginBottom: 16, marginTop: 16 }}>
+                                Orçamento por categorias:
+                            </Text>
+                            {Object.entries(reportData.limite_categorias).map(([categoria, valor]) => (
+                                <View
+                                    key={categoria}
+                                    style={{
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
+                                        marginBottom: 12
+                                    }}
+                                >
+                                    <Text style={styles.text}>{categoria}</Text>
+                                    <Text style={styles.text}>{valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Text>
+                                </View>
+                            ))}
+                        </>
+                    )}
                     <View style={{ alignSelf: 'center' }}>
                         <VictoryPie
                             data={data}
