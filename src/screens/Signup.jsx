@@ -139,7 +139,7 @@ export default SignupScreen
 
 const styles = StyleSheet.create({
     safeArea: {
-        backgroundColor: "#e0ebf3",
+        backgroundColor: '#e6eeeb',
         flex: 1,
         flexDirection: "row",
         justifyContent: "center",
@@ -181,7 +181,8 @@ const styles = StyleSheet.create({
         marginTop: 20,
         backgroundColor: '#3a9e58',
         borderWidth: 1,
-        borderRadius: 10,
+        borderRadius: 35,
+        marginBottom: 8,
         borderColor: "black"
 
     },
