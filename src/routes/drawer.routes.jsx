@@ -1,7 +1,7 @@
-import { createDrawerNavigator } from '@react-navigation/drawer'
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer'
 import { Feather, MaterialIcons, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons'
 import React, { useContext, useState } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, View, Text, Image, StyleSheet } from 'react-native';
 import { colorContext } from '@context/colorScheme';
 import TabRoutes from './tab.router';
 import Transactions from '@screens/Transactions/Transactions'
@@ -15,18 +15,57 @@ import Settings from '@screens/Settings'
 import Profile from '@screens/Profile';
 import TopTabRoutes from './top_tabs.routes';
 import GoalsTabsRoutes from './goals_tabs.routes';
+import DefaultIcon from '@assets/user-icon.png'
+import { useProfile } from '@hooks/useProfile'
 
 const Drawer = createDrawerNavigator();
+
+const CustomDrawerContent = (props) => {
+    const { isDarkMode, toggleDarkMode } = useContext(colorContext)
+    const { data } = useProfile()
+    let icon;
+    if (data?.picture_path) {
+        icon = { uri: data.picture_path };
+    } else {
+        icon = DefaultIcon;
+    }
+
+    return (
+        <DrawerContentScrollView {...props}>
+            <View style={{ alignSelf: 'center' }}>
+                <View style={[styles.image]}>
+                    <Image
+                        source={icon}
+                        style={{ width: 128, height: 128, borderRadius: 60 }}
+                        resizeMode="contain"
+                    />
+                </View>
+                <View style={[styles.nameContainer, { backgroundColor: isDarkMode ? '#505050' : '#b4ccba' }]}>
+                    <Text
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        style={{ fontSize: 20, fontWeight: 600, color: isDarkMode ? '#cccc' : '#0d521e' }}
+                    >
+                        {data?.nome}
+                    </Text>
+                </View>
+            </View>
+            <DrawerItemList {...props} />
+        </DrawerContentScrollView>
+    );
+}
+
 export default function DrawerRoutes() {
     const { isDarkMode, toggleDarkMode } = useContext(colorContext)
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     return (
         <>
             <Drawer.Navigator
-
+                drawerContent={(props) => <CustomDrawerContent {...props} />}
                 screenOptions={{
                     drawerStyle: {
-                        backgroundColor: isDarkMode ? "#202020" : "#dde6e9"
+                        backgroundColor: isDarkMode ? "#202020" : "#dde6e9",
+                        width: 300,
                     },
                     drawerLabelStyle: {
                         color: isDarkMode ? "#888787" : "#1f2122",
@@ -165,3 +204,21 @@ export default function DrawerRoutes() {
         </>
     )
 }
+
+const styles = StyleSheet.create({
+    image: {
+        borderRadius: 128,
+        marginVertical: 12
+    },
+    nameContainer: {
+        alignSelf: 'center',
+        paddingHorizontal: 25,
+        paddingVertical: 5,
+        borderRadius: 5,
+        marginTop: 6,
+        marginBottom: 24,
+        flexWrap: 'wrap',
+        maxWidth: 250,
+        overflow: 'hidden',
+    }
+})
