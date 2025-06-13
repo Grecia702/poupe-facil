@@ -25,7 +25,6 @@ export const InfoView = styled.View`
 `;
 
 export const TextContainer = styled.View`
-    width: 200px;
     flex-direction: row;
     align-items: center;
     gap: 8px
