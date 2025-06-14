@@ -2,6 +2,7 @@ const fetch = require('node-fetch');
 const transactionModel = require('../models/transactionModel');
 const AccountModel = require('../models/accountModel');
 const budgetModel = require('../models/budgetModel')
+const { format } = require('date-fns')
 
 const { getActiveService } = require('../services/budgetServices')
 
@@ -14,11 +15,7 @@ const promptBasic = async (req, res) => {
         AccountModel.listAccountsPrimary(userId),
         getActiveService(userId),
     ]);
-
     const { result } = accountData;
-    console.log(budgetData)
-
-    // console.log(budgetData.id)
 
     try {
         const structuredResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -92,13 +89,9 @@ A data atual para uso padrão é ${date}.
 
         const structuredData = await structuredResponse.json();
         const jsonResponse = structuredData.choices[0].message.content;
-
-        // console.log(jsonResponse)
-
         let parsed;
         try {
             parsed = JSON.parse(jsonResponse);
-            // console.log(parsed)
         } catch {
             return res.status(400).json({ error: 'Resposta da IA não é JSON válido.' });
         }
@@ -161,57 +154,39 @@ A data atual para uso padrão é ${date}.
 
             const valorTransacoes = queryResult.rows.reduce((acc, row) => acc + parseFloat(row.valor), 0);
             const valorRestante = budgetData.limite - (budgetData.quantia_gasta + valorTransacoes);
-            const valorRestanteFormatado = valorRestante.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-            const baseContent = `A data atual é ${date} e você é um assistente financeiro de um aplicativo de controle de finanças.
-Responda no formato:
-Transação adicionada
-
-Nome
-📌 Categoria
-Valor (em localestring pra reais)
-Tipo
-Natureza
-
-Data (padrão dd-MM-YYYY HH:mm)
-`;
-
-            const budgetContent = budgetData && budgetData.id !== undefined
-                ? `
-
-Valor restante no orçamento: ${(valorRestanteFormatado)}`
-                : '';
-
-            const systemContent = baseContent + budgetContent;
-
-            const formatResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${process.env.API_KEY_OPENAI}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    model: 'gpt-3.5-turbo',
-                    messages: [
-                        {
-                            role: 'system',
-                            content: systemContent
-                        },
-                        { role: 'user', content: `${JSON.stringify(queryResult.rows)}, budget_id:  ${budgetData ? budgetData.id : 'undefined'}` }
-                    ],
-                    max_tokens: 180,
-                }),
+            const valorRestanteFormatado = valorRestante.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
             });
 
-            const formatData = await formatResponse.json();
-            const friendlyMessage = formatData.choices[0].message.content;
+            console.log(queryResult.rows.length)
 
-            console.log(friendlyMessage)
+            const friendlyMessage = queryResult.rows.map((row) => {
+                const valor = parseFloat(row.valor).toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                });
+                const dataFormatada = format(new Date(row.data_transacao), 'dd/MM/yyyy');
+
+                return `
+📌 ${row.categoria}
+Nome: ${row.nome_transacao}
+Valor: ${valor}
+Tipo: ${row.tipo}
+Natureza: ${row.natureza}
+Data: ${dataFormatada}
+`.trim();
+            }).join('\n\n-------------------\n\n');
+
+            let baseContent = `${queryResult.rows.length > 1 ? 'Transações adicionadas' : 'Transação adicionada'}:\n\n${friendlyMessage}`;
+            if (budgetData && budgetData.id !== undefined) {
+                baseContent += `\n\n💰 Valor restante no orçamento:\n       ${valorRestanteFormatado}`;
+            }
 
             return res.json({
                 command: parsed.command,
                 rawData: queryResult.rows,
-                message: friendlyMessage,
+                message: baseContent,
             });
         }
 
