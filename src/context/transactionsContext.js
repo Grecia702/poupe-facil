@@ -39,6 +39,8 @@ export const TransactionProvider = ({ children }) => {
         const response = await api.get('/profile/transaction', {
             params: {
                 ...(filters.natureza && { natureza: filters.natureza }),
+                ...(filters.categoria && { categoria: filters.categoria }),
+                ...(filters.data_transacao && { data_transacao: filters.data_transacao }),
                 tipo: filters.tipo,
                 orderBy: filters.orderBy,
                 orderDirection: filters.orderDirection,

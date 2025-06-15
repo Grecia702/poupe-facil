@@ -20,7 +20,7 @@ const transactionQuerySchema = z.object({
     frequencia_recorrencia: z.string().optional(),
     proxima_ocorrencia: z.string().optional(),
     budget_id: z.number().int().optional(),
-    data_transacao: z.string().datetime().optional(),
+    data_transacao: z.string().optional(),
     orderBy: z.enum(['valor', 'data_transacao', 'tipo', 'natureza', 'transaction_id']).default('transaction_id'),
     orderDirection: z.enum(['ASC', 'DESC']).default('DESC'),
     limit: z.coerce.number().int().min(1).max(100).default(15),

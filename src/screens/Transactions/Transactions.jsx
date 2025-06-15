@@ -7,6 +7,7 @@ import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/nativ
 import { useTransactionAuth } from '@context/transactionsContext';
 import CustomLoader from '@components/contentLoader'
 import CreateTransaction from '@components/createTransaction'
+import FiltersTransactions from '@components/filtersTransactions';
 
 // TODO:  refatorar e otimizar
 const Transactions = () => {
@@ -14,16 +15,18 @@ const Transactions = () => {
     const { params } = route.params || '';
     const tipo = params;
     const { height, width } = useWindowDimensions();
-    const [filters, setFilters] = useState({ tipo: tipo, orderBy: 'transaction_id', orderDirection: 'DESC' })
+    const [filters, setFilters] = useState({ tipo: tipo, categoria: '', data_transacao: '', orderBy: 'transaction_id', orderDirection: 'DESC' })
     const { useFilteredTransacoes } = useTransactionAuth();
     const serializedFilters = `${filters.tipo}-${filters.orderBy}-${filters.orderDirection}`;
     const { data, refetch, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } = useFilteredTransacoes(serializedFilters, filters);
     const [showTransactionModal, setShowTransactionModal] = useState(false);
     const sortOptions = [
-        { label: 'Data (Mais recentes)', value: 'date_desc' },
-        { label: 'Data (Mais antigos)', value: 'date_asc' },
-        { label: 'Valor (Maior primeiro)', value: 'value_desc' },
-        { label: 'Valor (Menor primeiro)', value: 'value_asc' },
+        { label: 'Data de Ocorrência ↓', value: 'date_desc' },
+        { label: 'Data de Ocorrência ↑', value: 'date_asc' },
+        { label: 'Data de Criação ↓', value: 'id_desc' },
+        { label: 'Data de Criação ↑', value: 'id_asc' },
+        { label: 'Valor ↓', value: 'value_desc' },
+        { label: 'Valor ↑', value: 'value_asc' },
     ];
     const filterOptions = [
         { label: 'Valor', value: 'value' },
@@ -31,18 +34,17 @@ const Transactions = () => {
         { label: 'Categorias', value: 'categories' },
     ];
     const [selectedFilterOption, setSelectedFilterOption] = useState(null);
-    const categoriasDisponiveis = [
-        { label: 'Alimentação', value: 'Alimentacao' },
-        { label: 'Transporte', value: 'Transporte' },
-        { label: 'Saúde', value: 'Saude' },
-        { label: 'Educação', value: 'Educacao' },
-    ];
-    const handleCategoriaFiltro = (categoria) => {
-        setFiltrosChips(prev => [...prev, categoria.label]);
-        setFilters(prev => ({ ...prev, categoria: categoria.value }));
+
+    const handleFilter = ({ label, value, type, queryLabel }) => {
+        setFiltrosChips(prev =>
+            [...prev.filter(f => f.type !== type), { label, type }]
+        );
+        setFilters(prev => ({ ...prev, [queryLabel]: value }));
         setSelectedFilterOption(null);
         setIsOpen({ sort: false, filters: false });
     };
+
+    console.log('filtro:', filters.data_transacao)
     const [refreshing, setRefreshing] = useState(false);
     const [dropdownVisibleId, setDropdownVisibleId] = useState(null);
     const [selected, setSelected] = useState(sortOptions[0]);
@@ -152,136 +154,117 @@ const Transactions = () => {
         );
     }
 
-    const orderTransactions = (order) => {
-        setSelected(order);
-        setIsOpen(false);
-        switch (order.value) {
-            case "date_asc":
-                setFilters(item => ({ ...item, orderBy: 'data_transacao', orderDirection: 'ASC' }))
-                break;
-            case "date_desc":
-                setFilters(item => ({ ...item, orderBy: 'data_transacao', orderDirection: 'DESC' }))
-                break;
-            case "value_asc":
-                setFilters(item => ({ ...item, orderBy: 'valor', orderDirection: 'ASC' }))
-                break;
-            case "value_desc":
-                setFilters(item => ({ ...item, orderBy: 'valor', orderDirection: 'DESC' }))
-                break;
+    const removeFiltro = (filtro) => {
+        setFiltrosChips(prev => prev.filter(item => item !== filtro));
+        setFilters(prev => {
+            const newFilters = { ...prev, data_transacao: '' };
+            delete newFilters.categoria;
+            return newFilters;
+        });
+    };
 
+    const resetFiltros = (order = null) => {
+        if (order) {
+            setSelected(order);
+            switch (order.value) {
+                case "date_asc":
+                    setFilters(prev => ({ ...prev, orderBy: 'data_transacao', orderDirection: 'ASC' }));
+                    break;
+                case "date_desc":
+                    setFilters(prev => ({ ...prev, orderBy: 'data_transacao', orderDirection: 'DESC' }));
+                    break;
+                case "value_asc":
+                    setFilters(prev => ({ ...prev, orderBy: 'valor', orderDirection: 'ASC' }));
+                    break;
+                case "value_desc":
+                    setFilters(prev => ({ ...prev, orderBy: 'valor', orderDirection: 'DESC' }));
+                    break;
+                case "id_desc":
+                    setFilters(prev => ({ ...prev, orderBy: 'transaction_id', orderDirection: 'DESC' }));
+                    break;
+                case "id_asc":
+                    setFilters(prev => ({ ...prev, orderBy: 'transaction_id', orderDirection: 'ASC' }));
+                    break;
+            }
+        } else {
+            setFiltrosChips([]);
+            setFilters({ tipo, orderBy: 'transaction_id', orderDirection: 'DESC' });
+            setSelectedFilterOption(null);
         }
+    };
+
+    const clearFilters = () => {
+        setFiltrosChips([]);
+        setFilters({ tipo, orderBy: 'transaction_id', orderDirection: 'DESC' });
+        setSelectedFilterOption(null);
     }
 
     return (
-        <>
-            {isOpen.sort && (
-                <View style={[styles.dropdown, { backgroundColor: isDarkMode ? '#333' : '#fff', }]}>
-                    {sortOptions.map((option, index) => (
-                        <TouchableOpacity key={index} style={styles.item} onPress={() => orderTransactions(option)}>
-                            <Text style={{ color: isDarkMode ? '#fff' : '#333' }}>{option.label}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            )}
-            {isOpen.filters && (
-                <View style={[styles.dropdown, { backgroundColor: isDarkMode ? '#333' : '#fff', }]}>
-                    {filterOptions.map((option, index) => (
-                        <TouchableOpacity
-                            key={index}
-                            style={styles.item}
-                            onPress={() => {
-                                if (option.value === 'categories') {
-                                    setSelectedFilterOption('categories');
-                                } else {
-                                    orderTransactions(option);
-                                }
-                            }}>
-                            <Text style={{ color: isDarkMode ? '#fff' : '#333' }}>{option.label}</Text>
-                        </TouchableOpacity>
-                    ))}
+        <View style={{ backgroundColor: isDarkMode ? "#2e2e2e" : '#22C55E' }}>
+            <View style={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}>
 
-                    {selectedFilterOption === 'categories' && (
-                        <View style={{ borderTopWidth: 1, borderColor: '#ccc' }}>
-                            {categoriasDisponiveis.map((categoria, idx) => (
-                                <TouchableOpacity
-                                    key={idx}
-                                    style={[styles.item, { paddingLeft: 20 }]}
-                                    onPress={() => handleCategoriaFiltro(categoria)}>
-                                    <Text style={{ color: isDarkMode ? '#fff' : '#333' }}>{categoria.label}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                    )}
-
-                </View>
-            )}
-            <FlatList
-                contentContainerStyle={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}
-                data={allData}
-                keyExtractor={(item) => item.transaction_id.toString()}
-                renderItem={renderItem}
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                onEndReached={handleLoadMore}
-                onEndReachedThreshold={0.8}
-                initialNumToRender={15}
-                windowSize={5}
-                maxToRenderPerBatch={10}
-                updateCellsBatchingPeriod={60}
-                ListFooterComponent={() => (
-                    isFetchingNextPage ? (
-                        <View>
-                            <ActivityIndicator size="large" color={isDarkMode ? "#BBB" : "#122577"} />
-                        </View>
-                    ) : null
+                {(isOpen.sort || isOpen.filters) && (
+                    <Pressable
+                        onPress={() => setIsOpen({ sort: false, filters: false })}
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            zIndex: 10,
+                        }}
+                    />
                 )}
-                style={{ backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E' }}
-                ListHeaderComponent={
-                    <>
-                        <View style={[styles.ListHeader, { position: 'relative' }]}>
-                            <View style={styles.dropdownWrapper}>
-                                <TouchableOpacity onPressIn={() => toggleDropdown('filters')} style={
-                                    [styles.optionsButton, { borderColor: isDarkMode ? "#DDD" : "#111", }]
-                                }>
-                                    <MaterialIcons name="filter-alt" size={24} color={isDarkMode ? "#DDD" : "#111"} />
-                                </TouchableOpacity>
-                                <TouchableOpacity onPressIn={() => toggleDropdown('sort')} style={
-                                    [styles.optionsButton, { borderColor: isDarkMode ? "#DDD" : "#111", }]
-                                }>
-                                    <MaterialIcons name="sort" size={24} color={isDarkMode ? "#DDD" : "#111"} />
-                                </TouchableOpacity>
-                            </View>
-                            {
-                                filtrosChips.length > 0 ?
-                                    <>
-                                        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-                                            <Text style={{ fontSize: 16, alignSelf: 'flex-end', fontWeight: 'bold', color: isDarkMode ? "#EEE" : '#08380e' }}>Filtros Ativos: </Text>
-                                            {filtrosChips.map((item, index) =>
-                                                <TouchableOpacity key={index} style={{ backgroundColor: "#508bc5", padding: 5, }} onPress={() => removeFiltro(item)}>
-                                                    <Text style={{ color: "white", fontSize: 14 }}>{item}</Text>
-                                                </TouchableOpacity>
-                                            )}
-                                        </View>
-                                        <TouchableOpacity onPress={() => { setFiltrosChips([]); loadData() }} style={{ backgroundColor: '#c44343', alignSelf: 'flex-start', padding: 10, borderRadius: 5 }} >
-                                            <Text style={{ color: "white", fontSize: 14, fontWeight: 500 }}>Resetar Filtros!</Text>
-                                        </TouchableOpacity>
-                                    </>
-                                    : null
-                            }
-                        </View>
-                    </>
-                }
-            />
-            <TouchableOpacity onPress={() => setShowTransactionModal(true)}>
-                <MaterialIcons name="add-circle" size={64} color={"#1b90df"}
-                    style={{ position: 'absolute', bottom: 10, right: 10 }}
+
+                <FiltersTransactions
+                    isDarkMode={isDarkMode}
+                    isOpen={isOpen}
+                    toggleDropdown={toggleDropdown}
+                    sortOptions={sortOptions}
+                    filterOptions={filterOptions}
+                    selectedFilterOption={selectedFilterOption}
+                    setSelectedFilterOption={setSelectedFilterOption}
+                    handleFilter={handleFilter}
+                    filtrosChips={filtrosChips}
+                    removeFiltro={removeFiltro}
+                    resetFiltros={resetFiltros}
+                    clearFilters={clearFilters}
                 />
-            </TouchableOpacity>
-            <CreateTransaction
-                isOpen={showTransactionModal}
-                setIsOpen={() => setShowTransactionModal(false)}
-            />
-        </>
+                <FlatList
+                    // contentContainerStyle={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}
+                    data={allData}
+                    keyExtractor={(item) => item.transaction_id.toString()}
+                    renderItem={renderItem}
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    onEndReached={handleLoadMore}
+                    onEndReachedThreshold={0.8}
+                    initialNumToRender={15}
+                    windowSize={5}
+                    maxToRenderPerBatch={10}
+                    updateCellsBatchingPeriod={60}
+                    ListFooterComponent={() => (
+                        isFetchingNextPage ? (
+                            <View>
+                                <ActivityIndicator size="large" color={isDarkMode ? "#BBB" : "#122577"} />
+                            </View>
+                        ) : null
+                    )}
+                // style={{ backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E' }}
+                >
+                </FlatList>
+                <TouchableOpacity onPress={() => setShowTransactionModal(true)}>
+                    <MaterialIcons name="add-circle" size={64} color={"#1b90df"}
+                        style={{ position: 'absolute', bottom: 10, right: 10 }}
+                    />
+                </TouchableOpacity>
+                <CreateTransaction
+                    isOpen={showTransactionModal}
+                    setIsOpen={() => setShowTransactionModal(false)}
+                />
+            </View>
+        </View>
     );
 }
 
@@ -297,41 +280,41 @@ const styles = StyleSheet.create({
         position: 'relative'
 
     },
-    ListHeader: {
-        flexDirection: 'column',
-        gap: 15,
-        marginBottom: 10,
-        position: 'relative'
-    },
-    dropdownWrapper: {
-        marginLeft: 20,
-        flexDirection: 'row',
-        alignSelf: 'flex-end',
-        gap: 5,
-    },
-    dropdown: {
-        position: 'absolute',
-        top: 70,
-        right: 20,
-        marginTop: 5,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        elevation: 5,
-        width: 200,
-        zIndex: 1,
-    },
-    item: {
-        padding: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
-    },
-    optionsButton: {
-        alignItems: 'center',
-        flexDirection: 'row',
-        padding: 5,
-        gap: 5,
-        borderWidth: 2,
-        borderRadius: 5
-    }
+    // ListHeader: {
+    //     flexDirection: 'column',
+    //     gap: 15,
+    //     marginBottom: 10,
+    //     position: 'relative'
+    // },
+    // dropdownWrapper: {
+    //     marginLeft: 20,
+    //     flexDirection: 'row',
+    //     alignSelf: 'flex-end',
+    //     gap: 5,
+    // },
+    // dropdown: {
+    //     position: 'absolute',
+    //     top: 70,
+    //     right: 20,
+    //     marginTop: 5,
+    //     borderWidth: 1,
+    //     borderColor: '#ccc',
+    //     borderRadius: 5,
+    //     elevation: 5,
+    //     width: 200,
+    //     zIndex: 1,
+    // },
+    // item: {
+    //     padding: 10,
+    //     borderBottomWidth: 1,
+    //     borderBottomColor: '#eee',
+    // },
+    // optionsButton: {
+    //     alignItems: 'center',
+    //     flexDirection: 'row',
+    //     padding: 5,
+    //     gap: 5,
+    //     borderWidth: 2,
+    //     borderRadius: 5
+    // }
 })

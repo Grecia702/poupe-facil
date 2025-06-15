@@ -87,11 +87,14 @@ const DeleteTransaction = async (userId, transactionId) => {
 }
 
 const ListTransactions = async (userId, queryParams) => {
-  const { tipo, natureza, limit, offset, orderBy, orderDirection } = queryParams
+  const { tipo, natureza, limit, offset, orderBy, orderDirection, categoria, data_transacao } = queryParams
   let orderParam = orderBy
   if (orderBy === 'valor') {
     orderParam = 'ABS(valor)'
   }
+  const data = data_transacao ? `${data_transacao} days` : null
+  console.log(data_transacao)
+
   const query = `
     SELECT 
     transaction_id,
@@ -109,11 +112,13 @@ const ListTransactions = async (userId, queryParams) => {
     WHERE user_id = $1
       AND ($2::text IS NULL OR tipo = $2::text)
       AND ($3::text IS NULL OR natureza = $3::text)
+      AND ($4::text IS NULL OR categoria = $4::text)
+      AND ($5::text IS NULL OR data_transacao >= CURRENT_DATE - $5::interval)
     ORDER BY ${orderParam} ${orderDirection}, transaction_id ASC
-    LIMIT $4
-    OFFSET $5
+    LIMIT $6
+    OFFSET $7
   `;
-  const { rows, rowCount } = await pool.query(query, [userId, tipo, natureza, limit, offset]);
+  const { rows, rowCount } = await pool.query(query, [userId, tipo, natureza, categoria, data, limit, offset]);
   return { rows, total: rowCount, firstResult: rows[0] };
 }
 
@@ -133,14 +138,17 @@ GROUP BY GROUPING SETS ((tipo), ())
 }
 
 const countTransactionsResult = async (userId, queryParams) => {
-  const { tipo, natureza } = queryParams
+  const { tipo, natureza, categoria, data_transacao } = queryParams
+  const data = data_transacao ? `${data_transacao} days` : null
   const query = `
     SELECT COUNT(*) FROM user_transactions 
     WHERE user_id = $1
       AND ($2::text IS NULL OR tipo = $2::text)
       AND ($3::text IS NULL OR natureza = $3::text)
+      AND ($4::text IS NULL OR categoria = $4::text)
+      AND ($5::text IS NULL OR data_transacao >= CURRENT_DATE - $5::interval)
     `;
-  const { rows } = await pool.query(query, [userId, tipo, natureza]);
+  const { rows } = await pool.query(query, [userId, tipo, natureza, categoria, data]);
   return parseInt(rows[0].count)
 }
 

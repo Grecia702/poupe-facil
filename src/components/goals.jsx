@@ -76,7 +76,7 @@ const Goals = ({
                     </Menu>
                 )}
             </View>
-            <View>
+            <View >
                 <CustomProgressBar
                     height={25}
                     width={350}

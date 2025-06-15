@@ -3,6 +3,7 @@ import { Animated, View } from 'react-native';
 
 export default function CustomProgressBar({
   progress = 0,
+  width,
   height = 8,
   color = '#007AFF',
   unfilledColor = '#eee',
@@ -31,6 +32,7 @@ export default function CustomProgressBar({
     <View
       style={[
         {
+          width,
           height,
           backgroundColor: unfilledColor,
           borderColor,
