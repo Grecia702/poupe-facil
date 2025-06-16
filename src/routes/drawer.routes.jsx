@@ -15,45 +15,48 @@ import Settings from '@screens/Settings'
 import Profile from '@screens/Profile';
 import TopTabRoutes from './top_tabs.routes';
 import GoalsTabsRoutes from './goals_tabs.routes';
-import DefaultIcon from '@assets/user-icon.png'
+import DefaultIconSvg from '@assets/user-svg.svg'
 import { useProfile } from '@hooks/useProfile'
 
 const Drawer = createDrawerNavigator();
 
 const CustomDrawerContent = (props) => {
-    const { isDarkMode, toggleDarkMode } = useContext(colorContext)
-    const { data } = useProfile()
-    let icon;
-    if (data?.picture_path) {
-        icon = { uri: data.picture_path };
-    } else {
-        icon = DefaultIcon;
-    }
+    const { isDarkMode } = useContext(colorContext);
+    const { data } = useProfile();
 
     return (
         <DrawerContentScrollView {...props}>
             <View style={{ alignSelf: 'center' }}>
                 <View style={[styles.image]}>
-                    <Image
-                        source={icon}
-                        style={{ width: 128, height: 128, borderRadius: 60 }}
-                        resizeMode="contain"
-                    />
+                    {data?.picture_path ? (
+                        <Image
+                            source={{ uri: data.picture_path }}
+                            style={{ width: 128, height: 128, borderRadius: 64 }}
+                            resizeMode="cover"
+                        />
+                    ) : (
+                        <DefaultIconSvg width={128} height={128} />
+                    )}
                 </View>
                 <View style={[styles.nameContainer, { backgroundColor: isDarkMode ? '#505050' : '#b4ccba' }]}>
                     <Text
                         numberOfLines={1}
                         ellipsizeMode="tail"
-                        style={{ fontSize: 20, fontWeight: 600, color: isDarkMode ? '#cccc' : '#0d521e' }}
+                        style={{
+                            fontSize: 20,
+                            fontWeight: '600',
+                            color: isDarkMode ? '#cccc' : '#0d521e',
+                        }}
                     >
                         {data?.nome}
                     </Text>
                 </View>
             </View>
+
             <DrawerItemList {...props} />
         </DrawerContentScrollView>
     );
-}
+};
 
 export default function DrawerRoutes() {
     const { isDarkMode, toggleDarkMode } = useContext(colorContext)
