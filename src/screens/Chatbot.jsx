@@ -4,8 +4,19 @@ import { View, TextInput, Text, StyleSheet, KeyboardAvoidingView, Platform, Touc
 import { useFocusEffect } from '@react-navigation/native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { colorContext } from '@context/colorScheme'
+import { useTransactionAuth } from '@context/transactionsContext';
+import { useBudgetAuth } from '@context/budgetsContext';
+import { useContasAuth } from '@context/contaContext';
+import { useToast } from 'react-native-toast-notifications';
+import { useDonutchartData } from '@hooks/useDonutchartData';
 
 const Chatbot = () => {
+    const { useFilteredTransacoes } = useTransactionAuth();
+    const { refetch: refetchTransactions } = useFilteredTransacoes();
+    const { refetch: refetchAccount } = useContasAuth();
+    const { refetchBudget } = useBudgetAuth()
+    const { refetch: refetchDonut } = useDonutchartData()
+    const toast = useToast();
     const [message, setMessage] = useState({ message_user: '' });
     const [messages, setMessages] = useState([]);
     const scrollViewRef = useRef(null);
@@ -49,14 +60,22 @@ Veja o que eu posso fazer por você:
             });
             const botReply = { content: `${data.message}`, role: 'assistant' };
             setMessages(prevMessages => [...prevMessages, botReply]);
+            if (botReply.content.includes('Transação') || botReply.content.includes('Transações')) {
+                refetchTransactions(),
+                    refetchAccount(),
+                    refetchBudget(),
+                    refetchDonut(),
+                    toast.show('Transação criada com sucesso', {
+                        type: 'success',
+                        duration: 1500,
+                    })
+            }
         } catch (error) {
             console.log(error.message);
         } finally {
             setIsTyping(false);
         }
     }
-
-    console.log(messages)
 
     return (
         <KeyboardAvoidingView
