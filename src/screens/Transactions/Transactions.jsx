@@ -15,7 +15,7 @@ const Transactions = () => {
     const { params } = route.params || '';
     const tipo = params;
     const { height, width } = useWindowDimensions();
-    const [filters, setFilters] = useState({ tipo: tipo, categoria: '', data_transacao: '', orderBy: 'transaction_id', orderDirection: 'DESC' })
+    const [filters, setFilters] = useState({ tipo: tipo, orderBy: 'transaction_id', orderDirection: 'DESC' })
     const { useFilteredTransacoes } = useTransactionAuth();
     const serializedFilters = `${filters.tipo}-${filters.orderBy}-${filters.orderDirection}`;
     const { data, refetch, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } = useFilteredTransacoes(serializedFilters, filters);
@@ -37,14 +37,12 @@ const Transactions = () => {
 
     const handleFilter = ({ label, value, type, queryLabel }) => {
         setFiltrosChips(prev =>
-            [...prev.filter(f => f.type !== type), { label, type }]
+            [...prev.filter(f => f.type !== type), { label, type, queryLabel }]
         );
         setFilters(prev => ({ ...prev, [queryLabel]: value }));
         setSelectedFilterOption(null);
         setIsOpen({ sort: false, filters: false });
     };
-
-    console.log('filtro:', filters.data_transacao)
     const [refreshing, setRefreshing] = useState(false);
     const [dropdownVisibleId, setDropdownVisibleId] = useState(null);
     const [selected, setSelected] = useState(sortOptions[0]);
@@ -60,6 +58,8 @@ const Transactions = () => {
     };
     const navigation = useNavigation();
     const handleLoadMore = () => {
+        console.log('Disparou handleLoadMore');
+        console.log({ hasNextPage, isFetchingNextPage });
         if (hasNextPage && !isFetchingNextPage) {
             fetchNextPage();
         }
@@ -156,14 +156,10 @@ const Transactions = () => {
 
     const removeFiltro = (filtro) => {
         setFiltrosChips(prev => prev.filter(item => item !== filtro));
-        setFilters(prev => {
-            const newFilters = { ...prev, data_transacao: '' };
-            delete newFilters.categoria;
-            return newFilters;
-        });
+        setFilters({ ...filters, [filtro.queryLabel]: '' });
     };
 
-    const resetFiltros = (order = null) => {
+    const handleSort = (order = null) => {
         if (order) {
             setSelected(order);
             switch (order.value) {
@@ -200,63 +196,66 @@ const Transactions = () => {
     }
 
     return (
-        <View style={{ backgroundColor: isDarkMode ? "#2e2e2e" : '#22C55E' }}>
-            <View style={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}>
+        <>
 
-                {(isOpen.sort || isOpen.filters) && (
-                    <Pressable
-                        onPress={() => setIsOpen({ sort: false, filters: false })}
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            zIndex: 10,
-                        }}
-                    />
-                )}
+            <View style={{ backgroundColor: isDarkMode ? "#2e2e2e" : '#22C55E' }}>
 
-                <FiltersTransactions
-                    isDarkMode={isDarkMode}
-                    isOpen={isOpen}
-                    toggleDropdown={toggleDropdown}
-                    sortOptions={sortOptions}
-                    filterOptions={filterOptions}
-                    selectedFilterOption={selectedFilterOption}
-                    setSelectedFilterOption={setSelectedFilterOption}
-                    handleFilter={handleFilter}
-                    filtrosChips={filtrosChips}
-                    removeFiltro={removeFiltro}
-                    resetFiltros={resetFiltros}
-                    clearFilters={clearFilters}
-                />
-                <FlatList
-                    // contentContainerStyle={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}
-                    data={allData}
-                    keyExtractor={(item) => item.transaction_id.toString()}
-                    renderItem={renderItem}
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
-                    onEndReached={handleLoadMore}
-                    onEndReachedThreshold={0.8}
-                    initialNumToRender={15}
-                    windowSize={5}
-                    maxToRenderPerBatch={10}
-                    updateCellsBatchingPeriod={60}
-                    ListFooterComponent={() => (
-                        isFetchingNextPage ? (
-                            <View>
-                                <ActivityIndicator size="large" color={isDarkMode ? "#BBB" : "#122577"} />
-                            </View>
-                        ) : null
+                <View style={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}>
+                    {(isOpen.sort || isOpen.filters) && (
+                        <Pressable
+                            onPress={() => setIsOpen({ sort: false, filters: false })}
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: '100%',
+                                zIndex: 10,
+                            }}
+                        />
                     )}
-                // style={{ backgroundColor: isDarkMode ? 'rgb(29, 29, 29)' : '#22C55E' }}
+                    <FiltersTransactions
+                        isDarkMode={isDarkMode}
+                        isOpen={isOpen}
+                        toggleDropdown={toggleDropdown}
+                        sortOptions={sortOptions}
+                        filterOptions={filterOptions}
+                        selectedFilterOption={selectedFilterOption}
+                        setSelectedFilterOption={setSelectedFilterOption}
+                        handleFilter={handleFilter}
+                        filtrosChips={filtrosChips}
+                        removeFiltro={removeFiltro}
+                        handleSort={handleSort}
+                        clearFilters={clearFilters}
+                    />
+                    <FlatList
+                        data={allData}
+                        keyExtractor={(item) => item.transaction_id.toString()}
+                        renderItem={renderItem}
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        onEndReached={handleLoadMore}
+                        onEndReachedThreshold={0.8}
+                        initialNumToRender={10}
+                        windowSize={5}
+                        maxToRenderPerBatch={10}
+                        updateCellsBatchingPeriod={60}
+                        contentContainerStyle={{ paddingBottom: 100 }}
+                        ListFooterComponent={() => (
+                            isFetchingNextPage ? (
+                                <View style={{ paddingVertical: 25 }}>
+                                    <ActivityIndicator size="large" color={isDarkMode ? "#BBB" : "#122370"} />
+                                </View>
+                            ) : null
+                        )}
+                    />
+
+                </View>
+                <TouchableOpacity
+                    style={{ backgroundColor: '#222', borderRadius: 60, position: 'absolute', bottom: 60, right: 25 }}
+                    onPress={() => setShowTransactionModal(true)}
                 >
-                </FlatList>
-                <TouchableOpacity onPress={() => setShowTransactionModal(true)}>
                     <MaterialIcons name="add-circle" size={64} color={"#1b90df"}
-                        style={{ position: 'absolute', bottom: 10, right: 10 }}
                     />
                 </TouchableOpacity>
                 <CreateTransaction
@@ -264,7 +263,8 @@ const Transactions = () => {
                     setIsOpen={() => setShowTransactionModal(false)}
                 />
             </View>
-        </View>
+        </>
+
     );
 }
 
@@ -280,41 +280,4 @@ const styles = StyleSheet.create({
         position: 'relative'
 
     },
-    // ListHeader: {
-    //     flexDirection: 'column',
-    //     gap: 15,
-    //     marginBottom: 10,
-    //     position: 'relative'
-    // },
-    // dropdownWrapper: {
-    //     marginLeft: 20,
-    //     flexDirection: 'row',
-    //     alignSelf: 'flex-end',
-    //     gap: 5,
-    // },
-    // dropdown: {
-    //     position: 'absolute',
-    //     top: 70,
-    //     right: 20,
-    //     marginTop: 5,
-    //     borderWidth: 1,
-    //     borderColor: '#ccc',
-    //     borderRadius: 5,
-    //     elevation: 5,
-    //     width: 200,
-    //     zIndex: 1,
-    // },
-    // item: {
-    //     padding: 10,
-    //     borderBottomWidth: 1,
-    //     borderBottomColor: '#eee',
-    // },
-    // optionsButton: {
-    //     alignItems: 'center',
-    //     flexDirection: 'row',
-    //     padding: 5,
-    //     gap: 5,
-    //     borderWidth: 2,
-    //     borderRadius: 5
-    // }
 })

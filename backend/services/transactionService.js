@@ -16,6 +16,8 @@ const transactionQuerySchema = z.object({
     nome_transacao: z.string().optional(),
     categoria: z.string().min(1).optional(),
     valor: z.number().positive().optional(),
+    valor_maior_que: z.coerce.number().positive().optional(),
+    valor_menor_que: z.coerce.number().positive().optional(),
     recorrente: z.boolean().optional(),
     frequencia_recorrencia: z.string().optional(),
     proxima_ocorrencia: z.string().optional(),
@@ -23,7 +25,7 @@ const transactionQuerySchema = z.object({
     data_transacao: z.string().optional(),
     orderBy: z.enum(['valor', 'data_transacao', 'tipo', 'natureza', 'transaction_id']).default('transaction_id'),
     orderDirection: z.enum(['ASC', 'DESC']).default('DESC'),
-    limit: z.coerce.number().int().min(1).max(100).default(15),
+    limit: z.coerce.number().int().min(1).max(100).default(10),
     page: z.coerce.number().int().min(0).default(1),
     period: z.enum(['week', 'month', 'day', 'year']).default('week')
 });

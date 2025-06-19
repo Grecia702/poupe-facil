@@ -41,6 +41,8 @@ export const TransactionProvider = ({ children }) => {
                 ...(filters.natureza && { natureza: filters.natureza }),
                 ...(filters.categoria && { categoria: filters.categoria }),
                 ...(filters.data_transacao && { data_transacao: filters.data_transacao }),
+                ...(filters.valor_menor_que && { valor_menor_que: filters.valor_menor_que }),
+                ...(filters.valor_maior_que && { valor_maior_que: filters.valor_maior_que }),
                 tipo: filters.tipo,
                 orderBy: filters.orderBy,
                 orderDirection: filters.orderDirection,

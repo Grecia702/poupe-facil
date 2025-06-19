@@ -87,40 +87,55 @@ const DeleteTransaction = async (userId, transactionId) => {
 }
 
 const ListTransactions = async (userId, queryParams) => {
-  const { tipo, natureza, limit, offset, orderBy, orderDirection, categoria, data_transacao } = queryParams
-  let orderParam = orderBy
+  const { tipo, natureza, limit, offset, orderBy, orderDirection, categoria, data_transacao, valor_maior_que, valor_menor_que } = queryParams;
+
+  let orderParam = orderBy;
   if (orderBy === 'valor') {
-    orderParam = 'ABS(valor)'
+    orderParam = 'ABS(valor)';
   }
-  const data = data_transacao ? `${data_transacao} days` : null
-  console.log(data_transacao)
+
+  const data = data_transacao ? `${data_transacao} days` : null;
 
   const query = `
     SELECT 
-    transaction_id,
-    conta,
-    nome_transacao,
-    categoria,
-    valor,
-    data_transacao, 
-    tipo, 
-    natureza,
-    recorrente, 
-    frequencia_recorrencia, 
-    proxima_ocorrencia
+      transaction_id,
+      conta,
+      nome_transacao,
+      categoria,
+      valor,
+      data_transacao, 
+      tipo, 
+      natureza,
+      recorrente, 
+      frequencia_recorrencia, 
+      proxima_ocorrencia
     FROM user_transactions 
     WHERE user_id = $1
       AND ($2::text IS NULL OR tipo = $2::text)
       AND ($3::text IS NULL OR natureza = $3::text)
       AND ($4::text IS NULL OR categoria = $4::text)
       AND ($5::text IS NULL OR data_transacao >= CURRENT_DATE - $5::interval)
+      AND ($6::numeric IS NULL OR ABS(valor) >= $6::numeric)
+      AND ($7::numeric IS NULL OR ABS(valor) <= $7::numeric)
     ORDER BY ${orderParam} ${orderDirection}, transaction_id ASC
-    LIMIT $6
-    OFFSET $7
+    LIMIT $8
+    OFFSET $9
   `;
-  const { rows, rowCount } = await pool.query(query, [userId, tipo, natureza, categoria, data, limit, offset]);
+
+  const { rows, rowCount } = await pool.query(query, [
+    userId,
+    tipo,
+    natureza,
+    categoria,
+    data,
+    valor_maior_que,
+    valor_menor_que,
+    limit,
+    offset
+  ]);
+
   return { rows, total: rowCount, firstResult: rows[0] };
-}
+};
 
 const listSumTransactions = async (userId) => {
   const query = `
@@ -138,7 +153,8 @@ GROUP BY GROUPING SETS ((tipo), ())
 }
 
 const countTransactionsResult = async (userId, queryParams) => {
-  const { tipo, natureza, categoria, data_transacao } = queryParams
+  const { tipo, natureza, categoria, data_transacao, valor_maior_que, valor_menor_que } = queryParams;
+
   const data = data_transacao ? `${data_transacao} days` : null
   const query = `
     SELECT COUNT(*) FROM user_transactions 
@@ -147,8 +163,10 @@ const countTransactionsResult = async (userId, queryParams) => {
       AND ($3::text IS NULL OR natureza = $3::text)
       AND ($4::text IS NULL OR categoria = $4::text)
       AND ($5::text IS NULL OR data_transacao >= CURRENT_DATE - $5::interval)
+      AND ($6::numeric IS NULL OR ABS(valor) >= $6::numeric)
+      AND ($7::numeric IS NULL OR ABS(valor) <= $7::numeric)
     `;
-  const { rows } = await pool.query(query, [userId, tipo, natureza, categoria, data]);
+  const { rows } = await pool.query(query, [userId, tipo, natureza, categoria, data, valor_maior_que, valor_menor_que]);
   return parseInt(rows[0].count)
 }
 

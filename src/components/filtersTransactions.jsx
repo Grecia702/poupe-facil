@@ -1,8 +1,6 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { format, subDays, subMonths } from 'date-fns'
-import DateTimePicker from '@react-native-community/datetimepicker';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const FiltersTransactions = ({
     isDarkMode,
@@ -15,12 +13,10 @@ const FiltersTransactions = ({
     handleFilter,
     filtrosChips,
     removeFiltro,
-    resetFiltros,
+    handleSort,
     clearFilters,
 }) => {
-    const [showDatePicker, setShowDatePicker] = useState(false);
-    const [selectedDateType, setSelectedDateType] = useState(null);
-    const [selectedDate, setSelectedDate] = useState(null);
+    const [fields, setFields] = useState({ value_less_than: '', value_greater_than: '' })
     const categoriasDisponiveis = [
         { label: 'Contas', value: 'Contas' },
         { label: 'Alimentação', value: 'Alimentação' },
@@ -41,15 +37,28 @@ const FiltersTransactions = ({
         { type: 'date', label: 'Este Trimestre', value: 90, queryLabel: 'data_transacao' },
         { type: 'date', label: 'Este Ano', value: 365, queryLabel: 'data_transacao' },
     ];
-
-
+    const formatCurrency = (value) => {
+        return value.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+            minimumFractionDigits: 2,
+        })
+    }
+    const handleChange = (fieldName, text) => {
+        const clean = text.replace(/\D/g, '')
+        const valor = parseFloat(clean) / 100
+        setFields(prev => ({
+            ...prev,
+            [fieldName]: isNaN(valor) ? 0 : valor,
+        }))
+    }
 
     return (
         <>
             {isOpen.sort && (
                 <View style={[styles.dropdown, { backgroundColor: isDarkMode ? '#333' : '#fff' }]}>
                     {sortOptions.map((option, index) => (
-                        <TouchableOpacity key={index} style={styles.item} onPress={() => resetFiltros(option)}>
+                        <TouchableOpacity key={index} style={styles.item} onPress={() => handleSort(option)}>
                             <Text style={{ color: isDarkMode ? '#fff' : '#333' }}>{option.label}</Text>
                         </TouchableOpacity>
                     ))}
@@ -83,18 +92,52 @@ const FiltersTransactions = ({
                             </TouchableOpacity>
                             {selectedFilterOption === option.value && option.value === 'value' && (
                                 <View style={{ borderTopWidth: 1, borderColor: '#ccc' }}>
-                                    <TouchableOpacity
-                                        style={[styles.item, { paddingLeft: 20 }]}
-                                        onPress={() => handleFilter({ label: 'Menor que', value: 'before' })}
-                                    >
-                                        <Text style={{ color: isDarkMode ? '#fff' : '#333' }}>Menor que</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={[styles.item, { paddingLeft: 20 }]}
-                                        onPress={() => handleFilter({ label: 'Maior que', value: 'after' })}
-                                    >
-                                        <Text style={{ color: isDarkMode ? '#fff' : '#333' }}>Maior que</Text>
-                                    </TouchableOpacity>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingRight: 20 }}>
+                                        <View
+                                            style={[styles.item, { paddingLeft: 20 }]}
+                                        >
+                                            <Text style={{ color: isDarkMode ? '#fff' : '#333' }}>Menor que</Text>
+                                        </View>
+                                        <TextInput
+                                            keyboardType="numeric"
+                                            value={formatCurrency(fields.value_less_than || 0)}
+                                            onChangeText={text => handleChange('value_less_than', text)}
+                                            onBlur={() => handleFilter({ label: `Menor que ${fields.value_less_than}`, value: fields.value_less_than, type: 'less_than', queryLabel: 'valor_menor_que' })}
+                                            placeholder="R$ 0,00"
+                                            style={{
+                                                padding: 2,
+                                                color: isDarkMode ? '#fff' : '#000',
+                                                textAlign: 'right',
+                                                flexShrink: 1,
+                                                maxWidth: 120,
+                                            }}
+                                            scrollEnabled={true}
+                                            multiline={false}
+                                        />
+                                    </View>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingRight: 20 }}>
+                                        <View
+                                            style={[styles.item, { paddingLeft: 20 }]}
+                                        >
+                                            <Text style={{ color: isDarkMode ? '#fff' : '#333' }}>Maior que</Text>
+                                        </View>
+                                        <TextInput
+                                            keyboardType="numeric"
+                                            value={formatCurrency(fields.value_greater_than || 0)}
+                                            onChangeText={text => handleChange('value_greater_than', text)}
+                                            onBlur={() => handleFilter({ label: `Maior que ${fields.value_greater_than}`, value: fields.value_greater_than, type: 'greater_than', queryLabel: 'valor_maior_que' })}
+                                            placeholder="R$ 0,00"
+                                            style={{
+                                                padding: 2,
+                                                color: isDarkMode ? '#fff' : '#000',
+                                                textAlign: 'right',
+                                                flexShrink: 1,
+                                                maxWidth: 120,
+                                            }}
+                                            scrollEnabled={true}
+                                            multiline={false}
+                                        />
+                                    </View>
                                 </View>
                             )}
 
@@ -169,24 +212,6 @@ const FiltersTransactions = ({
                     </>
                 )}
             </View>
-            {showDatePicker && (
-                <DateTimePicker
-                    value={selectedDate}
-                    mode="date"
-                    display="default"
-                    onChange={(event, date) => {
-                        setShowDatePicker(false);
-                        if (event.type === 'set' && date) {
-                            setSelectedDate(date);
-                            handleFilter({
-                                label: `${selectedDateType === 'before' ? 'Antes de' : 'Depois de'} ${format(date, 'dd/MM/yyyy')}`,
-                                value: selectedDateType,
-                                date,
-                            });
-                        }
-                    }}
-                />
-            )}
         </>
     );
 };
