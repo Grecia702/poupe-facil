@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, FlatList, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, FlatList, Modal, RefreshControl } from 'react-native';
 import { colorContext } from '@context/colorScheme';
 import { useContext, useState, useMemo } from 'react'
 import { categoriaCores } from '@utils/categoriasCores'
@@ -32,17 +32,17 @@ import CreateTransaction from '@components/createTransaction'
 export default function HomeScreen() {
   const { useFilteredTransacoes } = useTransactionAuth();
   const { data: transactionData, refetch, isLoading } = useFilteredTransacoes();
-  const { dadosContas } = useContasAuth();
+  const { dadosContas, refetch: refetchAccount } = useContasAuth();
   const { balanceAccount, lastDate, setLastDate } = useContasAuth({});
-  const { budgetData } = useBudgetAuth()
-  const { data: goalsData } = useGoals()
+  const { budgetData, refetchBudget } = useBudgetAuth()
+  const { data: goalsData, refetch: refetchGoals } = useGoals()
   const [selectedItem, setSelectedItem] = useState(null);
-  const [refreshing, setRefreshing] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const navigation = useNavigation();
   const { isDarkMode } = useContext(colorContext)
   const firstDate = set(startOfMonth(new Date()), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
-  const { data: donutData, isLoading: donutLoading } = useDonutchartData({
+  const { data: donutData, isLoading: donutLoading, refetch: refetchDonut } = useDonutchartData({
     first_date: firstDate,
     last_date: lastDate
   })
@@ -60,9 +60,32 @@ export default function HomeScreen() {
     setSelectedItem(label);
   };
 
+  const onRefresh = () => {
+    setRefreshing(true);
+
+    try {
+      refetch()
+      refetchBudget()
+      refetchAccount()
+      refetchDonut()
+      refetchGoals()
+    } catch (error) {
+      console.error('Erro no refresh:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <>
-      <ScrollView style={{ backgroundColor: isDarkMode ? "rgb(26, 26, 26)" : "#c6ebe9" }}>
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#ff0000', '#00ff00', '#0000ff']}
+          />
+        } style={{ backgroundColor: isDarkMode ? "rgb(26, 26, 26)" : "#c6ebe9" }}>
 
         <VisaoGeral
           saldo={(saldo || 0)}
