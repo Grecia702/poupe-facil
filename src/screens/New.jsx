@@ -2,8 +2,10 @@ import React, { useState, useContext } from 'react';
 import { colorContext } from '@context/colorScheme';
 import { View, Text, Image, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import api from '@context/axiosInstance';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import CATEGORIAS from '@utils/categorias';
 
 async function pickImage() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -19,17 +21,20 @@ async function pickImage() {
     });
 
     if (result.cancelled) return null;
-    return result.assets[0]
+    const img = result.assets[0];
+    img.uri = img.uri.startsWith('file://') ? img.uri : 'file://' + img.uri;
+
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    return img;
 }
 
-export default function UploadImageScreen({ fields, setFields, selected, setSelected, categorias }) {
+export default function UploadImageScreen({ fields, setFields, selected, setSelected, categorias, tipo, account }) {
     const [photo, setPhoto] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const { isDarkMode } = useContext(colorContext);
-
-
 
     const createFormData = (photo) => {
         const data = new FormData();
@@ -54,22 +59,47 @@ export default function UploadImageScreen({ fields, setFields, selected, setSele
 
         const picked = await pickImage();
         if (!picked) return;
-        setPhoto(picked);
-        setLoading(true);
-        const formData = createFormData(picked);
 
         try {
+            setLoading(true);
+
+            const manipulated = await ImageManipulator.manipulateAsync(
+                picked.uri,
+                [],
+                { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
+            );
+            setPhoto(manipulated);
+
+            const formData = createFormData(manipulated);
             const { data } = await api.post('/ocr/', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
+
             setSuccess(true);
-            setFields({ ...fields, nome_transacao: data.nome_transacao, categoria: data.categoria, valor: data.valor, data_transacao: data.data, natureza: data.natureza })
-            setSelected({ ...selected, categoria: categorias[data.categoria], natureza: data.natureza })
+            setFields({
+                ...fields,
+                nome_transacao: data.nome_transacao,
+                categoria: data.categoria,
+                valor: data.valor,
+                data_transacao: data.data,
+                natureza: data.natureza
+            });
+
+            setSelected({
+                ...selected,
+                categoria: categorias[data.categoria],
+                natureza: data.natureza
+            });
+
         } catch (err) {
+            console.error('Upload error:', err.message);
+            if (err.response) {
+                console.log('Response status:', err.response.status);
+                console.log('Response data:', err.response.data);
+            }
             setError(err.message || 'Erro no upload');
-            console.error('Upload error:', err);
         } finally {
             setLoading(false);
         }
@@ -106,7 +136,13 @@ export default function UploadImageScreen({ fields, setFields, selected, setSele
                                 style={{ width: 100, height: 200 }}
                                 resizeMode="contain"
                             />
-                            <TouchableOpacity onPress={() => setPhoto(null)}>
+                            <TouchableOpacity onPress={() => {
+                                const date = new Date();
+                                setPhoto(null);
+                                setSelected({ ...selected, categoria: tipo === 'despesa' ? CATEGORIAS["Outros"] : CategoriasReceitas["Outros"], natureza: 'Variavel', recurrence_period: 'Mensal' });
+                                setFields({ ...fields, nome_transacao: '', valor: 0, data_transacao: date, categoria: tipo === 'despesa' ? CATEGORIAS["Outros"].label : CategoriasReceitas["Outros"].label, natureza: selected.natureza, recorrente: false, tipo: tipo });
+
+                            }}>
                                 <View style={{ borderColor: isDarkMode ? '#aaa' : '#444', borderWidth: 2, borderRadius: 30, padding: 2 }}>
                                     <MaterialIcons name="close" size={24} color={isDarkMode ? '#aaa' : '#444'} />
                                 </View>

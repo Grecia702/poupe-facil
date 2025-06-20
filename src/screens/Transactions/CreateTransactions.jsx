@@ -13,17 +13,17 @@ import { useTransactionAuth } from '@context/transactionsContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import New from '@screens/New'
+import { useContasAuth } from '@context/contaContext';
 import UploadImageScreen from '../New';
 
 const CreateTransactions = () => {
     const route = useRoute()
     const { tipo } = route.params
-    const [selected, setSelected] = useState({ categoria: tipo === 'despesa' ? CATEGORIAS["Outros"] : CategoriasReceitas["Outros"], account: null, natureza: 'Variavel', recurrence_period: 'Mensal' });
+    const { dadosContas } = useContasAuth();
+    const [selected, setSelected] = useState({ categoria: tipo === 'despesa' ? CATEGORIAS["Outros"] : CategoriasReceitas["Outros"], account: null, natureza: 'Variavel', recurrence_period: 'Mensal', account: { id: dadosContas[0]?.id, nome: dadosContas[0]?.nome_conta, icone: dadosContas[0]?.icone } });
     const [visible, setVisible] = useState({ categoria: false, account: false, natureza: false, recurring: false });
     const date = new Date();
-    const [fields, setFields] = useState({ valor: 0, data_transacao: date, categoria: tipo === 'despesa' ? CATEGORIAS["Outros"].label : CategoriasReceitas["Outros"].label, natureza: selected.natureza, recorrente: false, tipo: tipo });
-    const [accountData, setAccountData] = useState([{ id: '', nome: '', icone: '' }])
+    const [fields, setFields] = useState({ valor: 0, data_transacao: date, categoria: tipo === 'despesa' ? CATEGORIAS["Outros"].label : CategoriasReceitas["Outros"].label, natureza: selected.natureza, recorrente: false, tipo: tipo, id_contabancaria: dadosContas[0]?.id });
     const valorFormatado = (fields.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }))
     const { createTransactionMutation } = useTransactionAuth();
     const { isDarkMode } = useContext(colorContext);
@@ -62,21 +62,6 @@ const CreateTransactions = () => {
         'Mensal', 'Bimestral', 'Trimestral',
         'Quadrimestral', 'Semestral', 'Anual'
     ]
-
-    const searchAccount = async () => {
-        try {
-            const { data } = await api.get(`/profile/account/`);
-            setAccountData(data)
-            setSelected(prev => ({ ...prev, account: { id: data[0]?.id, nome: data[0]?.nome_conta, icone: data[0]?.icone } }))
-            setFields(prev => ({ ...prev, id_contabancaria: data[0]?.id }))
-        } catch (err) {
-            console.err('Erro ao buscar transação por ID:', err);
-        }
-    };
-
-    useEffect(() => {
-        searchAccount()
-    }, []);
 
     const handleCreateTransaction = () => {
         if (fields.nome_transacao === '') {
@@ -224,7 +209,7 @@ const CreateTransactions = () => {
                     >
                         <View style={[styles.modal, { backgroundColor: isDarkMode ? '#333' : '#EEE' }]}>
                             <FlatList
-                                data={accountData}
+                                data={dadosContas}
                                 keyExtractor={(item) => item.id}
                                 renderItem={({ item }) => (
                                     <TouchableOpacity
@@ -358,6 +343,7 @@ const CreateTransactions = () => {
                     selected={selected}
                     setSelected={setSelected}
                     categorias={CATEGORIAS}
+                    tipo={tipo}
                 />
             </View>
             <ActionButtons

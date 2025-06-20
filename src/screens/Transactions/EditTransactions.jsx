@@ -157,7 +157,7 @@ const EditTransactions = () => {
             <View style={[styles.buttonInput, { backgroundColor: isDarkMode ? '#222' : '#fff', borderColor: isDarkMode ? '#333' : '#ccc' }]}>
                 <TouchableOpacity style={styles.selector} onPress={() => setVisible(prev => ({ ...prev, categoria: true }))}>
                     <View style={styles.iconWrapper}>
-                        <View style={{ backgroundColor: selected.categoria?.color, borderRadius: 30, padding: 5 }}>
+                        <View style={{ backgroundColor: selected.categoria?.color, borderRadius: 60, padding: 5 }}>
                             <MaterialIcons name={selected.categoria?.icon} color={'#333'} size={24} />
                         </View>
                         <Text style={[styles.selectorText, { color: isDarkMode ? '#DDD' : "#333" }]}>
