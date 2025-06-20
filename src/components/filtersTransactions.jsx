@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         elevation: 5,
         width: 200,
-        zIndex: 50,
+        zIndex: 90,
     },
     item: {
         padding: 10,

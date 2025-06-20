@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { useRoute } from '@react-navigation/native';
 import api from '@context/axiosInstance'
 import CATEGORIAS from '@utils/categorias';
+import CATEGORIAS_RECEITAS from '@utils/categoriasReceitas';
 import { MaterialIcons } from '@expo/vector-icons'
 import { useTransactionByID } from '@hooks/usePosts';
 import { useToast } from 'react-native-toast-notifications';
@@ -19,16 +20,15 @@ import { ptBR } from 'date-fns/locale';
 
 const EditTransactions = () => {
     const route = useRoute();
-    const { transactionId } = route.params;
-    const { data } = useTransactionByID(transactionId)
+    const { transactionId, tipo, data } = route.params;
     const { isDarkMode } = useContext(colorContext);
     const date = data?.data_transacao ? new Date(data.data_transacao) : new Date();
     const [formatado, setFormatado] = useState(null);
     const [visible, setVisible] = useState({ categoria: false, account: false, natureza: false, type: false, recurring: false });
     const { dadosContas: accountData } = useContasAuth()
-    const [selected, setSelected] = useState({ ...data });
+    const [selected, setSelected] = useState({ ...data, categoria: tipo === 'despesa' ? CATEGORIAS[data.categoria] : CATEGORIAS_RECEITAS[data.categoria], });
     const [show, setShow] = useState(false);
-    const [fields, setFields] = useState({ data_transacao: date });
+    const [fields, setFields] = useState({ data_transacao: date, nome_transacao: data.nome_transacao });
     const navigation = useNavigation();
     const { updateTransactionMutation } = useTransactionAuth();
     const toast = useToast();
@@ -46,6 +46,9 @@ const EditTransactions = () => {
         }));
     };
 
+    console.log(selected.categoria)
+
+
     const recurrence_period = [
         'Diario', 'Semanal', 'Quinzenal',
         'Mensal', 'Bimestral', 'Trimestral',
@@ -55,7 +58,7 @@ const EditTransactions = () => {
     useEffect(() => {
         setSelected({
             ...data,
-            categoria: CATEGORIAS[data?.categoria],
+            categoria: tipo === 'despesa' ? CATEGORIAS[data?.categoria] : CATEGORIAS_RECEITAS[data?.categoria],
             recurrence_period: recurrence_period[3]
         })
         setFormatado(Math.abs(data?.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }))
@@ -116,7 +119,6 @@ const EditTransactions = () => {
         setFormatado(f);
     };
 
-    console.log(fields)
 
     return (
 
@@ -172,7 +174,7 @@ const EditTransactions = () => {
                     <TouchableOpacity style={styles.overlay} onPress={() => setVisible(prev => ({ ...prev, categoria: false }))}>
                         <View style={[styles.modal, { backgroundColor: isDarkMode ? '#333' : '#EEE' }]}>
                             <FlatList
-                                data={Object.values(CATEGORIAS)}
+                                data={tipo === 'despesa' ? Object.values(CATEGORIAS) : Object.values(CATEGORIAS_RECEITAS)}
                                 keyExtractor={(item) => item.id}
                                 renderItem={({ item }) => (
                                     <TouchableOpacity

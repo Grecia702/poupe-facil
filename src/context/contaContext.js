@@ -66,7 +66,7 @@ export const ContasProvider = ({ children }) => {
     const { isAuthenticated } = useAuth();
     const queryClient = useQueryClient();
     const [lastDate, setLastDate] = useState(new Date());
-    const { data: dadosContas, isLoading, error, refetch } = useQuery({
+    const { data: dadosContas, isLoading, error, refetch: refetchAccount } = useQuery({
         queryKey: ['account_id', { last_date: lastDate }],
         queryFn: getContas,
         enabled: isAuthenticated,
@@ -78,11 +78,19 @@ export const ContasProvider = ({ children }) => {
         }
     });
 
+
     const { data: balanceAccount, refetch: refetchBalance } = useQuery({
         queryKey: ['balance_id', { last_date: lastDate }],
         queryFn: getAccountBalance,
         enabled: isAuthenticated
     });
+
+    const refetchAccountNow = () => {
+        const now = new Date();
+        setLastDate(now);
+        refetchAccount()
+        refetchBalance()
+    };
 
     const createAccountMutation = useMutation({
         mutationFn: createAccount,
@@ -124,7 +132,7 @@ export const ContasProvider = ({ children }) => {
             error,
             lastDate,
             setLastDate,
-            refetch,
+            refetchAccountNow,
             setAccountPrimaryMutation,
             createAccountMutation,
             updateAccountMutation,

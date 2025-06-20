@@ -49,7 +49,7 @@ const ListAllAccounts = async (userId, last_date) => {
     c.icone,
     c.tipo_conta,
     c.is_primary,
-    c.saldo - COALESCE(SUM(t.valor), 0) AS saldo
+    c.saldo + COALESCE(SUM(t.valor), 0) AS saldo
     FROM contasBancarias AS c
     LEFT JOIN transacoes AS t 
     ON t.id_contabancaria = c.id 
@@ -71,20 +71,22 @@ const setAsPrimary = async (id, userId) => {
 }
 
 
-const getSumAccounts = async (userId, first_date, last_date) => {
+const getSumAccounts = async (userId, last_date) => {
     const query = `
 SELECT 
     COALESCE(SUM(valor) FILTER (WHERE tipo = 'receita'), 0) AS receita,
     COALESCE(SUM(valor) FILTER (WHERE tipo = 'despesa'), 0) AS despesa,
-	    COALESCE((SELECT SUM(saldo) FROM contasBancarias WHERE id_usuario = $1), 0)
+    COALESCE((SELECT SUM(saldo) FROM contasBancarias WHERE id_usuario = $1), 0)
     + COALESCE(SUM(valor), 0) AS saldo_total,
-	COALESCE(SUM(valor), 0) AS balanco_geral
+    COALESCE(SUM(valor), 0) AS balanco_geral
 FROM user_transactions
 WHERE user_id = $1
-  AND data_transacao BETWEEN $2 AND $3
+  AND data_transacao BETWEEN 
+    (SELECT created_at FROM usuario WHERE id = $1) 
+    AND $2
     `;
 
-    const { rows, rowCount } = await pool.query(query, [userId, first_date, last_date]);
+    const { rows, rowCount } = await pool.query(query, [userId, last_date]);
     return { rows, total: rowCount, result: rows[0] };
 }
 

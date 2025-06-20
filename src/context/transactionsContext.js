@@ -72,6 +72,7 @@ export const TransactionProvider = ({ children }) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['budget_id'] });
             queryClient.invalidateQueries({ queryKey: ['transacoes_infinite'] });
+            queryClient.invalidateQueries({ queryKey: ['account_id'] });
         }
     });
 
@@ -80,6 +81,7 @@ export const TransactionProvider = ({ children }) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['budget_id'] });
             queryClient.invalidateQueries({ queryKey: ['transacoes_infinite'] });
+            queryClient.invalidateQueries({ queryKey: ['account_id'] });
         }
     });
 
@@ -88,6 +90,7 @@ export const TransactionProvider = ({ children }) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['budget_id'] });
             queryClient.invalidateQueries({ queryKey: ['transacoes_infinite'] });
+            queryClient.invalidateQueries({ queryKey: ['account_id'] });
         }
     });
 

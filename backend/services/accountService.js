@@ -55,8 +55,6 @@ const RemoveAccountService = async (userId, id) => {
 
 const ListAccountService = async (userId, last_date) => {
     const account = await accountModel.ListAllAccounts(userId, last_date);
-    console.log(last_date)
-
     const data = account.rows.map(item => ({
         ...item,
         saldo: parseFloat(item.saldo)
@@ -73,8 +71,7 @@ const ListAccountByIDService = async (AccountId, userId) => {
 };
 
 const sumAccountService = async (userId, last_date) => {
-    const { result } = await userModel.getCreatedAt(userId)
-    const account = await accountModel.getSumAccounts(userId, result.created_at, last_date);
+    const account = await accountModel.getSumAccounts(userId, last_date);
 
     const data = {
         saldo_total: parseFloat(account.result.saldo_total),

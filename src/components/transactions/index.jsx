@@ -8,7 +8,7 @@ import { useTransactionAuth } from "@context/transactionsContext";
 import { format } from 'date-fns';
 import DangerModal from '@components/dangerModal';
 
-export default function TransactionCard({ loadData, iconName, name_transaction, state, color, category, date, value, type, recurrence, isVisible, setVisibleId, id, hideOption, conta, onRefresh }) {
+export default function TransactionCard({ item, loadData, tipo, iconName, name_transaction, state, color, category, date, value, type, recurrence, isVisible, setVisibleId, id, hideOption, conta, onRefresh }) {
     const navigation = useNavigation();
     const { isDarkMode } = useContext(colorContext)
     const [isOpen, setIsOpen] = useState(false)
@@ -54,7 +54,17 @@ export default function TransactionCard({ loadData, iconName, name_transaction, 
         }
     };
 
-    const categoriaIcons = {
+    const categoriasReceita = {
+        Salário: 'attach-money',
+        Benefícios: 'card-giftcard',
+        Comissão: 'trending-up',
+        Rendimentos: 'savings',
+        Serviços: 'build',
+        Vendas: 'point-of-sale',
+        Outros: 'more-horiz',
+    };
+
+    const categoriasDespesa = {
         Contas: 'credit-card',
         Alimentação: 'restaurant-menu',
         Transporte: 'directions-car',
@@ -90,7 +100,7 @@ export default function TransactionCard({ loadData, iconName, name_transaction, 
                     >
                         <TouchableOpacity
                             onPress={() => {
-                                navigation.navigate('EditTransactions', { transactionId: id });
+                                navigation.navigate('EditTransactions', { transactionId: id, tipo: tipo, data: item });
                                 setVisibleId(null);
                             }}
                             style={{ paddingVertical: 10, paddingHorizontal: 15 }}
@@ -125,7 +135,11 @@ export default function TransactionCard({ loadData, iconName, name_transaction, 
                 <View style={styles.container}>
                     <View style={[styles.iconCard, { backgroundColor: color }]}>
                         <MaterialIcons
-                            name={categoriaIcons[iconName] || 'help-outline'}
+                            name={
+                                tipo === 'receita'
+                                    ? (categoriasReceita[iconName] || 'help-outline')
+                                    : (categoriasDespesa[iconName] || 'help-outline')
+                            }
                             color="white"
                             size={28}
                         />

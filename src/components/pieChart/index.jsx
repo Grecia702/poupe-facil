@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { View } from "react-native";
 import { colorContext } from '@context/colorScheme';
 import Svg from "react-native-svg";
@@ -7,9 +7,12 @@ import { categoriaCores } from "@utils/categoriasCores";
 
 export default function PieChart({ data, total, selected, height, width, padAngle }) {
     const { isDarkMode } = useContext(colorContext)
-    const dadosFormatados = data?.length > 0
-        ? data
-        : [{ categoria: 'Sem dados', total: 1 }]
+    const dadosFormatados = useMemo(() => {
+        if (!data || data.length === 0) return [{ categoria: 'Sem dados', total: 1 }]
+        return data.map(item => ({ ...item }))
+    }, [data, total])
+
+
 
     const cores = data?.length > 0
         ? data.map(item => categoriaCores[item.categoria] || 'gray')
@@ -31,10 +34,6 @@ export default function PieChart({ data, total, selected, height, width, padAngl
                         <VictoryTooltip renderInPortal={false}
                             active={({ datum }) => datum.categoria === selected ? true : false}
                             flyoutPadding={{ top: 5, bottom: 5, left: 10, right: 10 }}
-                            centerOffset={({ datum }) => ({
-                                x: -50,
-                                y: -20,
-                            })}
                             flyoutStyle={{
                                 fill: isDarkMode ? '#3b3a3a' : '#4d84cc',
                                 stroke: isDarkMode ? "#c7c5c5" : '#3f3f3f',
@@ -49,7 +48,10 @@ export default function PieChart({ data, total, selected, height, width, padAngl
                     style={{
                         data: {
                             fillOpacity: ({ datum }) => (datum.categoria === selected || selected === "") ? 1 : 0.5,
-                            stroke: ({ datum }) => datum.categoria === selected ? categoriaCores[datum.categoria] : 'none',
+                            stroke: ({ datum }) =>
+                                datum.categoria !== 'Sem dados' && datum.categoria === selected
+                                    ? categoriaCores[datum.categoria]
+                                    : 'none',
                             strokeOpacity: 0.5,
                             strokeWidth: 10
                         },
@@ -60,7 +62,7 @@ export default function PieChart({ data, total, selected, height, width, padAngl
                             fontWeight: "600",
                         }
                     }}
-                    animate={{ duration: 500, easing: "linear" }}
+                    // animate={{ duration: 300, easing: "linear" }}
                     labels={({ datum }) => `Total: ${datum.ocorrencias} `}
                     colorScale={cores}
                 />

@@ -33,7 +33,7 @@ Regras de comportamento:
 1. Sempre que o usuário não especificar o nome da conta, você deve buscar na lista accounts a conta com "is_primary": true e usar seu id como id_contabancaria.
 2. Se o usuário omitir a data_transacao, use a data atual no formato ISO 8601.
 3. Se o usuário não informar o valor (valor) da transação, não crie transações e interprete a entrada como um comando livre (freeform), a menos que o contexto claramente indique um resumo.
-4. Se o usuario digitar algo como "ifood 15", ou "ifood 15 hoje" e variados, use o comando create
+4. Se o usuario digitar algo como "ifood 15", ou "ifood 15 hoje" ou "gastei 15 com ifood", use o comando create
 5. Para criar várias transações, responda com:
 
 {
@@ -56,6 +56,7 @@ Regras de comportamento:
 }
 - Se a categoria for "Contas", defina natureza como "Fixa" e recorrente como true.
 - Para todas as outras categorias, defina natureza como "Variavel" e recorrente como false.
+- Se o tipo for "despesa", transforme o valor em negativo
 5. Para pedidos de resumo de transações ou para verificar últimos gastos, responda com:
 {
   "command": "transactionSummary",
@@ -106,6 +107,7 @@ A data atual para uso padrão é ${date}.
 
         if (parsed.command === 'create') {
             const { transactions } = parsed;
+            console.log(transactions)
             const queryResult = await transactionModel.CreateManyTransactions(transactions, userId);
             const limite = budgetData?.limite ?? 0;
             const quantia_gasta = budgetData?.quantia_gasta ?? 0;
@@ -166,8 +168,6 @@ Data: ${dataFormatada}
                 transactionModel.GroupTransactionsByCategories(userId, firstStart, firstEnd),
                 transactionModel.GroupTransactionsByCategories(userId, secondStart, secondEnd)
             ]);
-            console.log(firstStart, firstEnd)
-            console.log(queryCategories.rows)
             const currentRows = queryCategories.rows;
             const previousRows = queryCategoriesLastPeriod.rows;
 

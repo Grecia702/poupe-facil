@@ -32,7 +32,7 @@ import CreateTransaction from '@components/createTransaction'
 export default function HomeScreen() {
   const { useFilteredTransacoes } = useTransactionAuth();
   const { data: transactionData, refetch, isLoading } = useFilteredTransacoes();
-  const { dadosContas, refetch: refetchAccount } = useContasAuth();
+  const { dadosContas, refetchAccountNow } = useContasAuth();
   const { balanceAccount, lastDate, setLastDate } = useContasAuth({});
   const { budgetData, refetchBudget } = useBudgetAuth()
   const { data: goalsData, refetch: refetchGoals } = useGoals()
@@ -66,7 +66,7 @@ export default function HomeScreen() {
     try {
       refetch()
       refetchBudget()
-      refetchAccount()
+      refetchAccountNow()
       refetchDonut()
       refetchGoals()
     } catch (error) {
@@ -75,6 +75,8 @@ export default function HomeScreen() {
       setRefreshing(false);
     }
   };
+
+  console.log(balanceAccount)
 
   return (
     <>
@@ -167,7 +169,7 @@ export default function HomeScreen() {
                     Saldo Total:
                   </Text>
                   <Text style={{ fontSize: 18, fontWeight: 'bold', color: isDarkMode ? "#e9e9e9" : "#2c2c2c" }}>
-                    R${saldo?.toFixed(2)}
+                    {saldo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </Text>
                 </View>
               </>
@@ -204,6 +206,7 @@ export default function HomeScreen() {
                   recurrence={item?.recorrente}
                   date={item?.data_transacao}
                   value={item?.valor}
+                  tipo={item?.tipo}
                   hideOption
                 />
               ))

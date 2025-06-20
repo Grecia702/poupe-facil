@@ -13,7 +13,7 @@ import { useDonutchartData } from '@hooks/useDonutchartData';
 const Chatbot = () => {
     const { useFilteredTransacoes } = useTransactionAuth();
     const { refetch: refetchTransactions } = useFilteredTransacoes();
-    const { refetch: refetchAccount } = useContasAuth();
+    const { refetchAccountNow } = useContasAuth();
     const { refetchBudget } = useBudgetAuth()
     const { refetch: refetchDonut } = useDonutchartData()
     const toast = useToast();
@@ -62,7 +62,7 @@ Veja o que eu posso fazer por você:
             setMessages(prevMessages => [...prevMessages, botReply]);
             if (botReply.content.includes('Transação') || botReply.content.includes('Transações')) {
                 refetchTransactions(),
-                    refetchAccount(),
+                    refetchAccountNow(),
                     refetchBudget(),
                     refetchDonut(),
                     toast.show('Transação criada com sucesso', {

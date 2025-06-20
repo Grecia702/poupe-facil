@@ -1,4 +1,4 @@
-import { StyleSheet, FlatList, TouchableOpacity, Modal, Text, View, Pressable, ActivityIndicator, useWindowDimensions } from 'react-native'
+import { StyleSheet, FlatList, TouchableOpacity, Image, Text, View, Pressable, ActivityIndicator, useWindowDimensions } from 'react-native'
 import { useState, useContext, useMemo, useLayoutEffect, useCallback } from 'react'
 import { MaterialIcons } from '@expo/vector-icons'
 import { colorContext } from '@context/colorScheme'
@@ -8,9 +8,12 @@ import { useTransactionAuth } from '@context/transactionsContext';
 import CustomLoader from '@components/contentLoader'
 import CreateTransaction from '@components/createTransaction'
 import FiltersTransactions from '@components/filtersTransactions';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+const NoData = require('@assets/no_data.png')
 
 // TODO:  refatorar e otimizar
 const Transactions = () => {
+    const insets = useSafeAreaInsets();
     const route = useRoute();
     const { params } = route.params || '';
     const tipo = params;
@@ -58,8 +61,6 @@ const Transactions = () => {
     };
     const navigation = useNavigation();
     const handleLoadMore = () => {
-        console.log('Disparou handleLoadMore');
-        console.log({ hasNextPage, isFetchingNextPage });
         if (hasNextPage && !isFetchingNextPage) {
             fetchNextPage();
         }
@@ -117,6 +118,8 @@ const Transactions = () => {
             isVisible={dropdownVisibleId === item?.transaction_id}
             setVisibleId={setDropdownVisibleId}
             onRefresh={onRefresh}
+            tipo={item?.tipo}
+            item={item}
         />
     ), [allData, isDarkMode, dropdownVisibleId]);
 
@@ -201,58 +204,71 @@ const Transactions = () => {
             <View style={{ backgroundColor: isDarkMode ? "#2e2e2e" : '#22C55E' }}>
 
                 <View style={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}>
-                    {(isOpen.sort || isOpen.filters) && (
-                        <Pressable
-                            onPress={() => setIsOpen({ sort: false, filters: false })}
-                            style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                height: '100%',
-                                zIndex: 10,
-                            }}
-                        />
-                    )}
-                    <FiltersTransactions
-                        isDarkMode={isDarkMode}
-                        isOpen={isOpen}
-                        toggleDropdown={toggleDropdown}
-                        sortOptions={sortOptions}
-                        filterOptions={filterOptions}
-                        selectedFilterOption={selectedFilterOption}
-                        setSelectedFilterOption={setSelectedFilterOption}
-                        handleFilter={handleFilter}
-                        filtrosChips={filtrosChips}
-                        removeFiltro={removeFiltro}
-                        handleSort={handleSort}
-                        clearFilters={clearFilters}
-                    />
-                    <FlatList
-                        data={allData}
-                        keyExtractor={(item) => item.transaction_id.toString()}
-                        renderItem={renderItem}
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                        onEndReached={handleLoadMore}
-                        onEndReachedThreshold={0.8}
-                        initialNumToRender={10}
-                        windowSize={5}
-                        maxToRenderPerBatch={10}
-                        updateCellsBatchingPeriod={60}
-                        contentContainerStyle={{ paddingBottom: 100 }}
-                        ListFooterComponent={() => (
-                            isFetchingNextPage ? (
-                                <View style={{ paddingVertical: 25 }}>
-                                    <ActivityIndicator size="large" color={isDarkMode ? "#BBB" : "#122370"} />
-                                </View>
-                            ) : null
-                        )}
-                    />
+                    {allData.length > 0 ? (
+                        <>
+                            {(isOpen.sort || isOpen.filters) && (
+                                <Pressable
+                                    onPress={() => setIsOpen({ sort: false, filters: false })}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: '100%',
+                                        zIndex: 10,
+                                    }}
+                                />
+                            )}
+                            <FiltersTransactions
+                                isDarkMode={isDarkMode}
+                                isOpen={isOpen}
+                                toggleDropdown={toggleDropdown}
+                                sortOptions={sortOptions}
+                                filterOptions={filterOptions}
+                                selectedFilterOption={selectedFilterOption}
+                                setSelectedFilterOption={setSelectedFilterOption}
+                                handleFilter={handleFilter}
+                                filtrosChips={filtrosChips}
+                                removeFiltro={removeFiltro}
+                                handleSort={handleSort}
+                                clearFilters={clearFilters}
+                            />
+                            <FlatList
+                                data={allData}
+                                keyExtractor={(item) => item.transaction_id.toString()}
+                                renderItem={renderItem}
+                                refreshing={refreshing}
+                                onRefresh={onRefresh}
+                                onEndReached={handleLoadMore}
+                                onEndReachedThreshold={0.8}
+                                initialNumToRender={10}
+                                windowSize={5}
+                                maxToRenderPerBatch={10}
+                                updateCellsBatchingPeriod={60}
+                                contentContainerStyle={{ paddingBottom: (filtrosChips.length > 0 ? 250 : 150) }}
+                                ListFooterComponent={() => (
+                                    <>
+                                        {isFetchingNextPage && (
+                                            <View style={{ paddingVertical: 25 }}>
+                                                <ActivityIndicator size="large" color={isDarkMode ? "#BBB" : "#122370"} />
+                                            </View>
+                                        )}
+                                        <View style={{ height: 100 }} />
+                                    </>
+                                )}
+                            />
+                        </>
+                    ) : (
+                        <View style={{ alignItems: 'center', justifyContent: 'center', height: 600, paddingBottom: 64 }}>
+                            <Image source={NoData} style={{ width: 250, height: 250 }} />
+                            <Text style={{ fontSize: 18, fontWeight: '500', color: isDarkMode ? '#a1a1a1' : '#555' }}> Nada por aqui...</Text>
+                        </View>
+                    )
+                    }
 
                 </View>
                 <TouchableOpacity
-                    style={{ backgroundColor: '#222', borderRadius: 60, position: 'absolute', bottom: 60, right: 25 }}
+                    style={{ backgroundColor: '#222', borderRadius: 60, position: 'absolute', bottom: insets.bottom + (filtrosChips.length > 0 ? 165 : 30), right: 35 }}
                     onPress={() => setShowTransactionModal(true)}
                 >
                     <MaterialIcons name="add-circle" size={64} color={"#1b90df"}
