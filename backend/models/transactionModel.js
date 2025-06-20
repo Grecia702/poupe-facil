@@ -194,12 +194,12 @@ const GroupTransactionsByCategories = async (userId, first_date, last_date) => {
     SELECT 
     categoria, 
     COUNT(*) AS ocorrencias, 
-    SUM(valor) AS total
+    SUM(ABS(valor)) AS total
     FROM user_transactions
     WHERE user_id = $1
     AND tipo = 'despesa'
     AND categoria IN ('Lazer', 'Transporte', 'Educação', 'Alimentação', 'Internet', 'Contas', 'Compras', 'Outros', 'Saúde')
-    AND data_transacao BETWEEN $2 AND $3
+    AND DATE(data_transacao) BETWEEN $2 AND $3
     GROUP BY categoria
 `;
   const { rows, rowCount } = await pool.query(query, [userId, first_date, last_date]);
