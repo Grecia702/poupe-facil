@@ -50,8 +50,9 @@ export default function Linechart() {
             timeZone: 'UTC'
         })
     })) || []
+
     const maiorValor = valores.reduce((acc, item) => item.valor > acc.valor ? item : acc, { valor: 0 });
-    const mediaSemanal = maiorValor.valor / 7
+    const mediaSemanal = total / 7
     const screenWidth = Dimensions.get('window').width;
     const handleDate = (label) => {
         if (label === 'prev') {
