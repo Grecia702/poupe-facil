@@ -4,7 +4,6 @@ import { useContext, useState, useMemo } from 'react'
 import { categoriaCores } from '@utils/categoriasCores'
 import Wrapper from '@components/wrapper';
 import Card from '@components/card';
-import ContentLoader, { Rect } from 'react-content-loader/native'
 import PieChart from '@components/pieChart';
 import { useNavigation } from '@react-navigation/native';
 import TransactionCard from '@components/transactions';
@@ -24,7 +23,8 @@ import AccountEmpty from '@assets/bank-account.svg';
 import Budget from '@components/budgetBars';
 import CreateItem from '@components/createItem';
 import Goals from '@components/goals';
-import NavMonths from '@components/navMonths';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 import { startOfMonth, endOfMonth, set, format, addMonths, subMonths } from 'date-fns'
 import { useDonutchartData } from '@hooks/useDonutchartData';
 import CreateTransaction from '@components/createTransaction'
@@ -76,7 +76,11 @@ export default function HomeScreen() {
     }
   };
 
-  console.log(balanceAccount)
+  useFocusEffect(
+    useCallback(() => {
+      onRefresh()
+    }, [])
+  );
 
   return (
     <>

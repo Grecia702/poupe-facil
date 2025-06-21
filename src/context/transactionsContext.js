@@ -2,6 +2,7 @@ import React, { createContext, useContext } from 'react';
 import api from './axiosInstance';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useAuth } from '@context/authContext';
+import { useContasAuth } from '@context/contaContext';
 
 export const TransactionContext = createContext();
 
@@ -32,7 +33,6 @@ const deleteTransaction = async (id) => {
 export const TransactionProvider = ({ children }) => {
     const { isAuthenticated } = useAuth();
     const queryClient = useQueryClient();
-
     const getInfinityTransaction = async ({ pageParam = 1, queryKey }) => {
         const [, filters = {}] = queryKey;
 
@@ -72,7 +72,7 @@ export const TransactionProvider = ({ children }) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['budget_id'] });
             queryClient.invalidateQueries({ queryKey: ['transacoes_infinite'] });
-            queryClient.invalidateQueries({ queryKey: ['account_id'] });
+            queryClient.invalidateQueries({ queryKey: ['categories_posts'] });
         }
     });
 
@@ -81,7 +81,7 @@ export const TransactionProvider = ({ children }) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['budget_id'] });
             queryClient.invalidateQueries({ queryKey: ['transacoes_infinite'] });
-            queryClient.invalidateQueries({ queryKey: ['account_id'] });
+            queryClient.invalidateQueries({ queryKey: ['categories_posts'] });
         }
     });
 
@@ -90,7 +90,7 @@ export const TransactionProvider = ({ children }) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['budget_id'] });
             queryClient.invalidateQueries({ queryKey: ['transacoes_infinite'] });
-            queryClient.invalidateQueries({ queryKey: ['account_id'] });
+            queryClient.invalidateQueries({ queryKey: ['categories_posts'] });
         }
     });
 

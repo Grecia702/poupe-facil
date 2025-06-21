@@ -132,6 +132,7 @@ export const ContasProvider = ({ children }) => {
             error,
             lastDate,
             setLastDate,
+            refetchAccount,
             refetchAccountNow,
             setAccountPrimaryMutation,
             createAccountMutation,
