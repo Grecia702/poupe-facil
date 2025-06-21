@@ -204,35 +204,37 @@ const Transactions = () => {
             <View style={{ backgroundColor: isDarkMode ? "#2e2e2e" : '#22C55E' }}>
 
                 <View style={[styles.Container, { backgroundColor: isDarkMode ? "#2e2e2e" : "#ffffffd5" }]}>
+                    {(isOpen.sort || isOpen.filters) && (
+                        <Pressable
+                            onPress={() => setIsOpen({ sort: false, filters: false })}
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: '100%',
+                                zIndex: 10,
+                            }}
+                        />
+                    )}
+                    <FiltersTransactions
+                        isDarkMode={isDarkMode}
+                        isOpen={isOpen}
+                        toggleDropdown={toggleDropdown}
+                        sortOptions={sortOptions}
+                        filterOptions={filterOptions}
+                        selectedFilterOption={selectedFilterOption}
+                        setSelectedFilterOption={setSelectedFilterOption}
+                        handleFilter={handleFilter}
+                        filtrosChips={filtrosChips}
+                        removeFiltro={removeFiltro}
+                        handleSort={handleSort}
+                        clearFilters={clearFilters}
+                    />
                     {allData.length > 0 ? (
                         <>
-                            {(isOpen.sort || isOpen.filters) && (
-                                <Pressable
-                                    onPress={() => setIsOpen({ sort: false, filters: false })}
-                                    style={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        left: 0,
-                                        width: '100%',
-                                        height: '100%',
-                                        zIndex: 10,
-                                    }}
-                                />
-                            )}
-                            <FiltersTransactions
-                                isDarkMode={isDarkMode}
-                                isOpen={isOpen}
-                                toggleDropdown={toggleDropdown}
-                                sortOptions={sortOptions}
-                                filterOptions={filterOptions}
-                                selectedFilterOption={selectedFilterOption}
-                                setSelectedFilterOption={setSelectedFilterOption}
-                                handleFilter={handleFilter}
-                                filtrosChips={filtrosChips}
-                                removeFiltro={removeFiltro}
-                                handleSort={handleSort}
-                                clearFilters={clearFilters}
-                            />
+
+
                             <FlatList
                                 data={allData}
                                 keyExtractor={(item) => item.transaction_id.toString()}
@@ -259,7 +261,7 @@ const Transactions = () => {
                             />
                         </>
                     ) : (
-                        <View style={{ alignItems: 'center', justifyContent: 'center', height: 600, paddingBottom: 64 }}>
+                        <View style={{ alignItems: 'center', justifyContent: 'center', height: filtrosChips.length > 0 ? 400 : 600, paddingBottom: 64 }}>
                             <Image source={NoData} style={{ width: 250, height: 250 }} />
                             <Text style={{ fontSize: 18, fontWeight: '500', color: isDarkMode ? '#a1a1a1' : '#555' }}> Nada por aqui...</Text>
                         </View>
@@ -268,7 +270,7 @@ const Transactions = () => {
 
                 </View>
                 <TouchableOpacity
-                    style={{ backgroundColor: '#222', borderRadius: 60, position: 'absolute', bottom: insets.bottom + (filtrosChips.length > 0 ? 165 : 30), right: 35 }}
+                    style={{ backgroundColor: '#222', borderRadius: 60, position: 'absolute', bottom: insets.bottom + 30, right: 35 }}
                     onPress={() => setShowTransactionModal(true)}
                 >
                     <MaterialIcons name="add-circle" size={64} color={"#1b90df"}
