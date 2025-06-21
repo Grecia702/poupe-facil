@@ -54,7 +54,7 @@ const loginService = async (query, agent, userIp) => {
     throw new Error('E-mail e/ou senha incorretos!')
 }
 
-const googleService = async (idToken, userAgent, userIp) => {
+const googleService = async (idToken, userAgent, userIp, retry = false) => {
     const timestamp = format(new Date(), "dd/MM/yyyy HH:mm:ss");
     const ticket = await client.verifyIdToken({
         idToken,
@@ -78,6 +78,12 @@ const googleService = async (idToken, userAgent, userIp) => {
         await authModel.createRefreshToken(id, refreshToken, userAgent, userIp, expiresAt)
         logger.info(`Login de google pelo usuário de ID ${id}, email ${decode.email} as ${timestamp}. IP: ${userIp}, User Agent: ${userAgent}`)
         return { accessToken, refreshToken }
+    }
+    else {
+        if (retry) throw new Error("Falha ao criar usuário Google.");
+        const googleSignUp = await authModel.createGoogleUser(decode.given_name, decode.email, decode.sub, decode.picture);
+        await accountModel.CreateAccount(googleSignUp.result.id, 'Conta corrente', 0, 'Conta corrente', 'account-balance', null, true)
+        return await googleService(idToken, userAgent, userIp, true);
     }
 }
 

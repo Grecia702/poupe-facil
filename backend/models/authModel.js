@@ -12,6 +12,17 @@ const createUser = async (name, email, password) => {
     return { rows, exists: rowCount > 0, result: rows[0] };
 }
 
+const createGoogleUser = async (name, email, googleid, picture_path) => {
+    const query = `
+    INSERT INTO usuario 
+    (nome, email, googleid, picture_path, accounttype) 
+    VALUES ($1, $2, $3, $4, 'gmail') 
+    RETURNING id
+    `;
+    const { rows, rowCount } = await pool.query(query, [name, email, googleid, picture_path]);
+    return { rows, exists: rowCount > 0, result: rows[0] };
+}
+
 const getUser = async (email) => {
     const { rows, rowCount } = await pool.query("SELECT id, nome, email, senha FROM usuario WHERE email = $1", [email]);
     return { rows, exists: rowCount > 0, result: rows[0] };
@@ -69,4 +80,4 @@ const accountExists = async (email) => {
 }
 
 
-module.exports = { createUser, getUser, getGoogleUser, createRefreshToken, getToken, deleteToken, accountExists };
+module.exports = { createUser, createGoogleUser, getUser, getGoogleUser, createRefreshToken, getToken, deleteToken, accountExists };
