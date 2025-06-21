@@ -27,7 +27,7 @@ const getBudgetById = async (budgetId, userId) => {
   b.id_usuario,
   b.desc_budget,
   b.quantia_limite AS limite,
-  COALESCE(SUM(t.valor), 0) AS quantia_gasta,
+COALESCE(SUM(ABS(t.valor)), 0) AS quantia_gasta,
   b.limites_categorias,
   cat_agg.quantia_gasta_categorias,
   b.data_inicio,
@@ -39,7 +39,7 @@ LEFT JOIN LATERAL (
   SELECT jsonb_object_agg(key, COALESCE(soma.valor, 0)) AS quantia_gasta_categorias
   FROM jsonb_object_keys(b.limites_categorias) AS key
   LEFT JOIN LATERAL (
-    SELECT SUM(t2.valor) AS valor
+    SELECT SUM(ABS(t2.valor)) AS valor
     FROM transacoes t2
     WHERE t2.budget_id = b.id AND t2.categoria = key
   ) soma ON true

@@ -79,19 +79,17 @@ const CreateTransactionService = async (dados, userId) => {
         dados.proxima_ocorrencia = null
     }
 
-
-    const contaValida = await transactionModel.checkValidAccount(dados.id_contabancaria, userId);
+    const [contaValida, { result, exists }] = await Promise.all([
+        transactionModel.checkValidAccount(dados.id_contabancaria, userId),
+        budgetModel.checkValidDate(dados.data_transacao, userId)
+    ]);
 
     if (!contaValida) throw new Error('Conta inválida');
 
-    const { result, exists } = await budgetModel.checkValidDate(dados.data_transacao, userId)
-
     let budget_id = null;
-    if (exists) {
+    if (exists && dados.tipo === 'despesa') {
         budget_id = result.id
     }
-
-    console.log(budget_id, exists)
 
     await transactionModel.CreateTransaction(
         dados.id_contabancaria,
