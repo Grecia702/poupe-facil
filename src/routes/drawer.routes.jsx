@@ -26,7 +26,7 @@ const CustomDrawerContent = (props) => {
 
     return (
         <DrawerContentScrollView {...props}>
-            <View style={{ alignSelf: 'center' }}>
+            <View style={{ alignSelf: 'center', alignItems: 'center' }}>
                 <View style={[styles.image]}>
                     {data?.picture_path ? (
                         <Image
