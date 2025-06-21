@@ -269,18 +269,19 @@ const Transactions = () => {
                     }
 
                 </View>
-                <TouchableOpacity
-                    style={{ backgroundColor: '#222', borderRadius: 60, position: 'absolute', bottom: insets.bottom + 30, right: 35 }}
-                    onPress={() => setShowTransactionModal(true)}
-                >
-                    <MaterialIcons name="add-circle" size={64} color={"#1b90df"}
-                    />
-                </TouchableOpacity>
-                <CreateTransaction
-                    isOpen={showTransactionModal}
-                    setIsOpen={() => setShowTransactionModal(false)}
-                />
+
             </View>
+            <TouchableOpacity
+                style={{ backgroundColor: '#222', borderRadius: 60, position: 'absolute', bottom: insets.bottom + 30, right: 35 }}
+                onPress={() => setShowTransactionModal(true)}
+            >
+                <MaterialIcons name="add-circle" size={64} color={"#1b90df"}
+                />
+            </TouchableOpacity>
+            <CreateTransaction
+                isOpen={showTransactionModal}
+                setIsOpen={() => setShowTransactionModal(false)}
+            />
         </>
 
     );
