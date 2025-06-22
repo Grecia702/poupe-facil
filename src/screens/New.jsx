@@ -84,13 +84,16 @@ export default function UploadImageScreen({ fields, setFields, selected, setSele
                 categoria: data.categoria,
                 valor: data.valor,
                 data_transacao: data.data,
-                natureza: data.natureza
+                natureza: data.natureza,
+                frequencia_recorrencia: data.frequencia_recorrencia,
+                recorrente: data.recorrente
             });
 
             setSelected({
                 ...selected,
                 categoria: categorias[data.categoria],
-                natureza: data.natureza
+                natureza: data.natureza,
+                recorrente: data.recorrente
             });
 
         } catch (err) {
