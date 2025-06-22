@@ -75,13 +75,11 @@ const LoginScreen = () => {
     };
 
     const toastSuccess = () => {
-        toast.show('Seja bem-vindo novamente', {
+        toast.show('Seja bem-vindo', {
             type: 'success',
-            duration: 1500,
+            duration: 2500,
         });
-        setTimeout(() => {
-            navigation.replace('home');
-        }, 50);
+        navigation.replace('home');
     }
 
     const toastError = (text) => {
