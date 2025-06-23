@@ -27,7 +27,7 @@ const CreateAccount = () => {
             return
         }
         createAccountMutation.mutate(fields, {
-            onSuccess: () => refetch().then(() => toastSuccess()),
+            onSuccess: () => toastSuccess(),
             onError: (error) => errorToast(error),
         });
     }
@@ -35,11 +35,9 @@ const CreateAccount = () => {
     const toastSuccess = () => {
         toast.show(`Conta ${fields.nome_conta} criada com sucesso`, {
             type: 'success',
-            duration: 1500,
+            duration: 2500,
         })
-        setTimeout(() => {
-            navigation.goBack();
-        }, 50)
+        navigation.goBack();
 
     }
 

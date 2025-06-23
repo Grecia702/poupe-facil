@@ -30,10 +30,7 @@ export default function Account({ name, value, icon, color, textColor, isVisible
             duration: 1500,
         });
         setRefreshing(prev => !prev);
-        setTimeout(() => {
-            deleteConta(id)
-            refetch()
-        }, 2000);
+        deleteConta(id)
         setTimeout(() => {
             setRefreshing(prev => !prev);
         }, 3500);
@@ -41,7 +38,7 @@ export default function Account({ name, value, icon, color, textColor, isVisible
 
     const handleSetPrimary = (id) => {
         setAccountPrimaryMutation.mutate(id, {
-            onSuccess: () => { refetch(); handleClose() },
+            onSuccess: () => { handleClose() },
             onError: (error) => console.log(error)
         })
     }
@@ -103,12 +100,7 @@ export default function Account({ name, value, icon, color, textColor, isVisible
                                 </TouchableOpacity>
                             </>
                         )}
-                        <DangerModal
-                            open={isOpen}
-                            setRefreshing={setRefreshing}
-                            setOpen={setIsOpen}
-                            onPress={() => showNotif()}
-                        />
+
                     </View>
                 </Pressable>
             </Modal>
@@ -119,6 +111,12 @@ export default function Account({ name, value, icon, color, textColor, isVisible
 
         <>
             {isVisible && <DropDown />}
+            <DangerModal
+                open={isOpen}
+                setRefreshing={setRefreshing}
+                setOpen={setIsOpen}
+                onPress={() => showNotif()}
+            />
             <AccountCard >
                 <IconCard color={color}>
                     <MaterialIcons
