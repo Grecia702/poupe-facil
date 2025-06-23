@@ -44,6 +44,9 @@ Para o campo "nome da transacao":
 Se a data estiver próxima do valor (antes ou depois, até algumas linhas de distância), considere essa data para o campo "data". Caso contrário, use null.
 Retorne uma lista JSON VALIDA com o objeto extraídos, e nadam ais que isso.
 Gere apenas um json, se encontrar mais de dois valores em reais, some eles
+Se houver mais de uma data no texto, priorize:
+- A que estiver associada a palavras como “vencimento”, “pagamento” ou “total a pagar” (sempre ponha as horas a partir das 10).
+- Se nenhuma estiver claramente associada, escolha a data mais próxima do valor em reais no texto.
 Agora, analise o texto abaixo e faça a extração conforme solicitado:
                             `
                 },
