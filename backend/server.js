@@ -22,7 +22,7 @@ app.use('/api/users/uploads', express.static(path.join(__dirname, 'uploads')))
 iniciarCron();
 
 const rateLimiter = new RateLimiterMemory({
-    points: 20,
+    points: 30,
     duration: 1,
     blockDuration: 10,
 });
