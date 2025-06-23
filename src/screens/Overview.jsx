@@ -144,7 +144,10 @@ const Overview = () => {
             ) : (
                 <View style={{ alignItems: 'center', justifyContent: 'center', height: 500, paddingBottom: 64 }}>
                     <Image source={NoData} style={{ width: 250, height: 250 }} />
-                    <Text style={{ fontSize: 18, fontWeight: '500', color: isDarkMode ? '#a1a1a1' : '#555' }}> Nada por aqui...</Text>
+                    <Text style={{ fontSize: 18, fontWeight: '500', color: isDarkMode ? '#a1a1a1' : '#555' }}>Nada por aqui...</Text>
+                    <Text style={{ fontSize: 18, textAlign: 'center', fontWeight: '500', color: isDarkMode ? '#a1a1a1' : '#555' }}>
+                        Espere até o final do mês para receber um relatório de seus gastos!
+                    </Text>
                 </View>
             )}
             <DateButtonNavigation
