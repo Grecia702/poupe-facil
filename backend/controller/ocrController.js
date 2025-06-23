@@ -1,8 +1,5 @@
-const path = require('path');
-const fs = require('fs');
 const vision = require('@google-cloud/vision');
 const { promptOCR } = require("../services/openaiService");
-require('dotenv').config();
 
 const client = new vision.ImageAnnotatorClient();
 
@@ -12,17 +9,14 @@ const processImage = async (req, res) => {
     }
 
     try {
-        const imagePath = path.resolve(req.file.path);
-        const [result] = await client.textDetection(imagePath);
+        const [result] = await client.textDetection({ image: { content: req.file.buffer } });
         const detections = result.textAnnotations;
 
         if (!detections || detections.length === 0) {
-            fs.unlinkSync(imagePath);
             return res.status(200).json({ text: '', message: 'Nenhum texto encontrado' });
         }
+
         const text = detections[0].description;
-        console.log(text);
-        fs.unlinkSync(imagePath);
         const data = await promptOCR(text);
         return res.status(200).json(data[0]);
     } catch (error) {
