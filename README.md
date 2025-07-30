@@ -1,50 +1,95 @@
-# Welcome to your Expo app 👋
+# Poupe Fácil - Aplicativo de Gerenciamento Financeiro
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicação web desenvolvida como parte de um Trabalho de Conclusão de Curso. O sistema oferece funcionalidades essenciais para controle financeiro com foco em experiência do usuário, organização visual e segurança de dados.
 
-## Get started
+## Tecnologias Utilizadas
 
-1. Install dependencies
+- React Native (JSX)
+- Node.js Express
+- PostgreSQL
+- Expo GO
 
-   ```bash
-   npm install
-   ```
+## Estrutura do projeto
 
-2. Start the app
+Poupe-Facil/<br>
+├── backend/ # Backend da aplicação (Node Js Express)<br>
+│ ├── controller/ # Lógica das rotas<br>
+│ ├── middleware/ # Middlewares personalizados<br>
+│ ├── models/ # Modelos de dados<br>
+│ ├── routes/ # Endpoints da API<br>
+│ ├── services/ # Camada de serviços<br>
+│ ├── utils/ # Funções auxiliares<br>
+│ ├── views/ # Templates ou respostas visuais<br>
+│ └── tests/ # Testes automatizados<br>
+├── src/ # Frontend (React Native)<br>
+│ ├── components/ # Componentes reutilizáveis<br>
+│ ├── context/ # Estado global com Context API<br>
+│ ├── hooks/ # Custom React hooks<br>
+│ ├── routes/ # Definição de rotas do app<br>
+│ ├── screens/ # Telas da aplicação<br>
+│ └── utils/ # Utilitários e helpers
 
-   ```bash
-    npx expo start
-   ```
 
-In the output, you'll find options to open the app in a
+## Capturas de tela
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Autenticação
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- Tela de Login  
+  ![Login](./screenshots/login.png)
 
-## Get a fresh project
+- Tela de Cadastro  
+  ![Signup](./screenshots/signup.png)
 
-When you're ready, run:
+### Pagina Principal
 
-```bash
-npm run reset-project
-```
+- Pagina inicial
+  ![Homepage](./screenshots/homepage.png)
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+- Menu principal
+  ![Main_Menu](./screenshots/main_menu.png)
 
-## Learn more
+### Gráficos
 
-To learn more about developing your project with Expo, look at the following resources:
+- Gráfico de rosca (gastos por categoria)
+  ![Donut](./screenshots/donut_chart.png)
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- Gráfico de barra (receitas x despesas)
+  ![Bar](./screenshots/bar_chart.png)
 
-## Join the community
+- Gráfico de linha (evolução semanal dos gastos)
+  ![Line](./screenshots/line_chart.png)
 
-Join our community of developers creating universal apps.
+### Outros
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Tela de transações 
+  ![Transactions](./screenshots/transactions.png)
+
+- Tela de orçamento 
+  ![Budget](./screenshots/budget.png)
+
+- Tela de metas financeiras 
+  ![Goals](./screenshots/goals.png)
+
+- Criando transação por formulario
+  ![Create_Transactions](./screenshots/creating_transaction.png)
+
+- Criando transação por texto
+  ![AI_Transactions](./screenshots/creating_transaction_AI.png)
+
+- Review de ultimos gastos
+  ![Expenses](./screenshots/expenses_review.png)
+
+- Relatório financeiro
+  ![Report](./screenshots/financial_report.png)
+
+## Status do Projeto
+
+Este projeto foi finalizado em **06/2025** como parte de um Trabalho de Conclusão de Curso. A instância de backend e serviços associados foi descontinuada após a entrega acadêmica.
+
+---
+
+## Direitos Autorais
+
+© 2025 Gabriel Grécia. Todos os direitos reservados.
+
+---
