@@ -52,6 +52,7 @@ android/app/google-services.json
 
 # 👨‍💻 IDEs
 .vscode/
+.VSCodeCounter
 *.iml
 
 # backend/

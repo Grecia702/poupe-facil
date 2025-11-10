@@ -2,9 +2,10 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node server.ts",
+    "dev": "nodemon server.ts",
     "test": "jest"
   },
   "keywords": [],
@@ -12,7 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@google-cloud/vision": "^5.2.0",
+    "@google-cloud/vision": "^5.3.4",
     "bcrypt": "^5.1.1",
     "cloudinary": "^2.6.1",
     "cookie-parser": "^1.4.7",
@@ -21,12 +22,10 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
-    "express-session": "^1.18.1",
     "google-auth-library": "^9.15.1",
     "googleapis": "^148.0.0",
     "image-js": "^0.37.0",
     "jsonwebtoken": "^9.0.2",
-    "multer": "^2.0.0",
     "node-cron": "^3.0.3",
     "pg": "^8.14.1",
     "rate-limiter-flexible": "^7.0.0",
@@ -34,5 +33,15 @@
     "socket.io-client": "^4.8.1",
     "winston": "^3.17.0",
     "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.9.2",
+    "@types/node-cron": "^3.0.11",
+    "@types/pg": "^8.15.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }
