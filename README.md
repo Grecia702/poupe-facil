@@ -1,6 +1,7 @@
 # Poupe Fácil - Aplicativo de Gerenciamento Financeiro
 
-Aplicação web desenvolvida como parte de um Trabalho de Conclusão de Curso. O sistema oferece funcionalidades essenciais para controle financeiro com foco em experiência do usuário, organização visual e segurança de dados.
+Aplicação mobile desenvolvida como parte de um Trabalho de Conclusão de Curso.<br>
+O sistema oferece funcionalidades essenciais para controle financeiro com foco em experiência do usuário, organização visual e segurança de dados.
 
 ## Tecnologias Utilizadas
 
