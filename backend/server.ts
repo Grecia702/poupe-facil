@@ -4,22 +4,22 @@ import path from 'path';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
-import userRoutes from './routes/userRoutes.ts';
-import accountRoutes from './routes/accountRoutes.ts';
-import authRoutes from './routes/authRoutes.ts';
-import transactionRoutes from './routes/transactionRoutes.ts';
-import budgetRoutes from './routes/budgetRoutes.ts';
-import goalsRoutes from './routes/goalsRoutes.ts';
-import gptRoutes from './routes/gptRoutes.ts';
-import ocrRoutes from './routes/OCRRoutes.ts';
-import financialReportRoutes from './routes/financial-report-routes.ts';
-import logger from './utils/loggerConfig.ts';
-import requestTimeLogger from './utils/requestTime.ts';
-import { iniciarCron } from './utils/cronTasks.ts';
+import userRoutes from './features/users/userRoutes.ts';
+import accountRoutes from './features/account/accountRoutes.ts';
+import authRoutes from './features/auth/authRoutes.ts';
+import transactionRoutes from './features/transactions/transactionRoutes.ts';
+import budgetRoutes from './features/budgets/budgetRoutes.ts';
+import goalsRoutes from './features/goals/goalsRoutes.ts';
+import gptRoutes from './features/gpt/gptRoutes.ts';
+import ocrRoutes from './features/OCR/OCRRoutes.ts';
+import financialReportRoutes from './features/financialReports/financial-report-routes.ts';
+import logger from './core/utils/loggerConfig.ts';
+import requestTimeLogger from './core/utils/requestTime.ts';
+import { iniciarCron } from './core/utils/cronTasks.ts';
 import type { Request, Response, NextFunction } from 'express'
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { errorHandler } from './middleware/errorHandler.ts';
+import { errorHandler } from './core/middleware/errorHandler.ts';
 
 const app = express();
 

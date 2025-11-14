@@ -42,6 +42,21 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@core/utils/*": [
+        "./core/utils/*"
+      ],
+      "@core/middleware/*": [
+        "./core/middleware/*"
+      ],
+      "@core/config/*": [
+        "./core/config/*"
+      ],
+      "@shared/*": [
+        "./shared/*"
+      ],
+      "@features/*": [
+        "./features/*"
       ]
     }
   }

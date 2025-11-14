@@ -76,3 +76,5 @@ app.json
 *.traineddata
 **/uploads/*
 packagebackup.json
+
+backend/benchmark.ts
