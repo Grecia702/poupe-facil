@@ -13,8 +13,8 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         const userIp = req.ip || 'Unknown'
         const query = req.body
         const authToken = await loginService(query, userAgent, userIp)
-        res.setHeader('access-token', `${authToken.accessToken}`)
-        res.setHeader('refresh-token', `${authToken.refreshToken}`)
+        res.setHeader('access-token', `Bearer ${authToken.accessToken}`)
+        res.setHeader('refresh-token', `Bearer ${authToken.refreshToken}`)
         res.status(200).json({ message: 'Login feito com sucesso' });
     }
     catch (error) {
