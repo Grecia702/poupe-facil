@@ -44,11 +44,12 @@ yarn-error.*
 .DS_Store
 
 # Android
-android/.gradle/
-android/app/build/
-android/build/
-android/local.properties
-android/app/google-services.json
+frontend/android/.gradle/
+frontend/android/app/build/
+frontend/android/build/
+frontend/android/local.properties
+frontend/android/app/google-services.json
+google-services.json
 
 # 👨‍💻 IDEs
 .vscode/
