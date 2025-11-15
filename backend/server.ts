@@ -10,7 +10,7 @@ import authRoutes from './features/auth/authRoutes.ts';
 import transactionRoutes from './features/transactions/transactionRoutes.ts';
 import budgetRoutes from './features/budgets/budgetRoutes.ts';
 import goalsRoutes from './features/goals/goalsRoutes.ts';
-import gptRoutes from './features/gpt/gptRoutes.ts';
+import chatbotRoutes from './features/chatbot/chatbotRoutes.ts';
 import ocrRoutes from './features/OCR/OCRRoutes.ts';
 import financialReportRoutes from './features/financialReports/financial-report-routes.ts';
 import logger from './core/utils/loggerConfig.ts';
@@ -83,7 +83,7 @@ app.use("/api/auth", (req: Request, res: Response, next: NextFunction) => {
 app.use("/api/users", userRoutes);
 app.use("/api/ocr", ocrRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/gpt", gptRoutes)
+app.use("/api/chatbot", chatbotRoutes)
 app.use("/api/profile/account", accountRoutes);
 app.use("/api/profile/transaction", transactionRoutes);
 app.use("/api/budget", budgetRoutes);
