@@ -1,8 +1,7 @@
-import type { CreateBudgetData, UpdateBudgetData } from '@/features/budgets/budget.js'
+import type { CreateBudgetData, UpdateBudgetData, CategoriasLimites, QueryBudgetData } from './budget.ts'
 import * as budgetModel from './budgetModel.ts'
 import { budgetQuerySchema } from './budget.schema.ts'
-import { NotFoundError, UnprocessableEntityError, BadRequestError } from '@core/utils/errorTypes.ts'
-import type { CategoriasLimites, QueryBudgetData } from './budget.js'
+import { NotFoundError, UnprocessableEntityError, BadRequestError } from '../../core/utils/errorTypes.ts'
 
 const createBudgetService = async (userId: number, queryParams: CreateBudgetData): Promise<void> => {
     const { data_inicio, quantia_limite, limites_categorias } = budgetQuerySchema.parse(queryParams)

@@ -1,6 +1,6 @@
 import express from "express";
-import { authMiddleware } from '@core/middleware/authMiddleware.ts';
-import { validateRefresh } from '@core/middleware/verifyRefreshToken.ts';
+import { authMiddleware } from '../../core/middleware/authMiddleware.ts';
+import { validateRefresh } from '../../core/middleware/verifyRefreshToken.ts';
 import * as authController from './authController.ts'
 import type { Request, Response } from "express";
 const router = express.Router();

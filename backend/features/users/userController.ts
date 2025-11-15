@@ -1,6 +1,6 @@
 import * as userModel from "./userModel.ts";
 import bcrypt from 'bcrypt';
-import cloudinary from '@core/config/cloudinary.ts';
+import cloudinary from '../../core/config/cloudinary.ts';
 import type { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
 import { Readable } from 'stream';
 import { getUserService, changePictureService } from './userService.ts';

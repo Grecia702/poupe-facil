@@ -1,6 +1,6 @@
 import express from "express";
 import * as ocrController from "./ocrController.ts";
-import { authMiddleware } from '@core/middleware/authMiddleware.ts';
+import { authMiddleware } from '../../core/middleware/authMiddleware.ts';
 import type { Request, Response } from "express";
 
 const router = express.Router();

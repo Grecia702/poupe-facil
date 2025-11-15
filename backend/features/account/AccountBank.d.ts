@@ -1,5 +1,5 @@
 export interface DadosBancarios {
-    id?: number,
+    id: number,
     id_usuario: number,
     nome_conta: string,
     tipo_conta: string,

@@ -1,4 +1,4 @@
-import type { FinancialReport } from '@/features/financialReports/financialreport.js'
+import type { FinancialReport } from './financialreport.ts'
 import * as financialReportModel from './financial-report-model.ts'
 
 const getReports = async (userId: number, period: Date): Promise<FinancialReport[]> => {

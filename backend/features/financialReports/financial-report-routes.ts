@@ -1,5 +1,5 @@
 import express from 'express';
-import { authMiddleware } from '@core/middleware/authMiddleware.ts';
+import { authMiddleware } from '../../core/middleware/authMiddleware.ts';
 import * as financialReportController from './financial-report-controller.ts';
 const router = express.Router();
 

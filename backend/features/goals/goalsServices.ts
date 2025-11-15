@@ -1,6 +1,6 @@
 import type { CreateGoalsData, GoalsOverview, UpdateGoalsData } from './goals.js'
 import * as goalsModel from './goalsModel.ts'
-import { NotFoundError } from '@core/utils/errorTypes.ts'
+import { NotFoundError } from '../../core/utils/errorTypes.ts'
 
 const createGoalService = async (userId: number, goalsData: CreateGoalsData): Promise<void> => {
     await goalsModel.createGoal(userId, goalsData)

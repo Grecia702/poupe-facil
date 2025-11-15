@@ -1,5 +1,5 @@
 import type { FinancialReportDB } from './financialreport.js';
-import pool from '@core/config/db.ts'
+import pool from '../../core/config/db.ts'
 
 const list_reports = async (userId: number, period: Date): Promise<FinancialReportDB[] | null> => {
     const query = `

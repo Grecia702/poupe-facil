@@ -1,6 +1,6 @@
 import express from "express";
 import * as userController from "./userController.ts";
-import { authMiddleware } from '@core/middleware/authMiddleware.ts';
+import { authMiddleware } from '../../core/middleware/authMiddleware.ts';
 import type { Request, Response } from "express"
 import fs from 'fs'
 const router = express.Router();

@@ -20,12 +20,8 @@ const createManyTransaction = async (req: Request, res: Response, next: NextFunc
     try {
         const { userId } = req.user
         const { transactions } = req.body
-        const dataToValidate = Array.isArray(transactions)
-            ? transactions.map(t => ({ ...t, id_usuario: userId }))
-            : { ...transactions, id_usuario: userId };
-
-        const transactionsDTO = transactionsCreateSchema.parse(dataToValidate);
-        await TransactionService.CreateManyTransactionService(transactionsDTO);
+        const transactionsDTO = transactionsCreateSchema.parse(transactions);
+        await TransactionService.CreateManyTransactionService(transactionsDTO, userId);
         return res.status(200).json({ message: 'Transações criada com sucesso' });
     } catch (error) {
         next(error)

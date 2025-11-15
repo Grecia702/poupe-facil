@@ -1,9 +1,9 @@
 import 'dotenv/config';
 import cron from 'node-cron';
-import pool from '@core/config/db.ts'
+import pool from '../../core/config/db.ts'
 import { format } from 'date-fns';
-import { getAllActiveService } from '@features/budgets/budgetServices.ts'
-import { promptReport } from '@features/OCR/openaiService.ts'
+import { getAllActiveService } from '../../features/budgets/budgetServices.ts'
+import { promptReport } from '../../features/OCR/openaiService.ts'
 import logger from './loggerCronJob.ts';
 
 async function processarTransacoesRecorrentes() {

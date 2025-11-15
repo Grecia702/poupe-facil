@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { transactionCreateSchema, transactionsCreateSchema, transactionQuerySchema, querySchema, dateParamsSchema } from '@/features/transactions/transaction.schema.ts'
-import type { PaginatedData } from './common.js'
 
 export type Categorias = 'Alimentação' | 'Transporte' | 'Internet' | 'Carro' | 'Saúde' | 'Educação' | 'Contas' | 'Compras' | 'Outros'
 
@@ -84,4 +83,4 @@ export type UpdateTransactionData = Partial<CreateTransactionData>
 export type PaginatedTransactionData = z.infer<typeof querySchema>
 export type DateParams = z.infer<typeof dateParamsSchema>
 
-export type PaginatedTransaction = PaginatedData<GetTransactionData>
+export type PaginatedTransaction = PaginatedTransactionData<GetTransactionData>

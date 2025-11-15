@@ -1,4 +1,4 @@
-import { BadRequestError } from '@core/utils/errorTypes.ts'
+import { BadRequestError } from '../../core/utils/errorTypes.ts'
 import * as FinancialReportService from './financial-report-service.ts'
 import type { Request, Response, NextFunction } from 'express'
 import { z } from 'zod'

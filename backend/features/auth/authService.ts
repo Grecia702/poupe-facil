@@ -2,13 +2,13 @@ import * as authModel from "./authModel.ts";
 import { CreateAccount } from '../account/accountModel.ts'
 import bcrypt from 'bcrypt'
 import { format } from 'date-fns';
-import { generateAccessToken, generateRefreshToken } from '@core/utils/tokenUtils.ts';
+import { generateAccessToken, generateRefreshToken } from '../../core/utils/tokenUtils.ts';
 import { z } from "zod";
 import { OAuth2Client, type TokenPayload } from 'google-auth-library';
-import logger from '@core/utils/loggerConfig.ts';
+import logger from '../../core/utils/loggerConfig.ts';
 import type { AuthTokens, GooglePayload, GoogleUserData, JWTData, UserData } from "./auth.js";
-import { UnauthorizedError, HttpError } from "@core/utils/errorTypes.ts";
-import type { JwtPayload } from "@/core/types/token.js";
+import { UnauthorizedError, HttpError } from "../../core/utils/errorTypes.ts";
+import type { JwtPayload } from "../../core/types/token.js";
 import type { DadosBancarios } from "../account/AccountBank.js";
 
 const saltRounds = 12;

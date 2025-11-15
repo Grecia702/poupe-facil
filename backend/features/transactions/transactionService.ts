@@ -1,9 +1,9 @@
 
 import * as transactionModel from "./transactionModel.ts";
 import * as budgetModel from "../budgets/budgetModel.ts";
-import { calcularProximaOcorrencia } from "@core/utils/calcularOcorrencia.ts"
+import { calcularProximaOcorrencia } from "../../core/utils/calcularOcorrencia.ts"
 import { startOfMonth, subDays, subMonths, endOfMonth } from 'date-fns';
-import { NotFoundError, UnprocessableEntityError } from '@core/utils/errorTypes.ts'
+import { NotFoundError, UnprocessableEntityError } from '../../core/utils/errorTypes.ts'
 import type {
     CreateTransactionData,
     DateParams,
@@ -116,7 +116,7 @@ const CreateTransactionService = async (dados: CreateTransactionData, id_usuario
     await transactionModel.CreateTransaction(transactionDTO);
 };
 
-const CreateManyTransactionService = async (transactions: TransactionList): Promise<void> => {
+const CreateManyTransactionService = async (transactions: CreateTransactionData[], userId: number): Promise<void> => {
 
     const transactionsArray = Array.isArray(transactions) ? transactions : [transactions];
     const updatedTransactions: CreateTransactionData[] = [];
@@ -125,9 +125,7 @@ const CreateManyTransactionService = async (transactions: TransactionList): Prom
         if (transaction.tipo === 'Despesa') {
             transaction.valor = -Math.abs(transaction.valor);
         }
-
-        if (!transaction.id_usuario) throw new Error('ID do usuário é obrigatório');
-        const contaValida = await transactionModel.checkValidAccount(transaction.id_contabancaria, transaction.id_usuario);
+        const contaValida = await transactionModel.checkValidAccount(transaction.id_contabancaria, userId);
         if (!contaValida) throw new Error('Conta inválida');
         updatedTransactions.push(transaction);
     }

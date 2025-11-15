@@ -1,9 +1,9 @@
-import logger from '@core/utils/loggerConfig.ts'
-import { generateAccessToken } from '@core/utils/tokenUtils.ts';
+import logger from '../../core/utils/loggerConfig.ts'
+import { generateAccessToken } from '../../core/utils/tokenUtils.ts';
 import { loginService, googleLoginService, signupService, logoutService } from './authService.ts';
 import { format } from 'date-fns';
 import type { Request, Response, NextFunction } from 'express';
-import type { JwtPayload } from '@/core/types/token.js';
+import type { JwtPayload } from '../../core/types/token.js';
 
 // LOGIN
 

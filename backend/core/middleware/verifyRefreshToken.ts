@@ -1,4 +1,4 @@
-import { getToken, deleteToken } from "@features/auth/authModel.ts";
+import { getToken, deleteToken } from "../../features/auth/authModel.ts";
 import { verifyRefreshToken } from '../utils/tokenUtils.ts';
 import type { Request, Response, NextFunction } from 'express';
 

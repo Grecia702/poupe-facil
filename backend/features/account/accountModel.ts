@@ -1,4 +1,4 @@
-import pool from '@/core/config/db.ts'
+import pool from '../../core/config/db.ts'
 import type { DadosBancarios, ContaCreate, ContaUpdate, UserBalance, UserBalanceDB } from '@/features/account/AccountBank.js'
 
 const CreateAccount = async (userId: number, bankAccountDTO: ContaCreate): Promise<void> => {
@@ -125,7 +125,7 @@ const listAccountsPrimary = async (userId: number) => {
     WHERE id_usuario = $1 
     `;
     const { rows, rowCount } = await pool.query(query, [userId]);
-    return { rows, total: rowCount, result: rows };
+    return rows;
 }
 
 export {

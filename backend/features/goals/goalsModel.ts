@@ -1,4 +1,4 @@
-import pool from '@/core/config/db.ts'
+import pool from '../../core/config/db.ts'
 import type { CreateGoalsData, UpdateGoalsData, QueryGoalsData, GoalsTotal } from './goals.ts';
 
 const createGoal = async (userId: number, goalsData: CreateGoalsData): Promise<void> => {

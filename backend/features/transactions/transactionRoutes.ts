@@ -1,7 +1,7 @@
 import express from "express";
 import * as transactionController from "./transactionController.ts";
-import { authMiddleware } from '@core/middleware/authMiddleware.ts';
-import { errorHandler } from "@core/middleware/errorHandler.ts";
+import { authMiddleware } from '../../core/middleware/authMiddleware.ts';
+import { errorHandler } from "../../core/middleware/errorHandler.ts";
 const router = express.Router();
 
 router.post("/many", authMiddleware, transactionController.createManyTransaction)

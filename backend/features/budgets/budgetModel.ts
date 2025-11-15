@@ -1,5 +1,5 @@
 import type { CreateBudgetData, QueryBudgetData, UpdateBudgetData } from './budget.d.ts';
-import pool from '@/core/config/db.ts'
+import pool from '../../core/config/db.ts'
 
 const createBudget = async (userId: number, queryParams: CreateBudgetData): Promise<void> => {
   const { desc_budget, quantia_limite, data_inicio, data_termino, limites_categorias } = queryParams

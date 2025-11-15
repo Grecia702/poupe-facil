@@ -1,4 +1,4 @@
-import pool from '@/core/config/db.ts'
+import pool from '../../core/config/db.ts'
 import type { UserData, JWTData, GoogleUserData } from './auth.d.ts';
 
 const createUser = async (name: string, email: string, password: string): Promise<{ id: number }> => {

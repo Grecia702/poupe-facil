@@ -13,7 +13,7 @@ import type {
   GroupedByType,
   GroupedCategories
 } from './transaction.d.ts';
-import pool from '@/core/config/db.ts'
+import pool from '../../core/config/db.ts'
 
 
 const checkValidAccount = async (id_account: number, id_usuario: number): Promise<boolean> => {

@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express"
 import * as AccountService from "./accountService.ts"
 import type { ContaCreate, ContaUpdate } from './AccountBank.ts'
-import { HttpError } from "@core/utils/errorTypes.ts"
+import { HttpError } from "../../core/utils/errorTypes.ts"
 
 const CreateAccount = async (req: Request, res: Response, next: NextFunction) => {
     try {
