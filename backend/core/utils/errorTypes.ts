@@ -36,5 +36,10 @@ export class UnprocessableEntityError extends HttpError {
         super(message, 422)
     }
 }
+export class BadGatewayError extends HttpError {
+    constructor(message: string) {
+        super(message, 502)
+    }
+}
 
 
