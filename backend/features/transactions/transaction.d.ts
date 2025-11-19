@@ -1,7 +1,19 @@
 import { z } from 'zod'
-import { transactionCreateSchema, transactionsCreateSchema, transactionQuerySchema, querySchema, dateParamsSchema } from '@/features/transactions/transaction.schema.ts'
+import { transactionCreateSchema, transactionsCreateSchema, transactionQuerySchema, querySchema, dateParamsSchema } from './transaction.schema.ts'
 
 export type Categorias = 'Alimentação' | 'Transporte' | 'Internet' | 'Carro' | 'Saúde' | 'Educação' | 'Contas' | 'Compras' | 'Outros'
+
+export const SUBCATEGORIAS_MAP: Record<Categorias, string[]> = {
+    Alimentação: ['Restaurantes', 'Supermercado', 'Lanches', 'Delivery', 'Padaria'],
+    Transporte: ['Combustível', 'Transporte público', 'Taxi/Uber', 'Estacionamento', 'Pedágio'],
+    Internet: ['Internet fibra', 'Internet móvel', 'Streaming', 'Jogos online'],
+    Carro: ['Manutenção', 'IPVA', 'Seguro', 'Lavagem', 'Multas'],
+    Saúde: ['Farmácia', 'Consultas', 'Exames', 'Plano de saúde', 'Academia'],
+    Educação: ['Mensalidade', 'Livros', 'Cursos online', 'Material escolar', 'Idiomas'],
+    Contas: ['Energia elétrica', 'Água', 'Gás', 'Condomínio', 'Telefone'],
+    Compras: ['Roupas', 'Eletrônicos', 'Casa e decoração', 'Presentes', 'Cosméticos'],
+    Outros: ['Lazer', 'Viagens', 'Pets', 'Doações', 'Diversos'],
+}
 
 export interface QueryFilters {
     tipo?: 'Despesa' | 'Receita',

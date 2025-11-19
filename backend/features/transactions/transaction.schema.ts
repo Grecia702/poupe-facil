@@ -1,11 +1,11 @@
 import { boolean, z } from 'zod'
+import { SUBCATEGORIAS_MAP } from './transaction.d.ts';
 
 export const transactionCreateSchema = z.object({
     id_usuario: z.number().int().optional(),
     id_contabancaria: z.number().int(),
     nome_transacao: z.string().min(1),
     valor: z.number().positive(),
-    categoria: z.enum(['Alimentação', 'Transporte', 'Internet', 'Carro', 'Saúde', 'Educação', 'Contas', 'Compras', 'Outros']),
     data_transacao: z.date(),
     tipo: z.enum(['Despesa', 'Receita']),
     natureza: z.enum(['Fixa', 'Variavel']),
@@ -16,7 +16,12 @@ export const transactionCreateSchema = z.object({
         'Quadrimestral', 'Anual'
     ]).optional().nullable(),
     proxima_ocorrencia: z.date().optional().nullable(),
-    budget_id: z.number().int().optional()
+    budget_id: z.number().int().optional(),
+    categoria: z.enum(['Alimentação', 'Transporte', 'Internet', 'Carro', 'Saúde', 'Educação', 'Contas', 'Compras', 'Outros']),
+    subcategoria: z.string()
+}).refine((data) => {
+    const subcategoriasValidas = SUBCATEGORIAS_MAP[data.categoria];
+    return subcategoriasValidas.includes(data.subcategoria);
 })
 
 export const transactionQuerySchema = z.object({

@@ -29,22 +29,23 @@ const checkValidAccount = async (id_account: number, id_usuario: number): Promis
 }
 
 const CreateTransaction = async (data: CreateTransactionData): Promise<void> => {
-  const { id_contabancaria, nome_transacao, categoria, data_transacao, tipo, valor, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id } = data
+  const { id_contabancaria, nome_transacao, categoria, subcategoria, data_transacao, tipo, valor, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id } = data
   const query = `
     INSERT INTO transacoes 
-    (id_contabancaria, nome_transacao, categoria, data_transacao, tipo, valor, natureza , recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id) 
+    (id_contabancaria, nome_transacao, categoria, subcategoria, data_transacao, tipo, valor, natureza , recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id) 
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
-  await pool.query(query, [id_contabancaria, nome_transacao, categoria, data_transacao, tipo, valor, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id]);
+  await pool.query(query, [id_contabancaria, nome_transacao, categoria, subcategoria, data_transacao, tipo, valor, natureza, recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id]);
 }
 
 const CreateManyTransactions = async (transactions: TransactionArray): Promise<Partial<TransactionArray[]> | null> => {
   const values: any[] = [];
   const placeholders = transactions.map((transaction, i) => {
-    const idx = i * 11;
+    const idx = i * 12;
     values.push(
       transaction.id_contabancaria,
       transaction.nome_transacao,
       transaction.categoria,
+      transaction.subcategoria,
       transaction.data_transacao,
       transaction.tipo,
       transaction.valor,
@@ -55,12 +56,12 @@ const CreateManyTransactions = async (transactions: TransactionArray): Promise<P
       transaction.budget_id,
     );
 
-    return `($${idx + 1}, $${idx + 2}, $${idx + 3}, $${idx + 4}, $${idx + 5}, $${idx + 6}, $${idx + 7}, $${idx + 8}, $${idx + 9}, $${idx + 10}, $${idx + 11})`;
+    return `($${idx + 1}, $${idx + 2}, $${idx + 3}, $${idx + 4}, $${idx + 5}, $${idx + 6}, $${idx + 7}, $${idx + 8}, $${idx + 9}, $${idx + 10}, $${idx + 11}), $${idx + 12})`;
   }).join(', ');
 
   const query = `
     INSERT INTO transacoes 
-    (id_contabancaria, nome_transacao, categoria, data_transacao, tipo, valor, natureza , recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id)   
+    (id_contabancaria, nome_transacao, categoria, subcategoria, data_transacao, tipo, valor, natureza , recorrente, frequencia_recorrencia, proxima_ocorrencia, budget_id)   
     VALUES ${placeholders}
     RETURNING categoria, nome_transacao, tipo, natureza, valor, data_transacao;
   `;

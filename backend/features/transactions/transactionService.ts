@@ -103,6 +103,7 @@ const CreateTransactionService = async (dados: CreateTransactionData, id_usuario
         id_contabancaria: dados.id_contabancaria,
         nome_transacao: dados.nome_transacao,
         categoria: dados.categoria,
+        subcategoria: dados.subcategoria,
         data_transacao: dados.data_transacao,
         tipo: dados.tipo,
         valor: dados.valor,
