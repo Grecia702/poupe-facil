@@ -1,42 +1,24 @@
-import type { CreateGoalsData, GoalsOverview, UpdateGoalsData } from './goals.js'
 import * as goalsModel from './goalsModel.ts'
 import { NotFoundError } from '../../core/utils/errorTypes.ts'
+import type { CreateGoalInput, UpdateGoalInput, StatusMeta } from './goals.d.ts'
+import type { GoalsOverview, Goal } from '../../shared/types/goals.d.ts'
 
-const createGoalService = async (userId: number, goalsData: CreateGoalsData): Promise<void> => {
+const createGoalService = async (userId: number, goalsData: CreateGoalInput): Promise<void> => {
     await goalsModel.createGoal(userId, goalsData)
 }
 
-const getGoalService = async (userId: number, query: string): Promise<GoalsOverview | []> => {
-    const soma = await goalsModel.totalConcluded(userId, query)
+const getGoalService = async (userId: number, query: StatusMeta): Promise<GoalsOverview> => {
     const goals = await goalsModel.getGoals(userId, query)
-    if (!goals) return []
-    return {
-        metas: goals.map(row => ({
-            ...row,
-            saldo_meta: parseFloat(row.saldo_meta),
-            valor_meta: parseFloat(row.valor_meta),
-
-        })),
-        total: {
-            total_ocorrencias: parseInt(soma.total_ocorrencias),
-            total_metas: parseFloat(soma.total_metas),
-            total_economizado: parseFloat(soma.total_economizado),
-        },
-    }
+    return goals
 }
 
-const getGoalByIdService = async (userId: number, goalId: number) => {
+const getGoalByIdService = async (userId: number, goalId: number): Promise<Goal> => {
     const goals = await goalsModel.getGoalById(userId, goalId)
     if (!goals) throw new NotFoundError('Meta não encontrada');
-    const data = ({
-        ...goals,
-        saldo_meta: parseFloat(goals.saldo_meta),
-        valor_meta: parseFloat(goals.valor_meta)
-    })
-    return data
+    return goals
 }
 
-const updateGoalService = async (userId: number, goalId: number, queryParams: UpdateGoalsData): Promise<void> => {
+const updateGoalService = async (userId: number, goalId: number, queryParams: UpdateGoalInput): Promise<void> => {
     const goals = await goalsModel.checkExisting(userId, goalId)
     if (!goals) throw new NotFoundError('Meta não encontrada');
     await goalsModel.updateGoal(userId, goalId, queryParams)

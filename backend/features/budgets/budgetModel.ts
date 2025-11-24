@@ -1,8 +1,10 @@
-import type { CreateBudgetData, QueryBudgetData, UpdateBudgetData } from './budget.d.ts';
+import type { BudgetCreateDTO, CategoriasLimites, UpdateBudgetData } from './budget.d.ts';
+import type { BudgetData } from '../../shared/types/budget.js';
 import pool from '../../core/config/db.ts'
+import { formatCurrency } from '../../shared/formatCurrency.ts';
 
-const createBudget = async (userId: number, queryParams: CreateBudgetData): Promise<void> => {
-  const { desc_budget, quantia_limite, data_inicio, data_termino, limites_categorias } = queryParams
+const createBudget = async (userId: number, budgetData: BudgetCreateDTO): Promise<void> => {
+  const { desc_budget, quantia_limite, data_inicio, data_termino, limites_categorias } = budgetData
   const query = `
     INSERT INTO planejamento
     (id_usuario, desc_budget, quantia_limite, data_inicio, data_termino, limites_categorias)
@@ -12,7 +14,7 @@ const createBudget = async (userId: number, queryParams: CreateBudgetData): Prom
   await pool.query(query, [userId, desc_budget, quantia_limite, data_inicio, data_termino, limites_categorias])
 }
 
-const getBudgets = async (userId: number): Promise<QueryBudgetData> => {
+const getBudgets = async (userId: number): Promise<BudgetData[]> => {
   const query = `
     SELECT 
     id, quantia_limite, desc_budget, data_inicio, data_termino, ativo, limites_categorias
@@ -20,14 +22,13 @@ const getBudgets = async (userId: number): Promise<QueryBudgetData> => {
     WHERE id_usuario = $1
     `;
   const { rows } = await pool.query(query, [userId])
-  return rows[0]
+  return rows
 }
 
-const getBudgetById = async (budgetId: number, userId: number): Promise<QueryBudgetData> => {
+const getBudgetById = async (budgetId: number, userId: number): Promise<BudgetData | null> => {
   const query = `
   SELECT 
     b.id,
-    b.id_usuario,
     b.desc_budget,
     b.quantia_limite AS limite,
     COALESCE(SUM(ABS(t.valor)), 0) AS quantia_gasta,
@@ -58,8 +59,25 @@ const getBudgetById = async (budgetId: number, userId: number): Promise<QueryBud
     b.id, b.id_usuario, b.desc_budget, b.quantia_limite,
     b.limites_categorias, b.data_inicio, b.data_termino, b.ativo,
     cat_agg.quantia_gasta_categorias`;
-  const { rows } = await pool.query(query, [budgetId, userId])
-  return rows[0]
+  const { rows, rowCount } = await pool.query(query, [budgetId, userId])
+  if (rowCount === 0) return null
+  const limites_categorias = rows[0].limites_categorias ?? {}
+  const quantia_gasta_categorias = rows[0].quantia_gasta_categorias ?? {}
+
+  const processedBudget = {
+    ...rows[0],
+    limite: Math.abs(formatCurrency(rows[0].limite)),
+    quantia_gasta: Math.abs(formatCurrency(rows[0].quantia_gasta)),
+    limites_categorias: limites_categorias.map((item: CategoriasLimites) => ({
+      ...item,
+      value: Math.abs(item.value)
+    })),
+    quantia_gasta_categorias: quantia_gasta_categorias.map((item: CategoriasLimites) => ({
+      ...item,
+      value: Math.abs(item.value)
+    }))
+  }
+  return processedBudget
 }
 
 const getActiveBudget = async (userId: number): Promise<{ id: number }> => {
@@ -128,9 +146,9 @@ const checkExisting = async (budgetId: number, userId: number): Promise<boolean>
   return rows[0].exists
 }
 
-const getAllActiveBudgets = async (): Promise<QueryBudgetData[]> => {
+const getAllActiveBudgets = async (): Promise<BudgetData[] | null> => {
   const query = `
-    SELECT 
+  SELECT 
   b.id,
   b.id_usuario,
   b.desc_budget,
@@ -144,21 +162,40 @@ const getAllActiveBudgets = async (): Promise<QueryBudgetData[]> => {
 FROM planejamento b
 LEFT JOIN transacoes t ON t.budget_id = b.id
 LEFT JOIN LATERAL (
-  SELECT jsonb_object_agg(key, COALESCE(soma.valor, 0)) AS quantia_gasta_categorias
-  FROM jsonb_object_keys(b.limites_categorias) AS key
+  SELECT jsonb_agg(
+    jsonb_build_object(
+      'category', limite_cat->>'category',
+      'value', COALESCE(gasto.total, 0)
+    )
+  ) AS quantia_gasta_categorias
+  FROM jsonb_array_elements(b.limites_categorias) AS limite_cat
   LEFT JOIN LATERAL (
-    SELECT SUM(t2.valor) AS valor
+    SELECT SUM(t2.valor) AS total
     FROM transacoes t2
-    WHERE t2.budget_id = b.id AND t2.categoria = key
-  ) soma ON true
+    WHERE t2.budget_id = b.id 
+      AND t2.categoria = (limite_cat->>'category')
+  ) gasto ON true
 ) cat_agg ON true
-WHERE ativo = true
+WHERE b.ativo = true
 GROUP BY 
-  b.id, b.id_usuario, b.desc_budget, b.quantia_limite,
-  b.limites_categorias, b.data_inicio, b.data_termino, b.ativo,
-  cat_agg.quantia_gasta_categorias`;
-  const { rows } = await pool.query(query)
-  return rows
+  b.id, 
+  b.id_usuario, 
+  b.desc_budget, 
+  b.quantia_limite,
+  b.limites_categorias, 
+  b.data_inicio, 
+  b.data_termino, 
+  b.ativo,
+  cat_agg.quantia_gasta_categorias;`;
+  const { rows, rowCount } = await pool.query(query)
+  if (rowCount === 0) return null
+  const formattedData = rows.map(row => ({
+    ...row,
+    limite: formatCurrency(row.limite),
+    quantia_gasta: formatCurrency(row.quantia_gasta),
+
+  }))
+  return formattedData
 }
 
 export {

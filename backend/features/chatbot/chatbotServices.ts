@@ -2,14 +2,14 @@ import { normalizeTransactions, formatTransactionMessage } from "./chatbotUtils.
 import { CreateManyTransactionService } from "../transactions/transactionService.ts";
 import { BadGatewayError, UnprocessableEntityError } from "../../core/utils/errorTypes.ts";
 import { GroupTransactionsByCategories } from "../transactions/transactionModel.ts";
-import { formatComparisson, formatCurrency, formatExpenseMessage } from "./chatbotUtils.ts";
+import { formatComparisson, formatCurrencyBRL, formatExpenseMessage } from "./chatbotUtils.ts";
 import type { ChatCompletionMessageFunctionToolCall } from "openai/resources/index";
-import type { QueryBudgetData } from "../budgets/budget.d.ts";
-import type { DadosBancarios } from "../account/AccountBank.d.ts";
+import type { DadosBancarios } from "../../shared/types/bankAccount.js";
+import type { Transaction, GroupedCategories } from '../../shared/types/transaction.d.ts'
+import type { BudgetData } from '../../shared/types/budget.d.ts'
 import type { KvCategories, OverviewArgs, TransactionArgs } from "./chatbot";
-import type { GroupedCategories } from "../transactions/transaction";
 
-export const createManyTransactions = async (accountData: DadosBancarios, budgetData: QueryBudgetData, args: TransactionArgs) => {
+export const createManyTransactions = async (accountData: DadosBancarios, budgetData: BudgetData, args: TransactionArgs) => {
     const { transactions } = args;
     if (!args || !transactions) {
         throw new BadGatewayError('Erro ao comunicar com serviço de IA')
@@ -47,7 +47,7 @@ export const transactionsOverview = async (args: OverviewArgs, userId: number) =
     const sortedCurrent = [...currentRows].sort((a, b) => Number(b.total) - Number(a.total));
     const maiorGasto = sortedCurrent[0] as GroupedCategories;
     const destaqueMessage = `Destaque do maior gasto:` +
-        `- ${maiorGasto?.categoria}: ${formatCurrency(maiorGasto.total)} (${maiorGasto?.ocorrencias}x)`.trim();
+        `- ${maiorGasto?.categoria}: ${formatCurrencyBRL(maiorGasto.total)} (${maiorGasto?.ocorrencias}x)`.trim();
 
     return ({
         command: 'transactionSummary',
@@ -118,20 +118,5 @@ export const prompts = (memory: string) => {
                 }
             }
         },
-        {
-            type: "function" as const,
-            function: {
-                name: "freeform",
-                description: "Você é um assistente financeiro. Apenas responda questões relacionadas a finanças, economias, gestão financeira e temas relacionados."
-                    + `Memória: ${memory}`,
-                parameters: {
-                    type: "object",
-                    properties: {
-                        query: { type: "string", description: "Responda a pergunta" }
-                    },
-                    required: ["query"]
-                }
-            }
-        }
     ]
 }

@@ -1,6 +1,8 @@
 import * as budgetService from './budgetServices.ts'
 import type { Request, Response, NextFunction } from 'express'
 import { budgetQuerySchema } from './budget.schema.ts'
+import type { ApiSuccess } from '../../shared/types/ApiResponse.d.ts'
+import type { BudgetData } from '@/shared/types/budget.d.ts'
 
 const createBudget = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -17,7 +19,7 @@ const getBudgets = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { userId } = req.user
         const budget = await budgetService.getBudgetService(userId)
-        res.status(200).json(budget)
+        return res.status(200).json({ success: true, data: budget } satisfies ApiSuccess<BudgetData[]>)
     } catch (error) {
         next(error)
     }
@@ -28,7 +30,7 @@ const getBudgetById = async (req: Request, res: Response, next: NextFunction) =>
         const { userId } = req.user
         const id = Number(req.params.id)
         const budget = await budgetService.getBudgetByIdService(userId, id)
-        res.status(200).json(budget)
+        return res.status(200).json({ success: true, data: budget } satisfies ApiSuccess<BudgetData>)
     } catch (error) {
         next(error)
     }
@@ -38,7 +40,7 @@ const getActiveBudget = async (req: Request, res: Response, next: NextFunction) 
     try {
         const { userId } = req.user
         const budget = await budgetService.getActiveService(userId)
-        res.status(200).json(budget)
+        return res.status(200).json({ success: true, data: budget } satisfies ApiSuccess<BudgetData>)
     } catch (error) {
         next(error)
     }

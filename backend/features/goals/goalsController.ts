@@ -1,8 +1,10 @@
 import * as goalsService from "./goalsServices.ts"
 import type { Request, Response, NextFunction } from "express"
-import { goalsQuerySchema } from "./goals.schema.ts"
+import { goalsQuerySchema, statusQuerySchema } from "./goals.schema.ts"
+import type { ApiSuccess } from "../../shared/types/ApiResponse.d.ts"
+import type { Goal, GoalsOverview } from "../../shared/types/goals.d.ts"
 
-const createGoal = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const createGoal = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const query = goalsQuerySchema.parse(req.body)
         const { userId } = req.user
@@ -13,29 +15,29 @@ const createGoal = async (req: Request, res: Response, next: NextFunction): Prom
     }
 }
 
-const getGoals = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const getGoals = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { userId } = req.user
-        const query = (req.query.status_meta as string) || 'ativa';
-        const goals = await goalsService.getGoalService(userId, query)
-        res.status(200).json(goals)
+        const { status_meta } = statusQuerySchema.parse(req.query)
+        const goals = await goalsService.getGoalService(userId, status_meta)
+        return res.status(200).json({ success: true, data: goals } satisfies ApiSuccess<GoalsOverview>)
     } catch (error) {
         next(error)
     }
 }
 
-const getGoalById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const getGoalById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const goalId = Number(req.params.id)
         const { userId } = req.user
-        const goals = await goalsService.getGoalByIdService(userId, goalId)
-        res.status(200).json(goals)
+        const goal = await goalsService.getGoalByIdService(userId, goalId)
+        return res.status(200).json({ success: true, data: goal } satisfies ApiSuccess<Goal>)
     } catch (error) {
         next(error)
     }
 }
 
-const updateGoal = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const updateGoal = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const query = req.body
         const goalId = Number(req.params.id)
@@ -47,7 +49,7 @@ const updateGoal = async (req: Request, res: Response, next: NextFunction): Prom
     }
 }
 
-const updateSaldo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const updateSaldo = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { saldo } = req.body
         const goalId = Number(req.params.id)
@@ -59,7 +61,7 @@ const updateSaldo = async (req: Request, res: Response, next: NextFunction): Pro
     }
 }
 
-const deleteGoal = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const deleteGoal = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const goalId = Number(req.params.id)
         const { userId } = req.user

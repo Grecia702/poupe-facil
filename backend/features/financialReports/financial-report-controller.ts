@@ -1,7 +1,8 @@
-import { BadRequestError } from '../../core/utils/errorTypes.ts'
 import * as FinancialReportService from './financial-report-service.ts'
 import type { Request, Response, NextFunction } from 'express'
 import { z } from 'zod'
+import type { ApiSuccess } from '../../shared/types/ApiResponse.d.ts'
+import type { FinancialReport } from '../../shared/types/financialReport.d.ts'
 
 const reportSchema = z.object({
     period: z
@@ -15,7 +16,7 @@ const getReport = async (req: Request, res: Response, next: NextFunction) => {
         const { userId } = req.user
         const { period } = reportSchema.parse(req.query)
         const reports = await FinancialReportService.getReports(userId, period)
-        res.status(200).json(reports)
+        return res.status(200).json({ success: true, data: reports } satisfies ApiSuccess<FinancialReport[]>)
     } catch (error) {
         next(error)
     }
@@ -24,11 +25,9 @@ const getReport = async (req: Request, res: Response, next: NextFunction) => {
 const getReportByID = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { userId } = req.user
-        const { id } = req.params
-        if (!id) throw new BadRequestError("ID inválida.");
-        const reportId = parseInt(id)
-        const reports = await FinancialReportService.getReportByID(userId, reportId)
-        res.status(200).json(reports)
+        const id = Number(req.params.id)
+        const report = await FinancialReportService.getReportByID(userId, id)
+        return res.status(200).json({ success: true, data: report } satisfies ApiSuccess<FinancialReport>)
     } catch (error) {
         next(error)
     }

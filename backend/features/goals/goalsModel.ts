@@ -1,7 +1,9 @@
 import pool from '../../core/config/db.ts'
-import type { CreateGoalsData, UpdateGoalsData, QueryGoalsData, GoalsTotal } from './goals.ts';
+import type { CreateGoalInput, UpdateGoalInput } from './goals.d.ts';
+import type { GoalsOverview, Goal } from '../../shared/types/goals.js';
+import { formatCurrency } from '../../shared/formatCurrency.ts';
 
-const createGoal = async (userId: number, goalsData: CreateGoalsData): Promise<void> => {
+const createGoal = async (userId: number, goalsData: CreateGoalInput): Promise<void> => {
     const data_inicio = new Date()
     const { desc_meta, valor_meta, status_meta, data_termino } = goalsData
     const query = `
@@ -13,36 +15,56 @@ const createGoal = async (userId: number, goalsData: CreateGoalsData): Promise<v
     await pool.query(query, [userId, desc_meta, valor_meta, status_meta, data_inicio, data_termino])
 }
 
-const getGoals = async (userId: number, status_meta: string): Promise<QueryGoalsData[] | null> => {
-    const query = `
+const getGoals = async (userId: number, status_meta: string): Promise<GoalsOverview> => {
+    const params = []
+    params.push(userId)
+    let whereClause = "WHERE id_usuario = $1 "
+    if (status_meta) {
+        whereClause += `AND status_meta = $2`
+        params.push(status_meta)
+    }
+    let queryBase = `
+    WITH metas_data AS (
+        SELECT 
+            id, 
+            desc_meta,
+            saldo_meta,
+            valor_meta,
+            status_meta,
+            data_inicio,
+            data_concluida,
+            deadline
+        FROM metas
+        ${whereClause}
+    ),
+    totals AS (
+        SELECT
+            COUNT(*)::int as total_ocorrencias,
+            COALESCE(SUM(valor_meta), 0) as total_metas,
+            COALESCE(SUM(saldo_meta), 0) as total_economizado
+        FROM metas
+        ${whereClause}
+    )
     SELECT 
-    g.id, 
-    g.desc_meta,
-    g.saldo_meta,
-    g.valor_meta,
-    g.status_meta,
-    g.data_inicio,
-    g.data_concluida,
-    g.deadline
-    FROM metas as g	
-    WHERE g.id_usuario = $1 
-    AND status_meta = $2
-    GROUP BY g.id, g.desc_meta, g.valor_meta, g.data_inicio, g.deadline
-    ORDER BY g.id DESC
+        COALESCE(json_agg(metas_data.* ORDER BY metas_data.id DESC) FILTER (WHERE metas_data.id IS NOT NULL), '[]'::json) as metas,
+        (SELECT row_to_json(totals.*) FROM totals) as totals
+    FROM metas_data
     `;
-    const { rows, rowCount } = await pool.query(query, [userId, status_meta])
-    if (rowCount === 0) return null
-    return rows
+    const { rows } = await pool.query(queryBase, params)
+    return {
+        metas: rows[0].metas,
+        totals: rows[0].totals
+    };
 }
 
-const getGoalById = async (userId: number, goalId: number): Promise<QueryGoalsData | null> => {
+const getGoalById = async (userId: number, goalId: number): Promise<Goal | null> => {
     const query = `
     SELECT 
     g.id, 
     g.id_usuario, 
     g.desc_meta, 
-    g.valor_meta,
-    g.saldo_meta,
+    g.saldo_meta g.saldo_meta,
+    g.valor_meta as valor_meta,
     g.data_inicio,
     g.deadline
     FROM metas as g	
@@ -51,10 +73,15 @@ const getGoalById = async (userId: number, goalId: number): Promise<QueryGoalsDa
     `;
     const { rows, rowCount } = await pool.query(query, [userId, goalId])
     if (rowCount === 0) return null
-    return rows[0]
+    const data = {
+        ...rows[0],
+        saldo_meta: formatCurrency(rows[0].saldo_meta),
+        valor_meta: formatCurrency(rows[0].valor_meta)
+    }
+    return data
 }
 
-const updateGoal = async (userId: number, goalId: number, updateFields: UpdateGoalsData): Promise<void> => {
+const updateGoal = async (userId: number, goalId: number, updateFields: UpdateGoalInput): Promise<void> => {
     const forbiddenFields = ['id', 'id_usuario', 'data_inicio'];
     const keys = Object.keys(updateFields).filter(key => !forbiddenFields.includes(key));
     const values = keys.map(key => updateFields[key]);
@@ -78,7 +105,6 @@ const updateSaldo = async (saldo: number, userId: number, goalId: number): Promi
     `;
     await pool.query(query, [saldo, userId, goalId])
 }
-
 
 const deleteGoal = async (userId: number, goalId: number): Promise<void> => {
     const query = ` 
@@ -113,18 +139,4 @@ const checkActiveGoal = async (userId: number): Promise<{ id: number } | null> =
     return rows[0]
 }
 
-const totalConcluded = async (userId: number, status_meta: string): Promise<GoalsTotal> => {
-    const query = `
-    SELECT
-    COUNT(*) AS total_ocorrencias,
-    COALESCE(SUM(valor_meta), 0) AS total_metas,
-    COALESCE(SUM(saldo_meta), 0) AS total_economizado
-    FROM metas g
-    WHERE g.id_usuario = $1
-    AND status_meta = $2 
-    `;
-    const { rows } = await pool.query(query, [userId, status_meta])
-    return rows[0]
-}
-
-export { createGoal, getGoals, getGoalById, updateGoal, deleteGoal, updateSaldo, checkExisting, totalConcluded, checkActiveGoal }
+export { createGoal, getGoals, getGoalById, updateGoal, deleteGoal, updateSaldo, checkExisting, checkActiveGoal }

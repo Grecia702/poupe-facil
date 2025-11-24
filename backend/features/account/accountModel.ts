@@ -1,7 +1,9 @@
+import { formatCurrency } from '../../shared/formatCurrency.ts';
 import pool from '../../core/config/db.ts'
-import type { DadosBancarios, ContaCreate, ContaUpdate, UserBalance, UserBalanceDB } from '@/features/account/AccountBank.js'
+import type { BankCreateDTO, BankUpdateDTO, BankAccountDB } from '../../features/account/AccountBank.d.ts'
+import type { UserBalance, DadosBancarios } from '../../shared/types/bankAccount.d.ts';
 
-const CreateAccount = async (userId: number, bankAccountDTO: ContaCreate): Promise<void> => {
+const CreateAccount = async (userId: number, bankAccountDTO: BankCreateDTO): Promise<void> => {
     const { nome_conta, saldo, tipo_conta, icone, desc_conta, is_primary } = bankAccountDTO;
     const query = `
     INSERT INTO contasBancarias 
@@ -22,7 +24,7 @@ const FindAccountByID = async (accountId: number, userId: number): Promise<Dados
     return rows[0]
 }
 
-const UpdateAccount = async (accountId: number, userId: number, updateFields: ContaUpdate): Promise<void> => {
+const UpdateAccount = async (accountId: number, userId: number, updateFields: BankUpdateDTO): Promise<void> => {
     const keys = Object.keys(updateFields);
     if (keys.length === 0) {
         throw new Error('Nenhum campo para atualizar');
@@ -63,9 +65,9 @@ const ListAllAccounts = async (userId: number, last_date: Date): Promise<DadosBa
     `;
     const { rows, rowCount } = await pool.query(query, [userId, last_date]);
     if (rowCount === 0) return null
-    const data = rows.map((row: DadosBancarios) => ({
+    const data = rows.map((row: BankAccountDB) => ({
         ...row,
-        saldo: parseFloat(row.saldo as string)
+        saldo: formatCurrency(row.saldo)
     }));
     return data
 }
@@ -80,7 +82,7 @@ const setAsPrimary = async (accountId: number, userId: number): Promise<void> =>
 }
 
 
-const getSumAccounts = async (userId: number, last_date: Date): Promise<UserBalanceDB | null> => {
+const getSumAccounts = async (userId: number, last_date: Date): Promise<UserBalance | null> => {
     const query = `
 SELECT 
     COALESCE(SUM(valor) FILTER (WHERE tipo = 'receita'), 0) AS receita,
@@ -97,7 +99,13 @@ WHERE user_id = $1
 
     const { rows, rowCount } = await pool.query(query, [userId, last_date]);
     if (rowCount === 0) return null
-    return rows[0]
+    const data = {
+        saldo_total: formatCurrency(rows[0].saldo_total),
+        despesa: Math.abs(formatCurrency(rows[0].despesa)),
+        receita: formatCurrency(rows[0].receita),
+        balanco_geral: formatCurrency(rows[0].balanco_geral)
+    };
+    return data
 }
 
 const ListTransactionsByAccount = async (accountId: number, userId: number) => {

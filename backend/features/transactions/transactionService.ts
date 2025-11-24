@@ -4,18 +4,13 @@ import * as budgetModel from "../budgets/budgetModel.ts";
 import { calcularProximaOcorrencia } from "../../core/utils/calcularOcorrencia.ts"
 import { startOfMonth, subDays, subMonths, endOfMonth } from 'date-fns';
 import { NotFoundError, UnprocessableEntityError } from '../../core/utils/errorTypes.ts'
+import type { Transaction, PaginatedTransaction, GroupedByType, GroupedCategories, WeeklySummary, TransactionSummary } from "../../shared/types/transaction.d.ts";
 import type {
     CreateTransactionData,
     DateParams,
-    GetTransactionData,
-    GroupedByType,
-    GroupedCategories,
-    PaginatedTransaction,
     PaginationQueryParams,
-    TransactionList,
-    TransactionSummary,
-    UpdateTransactionData
-} from "./transaction.js";
+    UpdateTransactionData,
+} from "./transaction.ts";
 
 
 const getMonth = (date: Date) => ({
@@ -24,10 +19,17 @@ const getMonth = (date: Date) => ({
 })
 
 const getTotals = (result: any[]) => {
-    return result.reduce((acc, item) => {
+    const data = result.reduce((acc, item) => {
         acc[item.tipo] = Math.abs(Number(item.valor));
         return acc;
     }, { despesa: 0, receita: 0 });
+
+    const totals = {
+        expenses: data.despesa,
+        incomes: data.receita,
+        balance: data.receita - data.despesa
+    }
+    return totals
 };
 
 const getVariation = (current: any, previous: any) => {
@@ -43,8 +45,8 @@ const getVariation = (current: any, previous: any) => {
     }
 
     return {
-        despesa: calculatePercentage(current.despesa, previous.despesa),
-        receita: calculatePercentage(current.receita, previous.receita)
+        expense_variance: calculatePercentage(current.expenses, previous.expenses),
+        income_variance: calculatePercentage(current.incomes, previous.incomes)
     }
 }
 
@@ -55,7 +57,7 @@ const groupByWeek = (data: any[]) => {
         if (!acc[week]) {
             acc[week] = { despesa: 0, receita: 0, date_interval: item.date_interval };
         }
-        acc[week][item.tipo] += item.valor;
+        acc[week][item.tipo] += parseFloat(item.valor);
 
         return acc;
     }, {});
@@ -134,7 +136,7 @@ const CreateManyTransactionService = async (transactions: CreateTransactionData[
     console.log(manyTransactions)
 };
 
-const getTransactionByID = async (id_usuario: number, id_transacao: number): Promise<GetTransactionData | null> => {
+const getTransactionByID = async (id_usuario: number, id_transacao: number): Promise<Transaction> => {
     const transacoes = await transactionModel.ReadTransaction(id_usuario, id_transacao);
     if (!transacoes) throw new NotFoundError('Nenhuma transação com essa ID foi encontrada');
     return transacoes;
@@ -163,64 +165,95 @@ const UpdateTransactionService = async (id_usuario: number, id_transacao: number
     await transactionModel.UpdateTransaction(id_usuario, id_transacao, fields);
 }
 
-const ListTransactionsService = async (id_usuario: number, query: PaginationQueryParams): Promise<PaginatedTransaction | []> => {
-    const { page, limit, orderBy, orderDirection, filters } = query;
+const ListTransactionsService = async (id_usuario: number, query: PaginationQueryParams): Promise<PaginatedTransaction> => {
+    const { page, limit, orderBy, orderDirection, ...filters } = query;
     const offset = (page - 1) * limit;
     const queryParams = { orderBy, orderDirection, page, limit, offset, ...filters };
     const transacoes = await transactionModel.ListTransactions(id_usuario, queryParams)
-    if (!transacoes) return []
+    if (!transacoes) {
+        return {
+            data: [],
+            meta: {
+                total: 0,
+                page,
+                limit,
+                hasNextPage: false
+            }
+        };
+    }
     return transacoes
 };
 
-const GroupTransactionByTypeService = async (userId: number): Promise<GroupedByType[]> => {
+const GroupTransactionByTypeService = async (userId: number): Promise<GroupedByType[] | []> => {
     const transacoes = await transactionModel.GroupTransactionsByType(userId);
     if (!transacoes) return []
     return transacoes
 };
 
-const GroupCategoriesService = async (id_usuario: number, query: DateParams): Promise<GroupedCategories[] | null> => {
+const GroupCategoriesService = async (id_usuario: number, query: DateParams): Promise<GroupedCategories[] | []> => {
     const { first_day, last_day } = query
-    if (!(first_day instanceof Date) || !(last_day instanceof Date)) {
+    const first_date = new Date(first_day)
+    const last_date = new Date(last_day)
+    if (!(first_date instanceof Date) || !(last_date instanceof Date)) {
         throw new UnprocessableEntityError("Datas inválidas");
     }
-
-
-    const transacoes = await transactionModel.GroupTransactionsByCategories(id_usuario, first_day, last_day);
+    const transacoes = await transactionModel.GroupTransactionsByCategories(id_usuario, first_date, last_date);
     if (!transacoes) return []
     return transacoes
 };
 
-const transactionSummaryService = async (userId: number, query: DateParams): Promise<TransactionSummary | null> => {
+const transactionSummaryService = async (userId: number, query: DateParams): Promise<TransactionSummary> => {
     const { period, first_day, last_day } = query;
 
     const transactions = await transactionModel.transactionSummary(first_day, last_day, period, userId)
-    if (!transactions) throw new NotFoundError('Nenhuma transação encontrada');
+    if (!transactions || transactions.length === 0) {
+        return {
+            weeks: [],
+            totals: {
+                expenses: 0,
+                incomes: 0,
+                balance: 0
+            },
+            vs_previous_period: {
+                expense_variance: '0%',
+                income_variance: '0%'
+            }
+        };
+    }
+    return transactions
+};
 
-    const data = transactions.map(row => ({
-        ...row,
-        valor: Math.abs(row.valor),
-    }));
-
+export const WeeklyTransactionSummary = async (userId: number, query: DateParams): Promise<WeeklySummary> => {
+    const { period, first_day, last_day } = query;
+    const transactions = await transactionModel.transactionSummary(first_day, last_day, period, userId)
+    if (!transactions || transactions.length === 0) {
+        return {
+            weeks: [],
+            totals: {
+                expenses: 0,
+                incomes: 0,
+                balance: 0
+            },
+            vs_previous_period: {
+                expense_variance: '0%',
+                income_variance: '0%'
+            }
+        };
+    }
     const prevMonth = getMonth(first_day);
-
     const [actualMonth, lastMonth] = await Promise.all([
         transactionModel.transactionSummaryTotal(first_day, last_day, userId),
         transactionModel.transactionSummaryTotal(prevMonth.start, prevMonth.end, userId)
     ]);
-
     const current = getTotals(actualMonth.rows)
     const previous = getTotals(lastMonth.rows)
     const variation = getVariation(current, previous)
-
-    if (period === 'week') {
-        return {
-            data: groupByWeek(data),
-            total: current,
-            percent: variation
-        };
-    }
-    return data
-};
+    return {
+        weeks: groupByWeek(transactions),
+        totals: current,
+        vs_previous_period: variation
+    };
+}
 
 export {
     CreateTransactionService,

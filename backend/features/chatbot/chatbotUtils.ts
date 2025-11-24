@@ -1,10 +1,10 @@
 import { calcularProximaOcorrencia } from '../../core/utils/calcularOcorrencia.ts'
 import { format } from 'date-fns'
-import type { GetTransactionData, GroupedCategories } from '../transactions/transaction'
-import type { QueryBudgetData } from '../budgets/budget'
+import type { Transaction, GroupedCategories } from '../../shared/types/transaction.d.ts'
+import type { BudgetData } from '../../shared/types/budget.d.ts'
 import type { NormalizedTransaction, DateInterval } from './chatbot'
 
-export function normalizeTransactions(transactions: GetTransactionData[], accountId: number, budgetId: number): NormalizedTransaction[] {
+export function normalizeTransactions(transactions: Transaction[], accountId: number, budgetId: number): NormalizedTransaction[] {
     const norm = transactions.map(row => ({
         ...row,
         id_contabancaria: accountId,
@@ -17,9 +17,9 @@ export function normalizeTransactions(transactions: GetTransactionData[], accoun
     return norm
 }
 
-export function formatTransactionMessage(transactions: GetTransactionData[], budgetData: QueryBudgetData): string {
+export function formatTransactionMessage(transactions: Transaction[], budgetData: BudgetData): string {
     const message = transactions.map((row) => {
-        const valor = formatCurrency(row.valor)
+        const valor = formatCurrencyBRL(row.valor)
         const dataFormatada = format(new Date(row.data_transacao), 'dd/MM/yyyy');
         return `
     📌 ${row.categoria}
@@ -40,18 +40,18 @@ export function formatTransactionMessage(transactions: GetTransactionData[], bud
     return baseMessage
 }
 
-export function formatRemainingBudget(transactions: GetTransactionData[], budgetData: QueryBudgetData): string {
+export function formatRemainingBudget(transactions: Transaction[], budgetData: BudgetData): string {
     const valorTransacoes = transactions.reduce(
         (acc, row) => acc + row.valor
         , 0);
     const limite = budgetData?.limite ?? 0;
     const quantia_gasta = budgetData?.quantia_gasta ?? 0;
     const valorRestante = limite - (quantia_gasta + valorTransacoes);
-    const valorRestanteFormatado = formatCurrency(valorRestante)
+    const valorRestanteFormatado = formatCurrencyBRL(valorRestante)
     return valorRestanteFormatado
 }
 
-export function formatCurrency(amount: number): string {
+export function formatCurrencyBRL(amount: number): string {
     return amount.toLocaleString('pt-BR', {
         style: 'currency',
         currency: 'BRL'
@@ -79,7 +79,7 @@ export function formatComparisson(currentRows: GroupedCategories[], previousRows
             variationText = `Novo gasto registrado (+100.00%)`;
         }
 
-        return `${row.categoria}: ${formatCurrency(currentTotal)} (${row.ocorrencias} ${row.ocorrencias > 1 ? 'transações' : 'transação'})\n${variationText}\n----------------\n`;
+        return `${row.categoria}: ${formatCurrencyBRL(currentTotal)} (${row.ocorrencias} ${row.ocorrencias > 1 ? 'transações' : 'transação'})\n${variationText}\n----------------\n`;
     });
 
     return comparisonLines.join('')

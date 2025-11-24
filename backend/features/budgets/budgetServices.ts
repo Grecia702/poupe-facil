@@ -1,76 +1,40 @@
-import type { CreateBudgetData, UpdateBudgetData, CategoriasLimites, QueryBudgetData } from './budget.ts'
+import type { BudgetCreateDTO, UpdateBudgetData, CategoriasLimites } from './budget.d.ts'
+import type { BudgetData } from '../../shared/types/budget.js'
 import * as budgetModel from './budgetModel.ts'
 import { budgetQuerySchema } from './budget.schema.ts'
-import { NotFoundError, UnprocessableEntityError, BadRequestError } from '../../core/utils/errorTypes.ts'
+import { NotFoundError, BadRequestError } from '../../core/utils/errorTypes.ts'
 
-const createBudgetService = async (userId: number, queryParams: CreateBudgetData): Promise<void> => {
-    const { data_inicio, quantia_limite, limites_categorias } = budgetQuerySchema.parse(queryParams)
-    const validatedQuery = budgetQuerySchema.parse(queryParams)
+const createBudgetService = async (userId: number, budgetData: BudgetCreateDTO): Promise<void> => {
+    const { data_inicio } = budgetQuerySchema.parse(budgetData)
     const budget = await budgetModel.checkValidDate(data_inicio, userId)
     if (budget) throw new BadRequestError('Já existe um orçamento para este período')
-    if (limites_categorias) {
-        const values = limites_categorias.reduce((acc, item) => acc + item.value, 0)
-        if (values > quantia_limite) throw new UnprocessableEntityError('Valores de sub-categorias exce o valor limite total')
-    }
-    await budgetModel.createBudget(userId, validatedQuery)
-    return
+    await budgetModel.createBudget(userId, budgetData)
 }
 
-const getBudgetService = async (userId: number): Promise<QueryBudgetData> => {
+const getBudgetService = async (userId: number): Promise<BudgetData[]> => {
     const budget = await budgetModel.getBudgets(userId)
     if (!budget) throw new NotFoundError('Nenhum orçamento encontrado')
     return budget
 }
 
-const getBudgetByIdService = async (userId: number, budgetId: number): Promise<QueryBudgetData> => {
+const getBudgetByIdService = async (userId: number, budgetId: number): Promise<BudgetData> => {
     const budget = await budgetModel.getBudgetById(budgetId, userId)
     if (!budget) throw new Error('Nenhum orçamento com esse ID foi encontrado')
     return budget
 }
 
-const getActiveService = async (userId: number): Promise<QueryBudgetData> => {
+const getActiveService = async (userId: number): Promise<BudgetData> => {
     const ActiveBudget = await budgetModel.getActiveBudget(userId)
-    if (!ActiveBudget) return []
+    if (!ActiveBudget) throw new Error('Nenhum orçamento com esse ID foi encontrado')
     const budget = await budgetModel.getBudgetById(ActiveBudget.id, userId)
-    const limites_categorias = budget.limites_categorias ?? {}
-    const quantia_gasta_categorias = budget.quantia_gasta_categorias ?? {}
-    const processedBudget = {
-        ...budget,
-        limite: Math.abs(parseFloat(budget.limite)),
-        quantia_gasta: Math.abs(parseFloat(budget.quantia_gasta)),
-        limites_categorias: limites_categorias.map((item: CategoriasLimites) => ({
-            ...item,
-            value: Math.abs(item.value)
-        })),
-        quantia_gasta_categorias: quantia_gasta_categorias.map((item: CategoriasLimites) => ({
-            ...item,
-            value: Math.abs(item.value)
-        }))
-    }
-    return processedBudget
+    if (!budget) throw new Error('Nenhum orçamento com esse ID foi encontrado')
+    return budget
 }
 
-const getAllActiveService = async (): Promise<QueryBudgetData> => {
+const getAllActiveService = async (): Promise<BudgetData[]> => {
     const budgets = await budgetModel.getAllActiveBudgets()
-
-    const processedBudgets = budgets.map(budget => {
-        const limites_categorias = budget.limites_categorias ?? {}
-        const quantia_gasta_categorias = budget.quantia_gasta_categorias ?? {}
-        return {
-            ...budget,
-            limite: Math.abs(parseFloat(budget.limite)),
-            quantia_gasta: Math.abs(parseFloat(budget.quantia_gasta)),
-            limites_categorias: limites_categorias.map((item: CategoriasLimites) => ({
-                ...item,
-                value: Math.abs(item.value)
-            })),
-            quantia_gasta_categorias: quantia_gasta_categorias.map((item: CategoriasLimites) => ({
-                ...item,
-                value: Math.abs(item.value)
-            }))
-        }
-    })
-    return processedBudgets
+    if (!budgets) return []
+    return budgets
 }
 
 const updateBudgetService = async (userId: number, budgetId: number, queryParams: UpdateBudgetData): Promise<void> => {

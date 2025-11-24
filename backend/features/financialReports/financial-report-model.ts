@@ -1,7 +1,13 @@
-import type { FinancialReportDB } from './financialreport.js';
+import type { FinancialReport } from '../../shared/types/financialReport.d.ts';
 import pool from '../../core/config/db.ts'
+import { formatCurrency } from '../../shared/formatCurrency.ts';
 
-const list_reports = async (userId: number, period: Date): Promise<FinancialReportDB[] | null> => {
+interface CategoryValue {
+    category: string,
+    value: string
+}
+
+const list_reports = async (userId: number, period: Date): Promise<FinancialReport[] | null> => {
     const query = `
     SELECT 
     id,
@@ -20,10 +26,24 @@ const list_reports = async (userId: number, period: Date): Promise<FinancialRepo
     `;
     const { rows, rowCount } = await pool.query(query, [userId, period]);
     if (rowCount === 0) return null
-    return rows
+
+    const data = rows?.map(row => ({
+        ...row,
+        limite_total: formatCurrency(row.limite_total),
+        quantia_gasta: formatCurrency(row.quantia_gasta),
+        limite_categorias: row.limite_categorias?.map((row: CategoryValue) => ({
+            ...row,
+            value: formatCurrency(row.value)
+        })),
+        quantia_gasta_categorias: row.quantia_gasta_categorias?.map((row: CategoryValue) => ({
+            ...row,
+            value: formatCurrency(row.value)
+        })),
+    }))
+    return data
 }
 
-const get_report_by_id = async (userId: number, reportId: number): Promise<FinancialReportDB | null> => {
+const get_report_by_id = async (userId: number, reportId: number): Promise<FinancialReport | null> => {
     const query = `
     SELECT 
     id,
@@ -42,7 +62,21 @@ const get_report_by_id = async (userId: number, reportId: number): Promise<Finan
     `;
     const { rows, rowCount } = await pool.query(query, [userId, reportId]);
     if (rowCount === 0) return null
-    return rows[0]
+
+    const data = {
+        ...rows[0],
+        limite_total: formatCurrency(rows[0].limite_total),
+        quantia_gasta: formatCurrency(rows[0].quantia_gasta),
+        limite_categorias: rows[0].limite_categorias?.map((row: CategoryValue) => ({
+            ...row,
+            value: formatCurrency(row.value)
+        })),
+        quantia_gasta_categorias: rows[0].quantia_gasta_categorias?.map((row: CategoryValue) => ({
+            ...row,
+            value: formatCurrency(row.value)
+        })),
+    }
+    return data
 }
 
 export { list_reports, get_report_by_id }

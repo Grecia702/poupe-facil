@@ -1,19 +1,18 @@
 import { getAllActiveService } from '../budgets/budgetServices.ts'
 
-interface promptObject {
-    id: number,
-    id_usuario: number,
-    data_inicio: Date,
-    data_termino: Date,
-    limite: number,
-    limites_categorias: number,
-    quantia_gasta: number,
-    quantia_gasta_categorias: number,
-    status: string,
-    analise_textual: string,
-    recomendacoes: string
-}
-
+type ReportAnalysis = {
+    id: number;
+    id_usuario: number;
+    periodo_inicio: Date;
+    periodo_fim: Date;
+    limite_total: number;
+    limites_categorias?: Array<{ category: string; value: number }>;
+    quantia_gasta: number;
+    quantia_gasta_categorias?: Array<{ category: string; value: number }>;
+    status: 'DENTRO_DO_ORCAMENTO' | 'LIMITE_ATINGIDO' | 'LIMITE_EXCEDIDO';
+    analise_textual: string;
+    recomendacoes: string;
+};
 const promptOCR = async (prompt: string) => {
     const data = new Date()
     const structuredResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -33,6 +32,7 @@ Para cada valor extraído, gere um objeto JSON com:
   "nome_transacao": string,   // gere o nome com base na categoria, se não for possível identificar um nome específico, use "Pagamento"
   "data": timestamp ISO,                // ${data} formatada em timestamp iso se não tiver data informada
   "categoria": string,           // uma das categorias fixas abaixo, escolhida a partir do texto e pistas contextuais
+  "subcategoria": 
   "valor": decimal
   "natureza": "Fixa" ou "Varíavel" // com base no tipo de categoria
   "recorrente": boolean // se for Fixa é true
@@ -77,8 +77,8 @@ Agora, analise o texto abaixo e faça a extração conforme solicitado:
 }
 
 const promptReport = async (prompt: promptObject) => {
-    const data = new Date()
-    const structuredResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    const date = new Date().toLocaleDateString('pt-BR');
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${process.env.API_KEY_OPENAI}`,
@@ -89,41 +89,64 @@ const promptReport = async (prompt: promptObject) => {
             messages: [
                 {
                     role: 'system',
-                    content: `A data atual é ${data}Você recebe um JSON com dados financeiros.
-                            NUNCA invente ou altere dados do JSON recebido.
-                            Use os valores do JSON como estão.
-Sua tarefa é gerar SOMENTE três campos:
-1. "status" → 'DENTRO_DO_ORCAMENTO', 'LIMITE_ATINGIDO', 'LIMITE_EXCEDIDO', com base APENAS na COMPARAÇÃO entre "limite" e "quantia_gasta".
-   - Se quantia_gasta < limite → 'DENTRO_DO_ORCAMENTO'
-   - Se quantia_gasta === limite → 'LIMITE_ATINGIDO'
-   - Se quantia_gasta > limite → 'LIMITE_EXCEDIDO'
-NÃO considere os limites e gastos por categoria para definir o status.
-2. "analise_textual" → uma análise da sua situação financeira, falando DIRETAMENTE COMIGO, usando "você". NÃO fale na terceira pessoa.
-Além de analisar o orçamento total, também leve em conta os limites de cada categoria (limites_categorias e quantia_gasta_categorias). 
-Aponte se alguma categoria está acima, próxima ou muito abaixo do limite.
+                    content: `Você é um assistente financeiro que analisa orçamentos.
+Data atual: ${date}
 
-3. "recomendacoes" → recomendações financeiras baseadas nesses dados, também falando DIRETAMENTE COMIGO, usando "você". NÃO fale na terceira pessoa.
-Inclua sugestões específicas se alguma categoria estiver com gasto elevado ou estourando o limite.
-                            Responda EXCLUSIVAMENTE neste formato:
-                            {
-                                "status": 'DENTRO_DO_ORCAMENTO', 'LIMITE_ATINGIDO', 'LIMITE_EXCEDIDO'
-                                "analise_textual": "Sua análise aqui.",
-                                "recomendacoes": "Suas recomendações aqui."
-                            }
-                            `
+Sua tarefa é analisar os dados financeiros fornecidos e:
+1. Determinar o status do orçamento comparando quantia_gasta com limite
+2. Fornecer uma análise detalhada falando DIRETAMENTE com o usuário (use "você")
+3. Dar recomendações personalizadas
+
+Considere também os limites e gastos por categoria na sua análise.`
                 },
-                { role: 'user', content: `Prompt: ${JSON.stringify(prompt)} ` }
+                {
+                    role: 'user',
+                    content: `Analise minha situação financeira:\n${JSON.stringify(prompt, null, 2)}`
+                }
             ],
-            max_tokens: 500,
+            tools: [
+                {
+                    type: 'function',
+                    function: {
+                        name: 'gerar_relatorio_financeiro',
+                        description: 'Gera um relatório financeiro com status, análise e recomendações',
+                        parameters: {
+                            type: 'object',
+                            properties: {
+                                status: {
+                                    type: 'string',
+                                    enum: ['DENTRO_DO_ORCAMENTO', 'LIMITE_ATINGIDO', 'LIMITE_EXCEDIDO'],
+                                    description: 'Status do orçamento baseado na comparação entre quantia_gasta e limite'
+                                },
+                                analise_textual: {
+                                    type: 'string',
+                                    description: 'Análise detalhada da situação financeira, falando diretamente com o usuário (use "você"). Mencione categorias específicas se relevante.'
+                                },
+                                recomendacoes: {
+                                    type: 'string',
+                                    description: 'Recomendações financeiras personalizadas, falando diretamente com o usuário (use "você"). Inclua sugestões específicas por categoria se necessário.'
+                                }
+                            },
+                            required: ['status', 'analise_textual', 'recomendacoes'],
+                            additionalProperties: false
+                        }
+                    }
+                }
+            ],
+            tool_choice: {
+                type: 'function',
+                function: { name: 'gerar_relatorio_financeiro' }
+            }
         }),
     });
 
-    const structuredData = await structuredResponse.json();
-    const rawResponse = structuredData.choices[0].message.content;
-    const cleanedResponse = rawResponse.replace(/```json|```/g, '').trim();
-    const { status, analise_textual, recomendacoes } = JSON.parse(cleanedResponse);
-
-    const result = {
+    const data = await response.json();
+    const toolCall = data.choices[0].message.tool_calls?.[0];
+    if (!toolCall) {
+        throw new Error('Modelo não retornou function call');
+    }
+    const { status, analise_textual, recomendacoes } = JSON.parse(toolCall.function.arguments);
+    return {
         id: prompt.id,
         id_usuario: prompt.id_usuario,
         periodo_inicio: prompt.data_inicio,
@@ -136,8 +159,6 @@ Inclua sugestões específicas se alguma categoria estiver com gasto elevado ou 
         analise_textual,
         recomendacoes
     };
-
-    return result;
 }
 
 export { promptOCR, promptReport }

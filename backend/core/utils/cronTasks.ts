@@ -94,6 +94,29 @@ async function processarMetasVencimento() {
     }
 }
 
+async function gerarRelatorio(prompt) {
+    const openAIresponse = await promptReport(prompt)
+    const limites_cat = openAIresponse.limites_categorias ?? [];
+    const gastos_cat = openAIresponse.quantia_gasta_categorias ?? [];
+    await pool.query(
+        `INSERT INTO relatorios 
+            (id_usuario, periodo_inicio, periodo_fim, limite_total, limite_categorias, quantia_gasta, quantia_gasta_categorias, status, analise_textual, recomendacoes)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        [
+            openAIresponse.id_usuario,
+            openAIresponse.periodo_inicio,
+            openAIresponse.periodo_fim,
+            openAIresponse.limite_total,
+            JSON.stringify(limites_cat),
+            openAIresponse.quantia_gasta,
+            JSON.stringify(gastos_cat),
+            openAIresponse.status,
+            openAIresponse.analise_textual,
+            openAIresponse.recomendacoes
+        ]
+    )
+}
+
 async function processarOrcamentoVencimento() {
     try {
         const hoje = new Date();
@@ -103,32 +126,15 @@ async function processarOrcamentoVencimento() {
             if (data_termino < hoje) {
                 await pool.query(
                     `UPDATE planejamento
-                SET ativo = false
-                WHERE data_termino < $1
-                AND id = $2`,
+                    SET ativo = false
+                    WHERE data_termino < $1
+                    AND id = $2`,
                     [hoje, id]
                 );
                 console.log(`Orçamento de id ${id} do usuario ${id_usuario} venceu. Marcando como expirado`);
                 logger.info(`Orçamento de id ${id} do usuario ${id_usuario} venceu. Marcando como expirado`)
                 const prompt = { ...planejamento };
-                const openAIresponse = await promptReport(prompt)
-                await pool.query(
-                    `INSERT INTO relatorios 
-            (id_usuario, periodo_inicio, periodo_fim, limite_total, limite_categorias, quantia_gasta, quantia_gasta_categorias, status, analise_textual, recomendacoes)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-                    [
-                        openAIresponse.id_usuario,
-                        openAIresponse.periodo_inicio,
-                        openAIresponse.periodo_fim,
-                        openAIresponse.limite_total,
-                        openAIresponse.limites_categorias,
-                        openAIresponse.quantia_gasta,
-                        openAIresponse.quantia_gasta_categorias,
-                        openAIresponse.status,
-                        openAIresponse.analise_textual,
-                        openAIresponse.recomendacoes
-                    ]
-                )
+                await gerarRelatorio(prompt)
                 logger.info(`Criando relatório financeiro pro usuario de ID ${id_usuario} pro periodo de ${data_inicio} até ${data_termino}`);
             }
         }
@@ -139,6 +145,7 @@ async function processarOrcamentoVencimento() {
         }
     }
 }
+
 
 function iniciarCron() {
     cron.schedule('0 0 * * *', async () => {

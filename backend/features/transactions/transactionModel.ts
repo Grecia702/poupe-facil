@@ -5,15 +5,11 @@ import type {
   TransacaoMensalResult,
   TransactionArray,
   UpdateTransactionData,
-  PaginatedTransactionData,
-  QueryFilters,
-  QueryTransactionData,
-  GetTransactionData,
-  PaginatedTransaction,
-  GroupedByType,
-  GroupedCategories
+  PaginationQueryParams,
 } from './transaction.d.ts';
+import type { Transaction, PaginatedTransaction, GroupedByType, GroupedCategories } from '../../shared/types/transaction.d.ts';
 import pool from '../../core/config/db.ts'
+import { formatCurrency } from '../../shared/formatCurrency.ts';
 
 
 const checkValidAccount = async (id_account: number, id_usuario: number): Promise<boolean> => {
@@ -73,7 +69,7 @@ const CreateManyTransactions = async (transactions: TransactionArray): Promise<P
   return rows
 };
 
-const ReadTransaction = async (id_usuario: number, id_transacao: number): Promise<GetTransactionData | null> => {
+const ReadTransaction = async (id_usuario: number, id_transacao: number): Promise<Transaction | null> => {
   const query = `
   SELECT * 
   FROM user_transactions 
@@ -120,22 +116,20 @@ const DeleteTransaction = async (id_usuario: number, id_transacao: number): Prom
   await pool.query(query, [id_usuario, id_transacao])
 }
 
-const ListTransactions = async (userId: number, queryParams: PaginatedTransactionData): Promise<PaginatedTransaction | null> => {
+const ListTransactions = async (userId: number, queryParams: PaginationQueryParams): Promise<PaginatedTransaction | null> => {
   const { tipo, natureza, limit, offset, orderBy, orderDirection, categoria, data_transacao, valor_maior_que, valor_menor_que, page } = queryParams;
-
   let orderParam = orderBy;
   if (orderBy === 'valor') {
     orderParam = 'ABS(valor)';
   }
-
   const data = data_transacao ? `${data_transacao} days` : null;
-
   const query = `
     SELECT 
-      transaction_id,
-      conta,
+      transaction_id as id,
+      conta as id_contabancaria,
       nome_transacao,
       categoria,
+      subcategoria,
       valor,
       data_transacao, 
       tipo, 
@@ -143,7 +137,7 @@ const ListTransactions = async (userId: number, queryParams: PaginatedTransactio
       recorrente, 
       frequencia_recorrencia, 
       proxima_ocorrencia,
-      COUNT(*) OVER() as total_count
+      (COUNT(*) OVER())::int as total_count
     FROM user_transactions 
     WHERE user_id = $1
       AND ($2::text IS NULL OR tipo = $2::text)
@@ -185,39 +179,6 @@ const ListTransactions = async (userId: number, queryParams: PaginatedTransactio
   };
 };
 
-const listSumTransactions = async (userId: number) => {
-  const query = `
-SELECT
-  COALESCE(tipo, 'Total') AS tipo,
-  SUM(valor) AS total
-FROM user_transactions
-WHERE user_id = $1
-  AND tipo IN ('receita', 'despesa')
-GROUP BY GROUPING SETS ((tipo), ())
-
-`;
-  const { rows, rowCount } = await pool.query(query, [userId]);
-  return { rows, total: rowCount, firstResult: rows[0] };
-}
-
-const countTransactionsResult = async (userId: number, queryParams: QueryFilters): Promise<number> => {
-  const { tipo, natureza, categoria, data_transacao, valor_maior_que, valor_menor_que } = queryParams;
-
-  const data = data_transacao ? `${data_transacao} days` : null
-  const query = `
-    SELECT COUNT(*) FROM user_transactions 
-    WHERE user_id = $1
-      AND ($2::text IS NULL OR tipo = $2::text)
-      AND ($3::text IS NULL OR natureza = $3::text)
-      AND ($4::text IS NULL OR categoria = $4::text)
-      AND ($5::text IS NULL OR data_transacao >= CURRENT_DATE - $5::interval)
-      AND ($6::numeric IS NULL OR ABS(valor) >= $6::numeric)
-      AND ($7::numeric IS NULL OR ABS(valor) <= $7::numeric)
-    `;
-  const { rows } = await pool.query(query, [userId, tipo, natureza, categoria, data, valor_maior_que, valor_menor_que]);
-  return parseInt(rows[0].count)
-}
-
 const GroupTransactionsByType = async (id_usuario: number): Promise<GroupedByType[] | null> => {
   const query = `
     SELECT 
@@ -240,7 +201,7 @@ const GroupTransactionsByType = async (id_usuario: number): Promise<GroupedByTyp
     tipo: row.tipo,
     natureza: row.natureza,
     ocorrencias: Number(row.ocorrencias),
-    valor: Math.abs(parseFloat(row.valor))
+    valor: Math.abs(formatCurrency(row.valor))
   }));
 
   return data;
@@ -250,7 +211,7 @@ const GroupTransactionsByCategories = async (userId: number, first_date: Date, l
   const query = `
     SELECT 
     categoria, 
-    COUNT(*) AS ocorrencias, 
+    COUNT(*)::int AS ocorrencias, 
     SUM(ABS(valor)) AS total
     FROM user_transactions
     WHERE user_id = $1
@@ -261,12 +222,7 @@ const GroupTransactionsByCategories = async (userId: number, first_date: Date, l
 `;
   const { rows, rowCount } = await pool.query(query, [userId, first_date, last_date]);
   if (rowCount === 0) return null
-  const data = rows.map(row => ({
-    ...row,
-    ocorrencias: parseInt(row.ocorrencias),
-    total: Math.abs(row.total)
-  }));
-  return data;
+  return rows;
 }
 
 const transactionSummary = async (first_day: Date, last_day: Date, interval: string, userId: number) => {
@@ -289,8 +245,8 @@ SELECT
   p.date_interval AS date_interval,
   p.periodo_num AS name_interval,
   t.tipo,
-  COUNT(ut.user_id) AS ocorrencias,
-  COALESCE(SUM(ut.valor), 0) AS valor
+  COUNT(ut.user_id)::int AS ocorrencias,
+  ABS(COALESCE(SUM(ut.valor), 0))::int AS valor
 FROM periodo_numerado p
 CROSS JOIN tipos t
 LEFT JOIN user_transactions ut 
@@ -348,8 +304,6 @@ export {
   UpdateTransaction,
   DeleteTransaction,
   ListTransactions,
-  listSumTransactions,
-  countTransactionsResult,
   GroupTransactionsByType,
   GroupTransactionsByCategories,
   transactionSummary,

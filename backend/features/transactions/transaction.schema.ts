@@ -1,8 +1,7 @@
 import { boolean, z } from 'zod'
-import { SUBCATEGORIAS_MAP } from './transaction.d.ts';
+import { SUBCATEGORIAS_MAP } from './transaction.ts';
 
 export const transactionCreateSchema = z.object({
-    id_usuario: z.number().int().optional(),
     id_contabancaria: z.number().int(),
     nome_transacao: z.string().min(1),
     valor: z.number().positive(),
@@ -40,7 +39,7 @@ export const transactionQuerySchema = z.object({
 export const querySchema = z.object({
     page: z.coerce.number().min(1).default(1),
     limit: z.coerce.number().min(1).max(100).default(10),
-    offset: z.number().positive().default(10).optional(),
+    offset: z.number().min(1).default(0).optional(),
     orderBy: z.string().default('data_transacao'),
     orderDirection: z.enum(['ASC', 'DESC']).default('DESC'),
     valor: z.number().positive().optional(),
@@ -65,7 +64,10 @@ export const dateParamsSchema = z.object({
     period: z.string()
 });
 
-export const transactionsCreateSchema = z.union([
-    transactionCreateSchema,
-    z.array(transactionCreateSchema).nonempty()
-]);
+export const periodParamsSchema = z.object({
+    first_day: z.coerce.date(),
+    last_day: z.coerce.date(),
+    period: z.string()
+});
+
+export const transactionsCreateManySchema = z.array(transactionCreateSchema);

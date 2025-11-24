@@ -1,23 +1,14 @@
-export interface DadosBancarios {
+import { accountBankSchema } from "@/features/account/accountBank.schema"
+
+export type BankCreateDTO = z.infer<typeof accountBankSchema>
+export type BankUpdateDTO = { id: number; id_usuario: number } & Partial<Omit<BankCreateDTO, 'id' | 'id_usuario'>>
+
+export interface BankAccountDB {
     id: number,
-    id_usuario: number,
     nome_conta: string,
     tipo_conta: string,
-    saldo: number | string,
+    saldo: string,
     desc_conta?: string,
     icone: string,
     is_primary: boolean
 }
-
-export interface UserBalance<T = number> {
-    saldo_total: T
-    despesa: T
-    receita: T
-    balanco_geral: T
-}
-
-export interface UserBalanceDB<T = string> extends UserBalance<T> { };
-
-export type ContaCreate = Omit<DadosBancarios, 'id' | 'id_usuario'>
-
-export type ContaUpdate = { id: number; id_usuario: number } & Partial<Omit<DadosBancarios, 'id' | 'id_usuario'>>
