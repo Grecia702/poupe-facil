@@ -192,12 +192,7 @@ const GroupTransactionByTypeService = async (userId: number): Promise<GroupedByT
 
 const GroupCategoriesService = async (id_usuario: number, query: DateParams): Promise<GroupedCategories[] | []> => {
     const { first_day, last_day } = query
-    const first_date = new Date(first_day)
-    const last_date = new Date(last_day)
-    if (!(first_date instanceof Date) || !(last_date instanceof Date)) {
-        throw new UnprocessableEntityError("Datas inválidas");
-    }
-    const transacoes = await transactionModel.GroupTransactionsByCategories(id_usuario, first_date, last_date);
+    const transacoes = await transactionModel.GroupTransactionsByCategories(id_usuario, first_day, last_day);
     if (!transacoes) return []
     return transacoes
 };
