@@ -61,7 +61,6 @@ export const querySchema = z.object({
 export const dateParamsSchema = z.object({
     first_day: z.coerce.date(),
     last_day: z.coerce.date(),
-    period: z.string()
 });
 
 export const periodParamsSchema = z.object({
