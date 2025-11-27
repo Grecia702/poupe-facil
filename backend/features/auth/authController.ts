@@ -13,8 +13,8 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         const userIp = req.ip || 'Unknown'
         const query = req.body
         const authToken = await loginService(query, userAgent, userIp)
-        res.setHeader('access-token', `Bearer ${authToken.accessToken}`)
-        res.setHeader('refresh-token', `Bearer ${authToken.refreshToken}`)
+        res.setHeader('access-token', `${authToken.accessToken}`)
+        res.setHeader('refresh-token', `${authToken.refreshToken}`)
         res.status(200).json({ message: 'Login feito com sucesso' });
     }
     catch (error) {
@@ -51,7 +51,7 @@ const refresh = async (req: Request, res: Response, next: NextFunction) => {
         const date = format(new Date(), 'dd/MM/yyyy HH:mm:ss');;
         console.log("Token renovado com sucesso às", date);
         logger.info(`Renovação de token feita pelo usuario ${userId} durante as ${date}. IP: ${ipAddress}, User-Agent: ${userAgent}`);
-        res.setHeader('x-access-token', `Bearer ${newAccessToken}`)
+        res.setHeader('access-token', `${newAccessToken}`)
         res.status(200).json({ message: 'Token renovado com sucesso' });
     } catch (error) {
         next(error)
