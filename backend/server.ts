@@ -20,6 +20,7 @@ import type { Request, Response, NextFunction } from 'express'
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { errorHandler } from './core/middleware/errorHandler.ts';
+import { RequestLogger } from './core/middleware/loggerMiddleware.ts';
 
 const app = express();
 
@@ -75,11 +76,12 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     next();
 });
 
+
+app.use(RequestLogger)
 app.use("/api/auth", (req: Request, res: Response, next: NextFunction) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     next()
 });
-
 app.use("/api/users", userRoutes);
 app.use("/api/ocr", ocrRoutes);
 app.use("/api/auth", authRoutes);
