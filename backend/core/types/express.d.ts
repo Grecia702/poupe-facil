@@ -1,9 +1,9 @@
-import type { JwtPayload } from "./token.js"
+import type { DecodedPayload } from "./token.js"
 
 declare global {
     namespace Express {
         interface Request {
-            user: JwtPayload;
+            user: DecodedPayload;
             requestId?: string
         }
     }
