@@ -14,13 +14,13 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
         }
         if (!token) return res.status(401).json({ message: 'Acesso negado. Token não fornecido' })
         const payload = verifyAccessToken(token)
-        if (!payload) return res.status(401).json({ message: 'Token de acesso inválido' });
-        const isExpired = payload.exp < (Date.now() / 1000)
-        if (isExpired) return res.status(401).json({ message: 'Token de acesso expirado' });
         req.user = payload
         next()
     } catch (error: any) {
-        res.status(500).json({ error: 'Token inválido', message: error.message })
+        if (error.name === "TokenExpiredError") {
+            return res.status(401).json({ message: "Token expirado" })
+        }
+        return res.status(401).json({ message: "Token inválido" });
     }
 }
 
