@@ -14,7 +14,6 @@ import chatbotRoutes from './features/chatbot/chatbotRoutes.ts';
 import ocrRoutes from './features/OCR/OCRRoutes.ts';
 import financialReportRoutes from './features/financialReports/financial-report-routes.ts';
 import logger from './core/utils/loggerConfig.ts';
-import requestTimeLogger from './core/utils/requestTime.ts';
 import { iniciarCron } from './core/utils/cronTasks.ts';
 import type { Request, Response, NextFunction } from 'express'
 import { dirname, join } from 'path';
@@ -39,7 +38,6 @@ const rateLimiter = new RateLimiterMemory({
     duration: 1,
     blockDuration: 10,
 });
-app.use(requestTimeLogger);
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'views')));

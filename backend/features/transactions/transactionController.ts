@@ -46,7 +46,7 @@ const readTransaction = async (req: Request, res: Response, next: NextFunction) 
 
 const removeTransaction = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const id = Number(req.params)
+        const id = Number(req.params.id)
         const { userId } = req.user
         await TransactionService.RemoveTransactionService(userId, id)
         return res.status(200).json({ message: 'Transação excluída com sucesso' });
