@@ -22,24 +22,21 @@ const Drawer = createDrawerNavigator();
 
 const CustomDrawerContent = (props) => {
     const { isDarkMode } = useContext(colorContext);
-    const profile = useProfile();
-    const { data } = profile;
-
+    const { data } = useProfile();
 
     return (
         <DrawerContentScrollView {...props}>
             <View style={{ alignSelf: 'center', alignItems: 'center' }}>
                 <View style={[styles.image]}>
-                    {typeof data?.picture_path === 'string' && data.picture_path.trim().length > 0 ? (
+                    {data?.picture_path ? (
                         <Image
                             source={{ uri: data.picture_path }}
                             style={{ width: 128, height: 128, borderRadius: 64 }}
                             resizeMode="cover"
                         />
                     ) : (
-                        <DefaultIconSvg width="128" height="128" />
+                        <DefaultIconSvg width={128} height={128} />
                     )}
-
                 </View>
                 <View style={[styles.nameContainer, { backgroundColor: isDarkMode ? '#505050' : '#b4ccba' }]}>
                     <Text
@@ -48,10 +45,10 @@ const CustomDrawerContent = (props) => {
                         style={{
                             fontSize: 20,
                             fontWeight: '600',
-                            color: isDarkMode ? '#cccccc' : '#0d521e',
+                            color: isDarkMode ? '#cccc' : '#0d521e',
                         }}
                     >
-                        {data?.nome || 'Usuário'}
+                        {data?.nome}
                     </Text>
                 </View>
             </View>

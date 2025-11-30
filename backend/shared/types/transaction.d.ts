@@ -1,10 +1,7 @@
 import { transactionCreateSchema, transactionsCreateSchema, transactionQuerySchema, querySchema, dateParamsSchema } from '../../features/transactions/transaction.schema.ts'
-import type { CreateTransactionData, UpdateTransactionData, Categorias } from '../../features/transactions/transaction.ts'
+import type { CreateTransactionData, Categorias } from '../../features/transactions/transaction.ts'
 
 export type PaginatedTransactionDTO = z.infer<typeof querySchema>
-
-export type CreateTransaction = CreateTransactionData
-export type UpdateTransaction = UpdateTransactionData
 
 export type Transaction = Omit<CreateTransactionData, 'budget_id' | 'frequencia_recorrencia'> & {
     id: number

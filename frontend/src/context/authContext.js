@@ -10,12 +10,12 @@ import { jwtDecode } from "jwt-decode";
 export const AuthContext = createContext();
 const postLogin = async (loginData) => {
     const res = await api.post('/auth/login', loginData)
-    return res;
+    return res.data;
 };
 
 const postGoogleLogin = async (loginData) => {
     const res = await api.post('/auth/google', loginData);
-    return res;
+    return res.data;
 };
 
 
@@ -26,7 +26,7 @@ const postSignUp = async (signUpData) => {
 
 const postLogout = async () => {
     const refreshToken = await SecureStore.getItemAsync('refreshToken');
-    const res = await api.post(`${API_URL}/auth/logout`,
+    const res = await axios.post(`${API_URL}/auth/logout`,
         { refreshToken },
         { withCredentials: true }
     );
@@ -39,11 +39,9 @@ export const AuthProvider = ({ children }) => {
 
     const loginMutation = useMutation({
         mutationFn: postLogin,
-        onSuccess: async (res) => {
-            const accessToken = res.headers['access-token'];
-            const refreshToken = res.headers['refresh-token'];
-            await SecureStore.setItemAsync('accessToken', accessToken);
-            await SecureStore.setItemAsync('refreshToken', refreshToken);
+        onSuccess: async (data) => {
+            await SecureStore.setItemAsync('accessToken', data.accessToken);
+            await SecureStore.setItemAsync('refreshToken', data.refreshToken);
             setIsAuthenticated(true);
         },
 
@@ -54,11 +52,9 @@ export const AuthProvider = ({ children }) => {
 
     const googleMutation = useMutation({
         mutationFn: postGoogleLogin,
-        onSuccess: async (res) => {
-            const accessToken = res.headers['access-token'];
-            const refreshToken = res.headers['refresh-token'];
-            await SecureStore.setItemAsync('accessToken', accessToken);
-            await SecureStore.setItemAsync('refreshToken', refreshToken);
+        onSuccess: async (data) => {
+            await SecureStore.setItemAsync('accessToken', data.accessToken);
+            await SecureStore.setItemAsync('refreshToken', data.refreshToken);
             setIsAuthenticated(true);
         },
 
@@ -78,7 +74,7 @@ export const AuthProvider = ({ children }) => {
     const logoutMutation = useMutation({
         mutationFn: async () => {
             const refreshToken = await SecureStore.getItemAsync('refreshToken');
-            return api.post(`${API_URL}/auth/logout`, {}, {
+            return axios.post(`${API_URL}/auth/logout`, {}, {
                 headers: { Authorization: `Bearer ${refreshToken}` },
                 timeout: 3000,
                 validateStatus: () => true,
@@ -119,7 +115,7 @@ export const AuthProvider = ({ children }) => {
                     setIsLoading(false);
                     return;
                 }
-                const response = await api.post(
+                const response = await axios.post(
                     `${API_URL}/auth/refresh`,
                     {},
                     {
@@ -129,7 +125,7 @@ export const AuthProvider = ({ children }) => {
                     }
                 );
                 if (response.status === 200) {
-                    await SecureStore.setItemAsync('accessToken', response.headers['access-token']);
+                    await SecureStore.setItemAsync('accessToken', response.data.newAccessToken);
                     setIsAuthenticated(true);
                 } else {
                     console.log("Erro ao renovar token:", response.data.message);
@@ -140,7 +136,6 @@ export const AuthProvider = ({ children }) => {
 
                 if (error.message === "A requisição excedeu o tempo limite. Tente novamente mais tarde.") {
                     console.log('Não foi possivel conectar-se a internet', error.code)
-                    return
                 }
                 await SecureStore.deleteItemAsync('accessToken');
                 await SecureStore.deleteItemAsync('refreshToken');

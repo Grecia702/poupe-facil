@@ -8,10 +8,10 @@ export const ContasContext = createContext();
 const getContas = async ({ queryKey }) => {
     const [_key, { last_date }] = queryKey;
     try {
-        const res = await api.get('/profile/account/', {
+        const { data } = await api.get('/profile/account/', {
             params: { last_date }
         });
-        return res.data.data;
+        return data;
     } catch (error) {
         console.log('Erro ao fazer a requisição:', error);
         throw error;
@@ -24,10 +24,10 @@ const getAccountBalance = async ({ queryKey }) => {
         const [_key, params = {}] = queryKey;
         const { last_date = now } = params;
 
-        const res = await api.get('/profile/account/total', {
+        const { data } = await api.get('/profile/account/total', {
             params: { last_date }
         });
-        return res.data.data;
+        return data;
     } catch (error) {
         console.log('Erro ao fazer a requisição:', error);
         throw error;
@@ -67,7 +67,7 @@ export const ContasProvider = ({ children }) => {
     const queryClient = useQueryClient();
     const [lastDate, setLastDate] = useState(new Date());
     const { data: dadosContas, isLoading, error, refetch: refetchAccount } = useQuery({
-        queryKey: ['account_id', lastDate],
+        queryKey: ['account_id', { last_date: lastDate }],
         queryFn: getContas,
         enabled: isAuthenticated,
         onSuccess: (data) => {

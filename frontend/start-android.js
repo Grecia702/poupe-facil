@@ -11,8 +11,6 @@ function startEmulator() {
     // Abre o emulador do dispositivo android Pixel_8, se for alterar o dispositivo mude o nome
 
     spawn("cmd", ["/c", "start", "emulator -avd Pixel_8"]);
-
-    spawn("cmd", ["/c", "start", "", "cmd", "/k", "cd ../backend && nodemon server.ts"]);
 }
 
 if (!isEmulatorRunning()) {
@@ -20,7 +18,7 @@ if (!isEmulatorRunning()) {
     console.log("⏳ Waiting for emulator to boot...");
     setTimeout(() => {
         execSync("npx expo start --android", { stdio: "inherit" });
-    }, 15000); // aguarda 15 segundos para o emulador iniciar
+    }, 25000); // aguarda 15 segundos para o emulador iniciar
 } else {
     console.log("✅ Emulator already running.");
     execSync("npx expo start --android", { stdio: "inherit" });

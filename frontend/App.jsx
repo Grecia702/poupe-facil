@@ -16,64 +16,64 @@ import { Platform, PermissionsAndroid } from 'react-native';
 
 const queryClient = new QueryClient();
 
-// // Configuração padrão para notificação
-// Notifications.setNotificationHandler({
-//     handleNotification: async () => ({
-//         shouldShowAlert: true,
-//         shouldPlaySound: false,
-//         shouldSetBadge: false,
-//     }),
-// });
+// Configuração padrão para notificação
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+    }),
+});
 
-// const getPushToken = async () => {
-//     if (!Device.isDevice) {
-//         console.log('As notificações só funcionam em dispositivos físicos.');
-//         return;
-//     }
+const getPushToken = async () => {
+    if (!Device.isDevice) {
+        console.log('As notificações só funcionam em dispositivos físicos.');
+        return;
+    }
 
-//     // ANDROID 13+ → Solicita permissão POST_NOTIFICATIONS
-//     if (Platform.OS === 'android' && Platform.Version >= 33) {
-//         const granted = await PermissionsAndroid.request(
-//             PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
-//         );
+    // ANDROID 13+ → Solicita permissão POST_NOTIFICATIONS
+    if (Platform.OS === 'android' && Platform.Version >= 33) {
+        const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+        );
 
-//         if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-//             console.log('Permissão POST_NOTIFICATIONS negada.');
-//             return;
-//         }
-//     }
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+            console.log('Permissão POST_NOTIFICATIONS negada.');
+            return;
+        }
+    }
 
-//     const { status: existingStatus } = await Notifications.getPermissionsAsync();
-//     let finalStatus = existingStatus;
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
 
-//     if (existingStatus !== 'granted') {
-//         const { status } = await Notifications.requestPermissionsAsync();
-//         finalStatus = status;
-//     }
+    if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+    }
 
-//     if (finalStatus !== 'granted') {
-//         console.log('Permissão negada para notificações');
-//         return;
-//     }
+    if (finalStatus !== 'granted') {
+        console.log('Permissão negada para notificações');
+        return;
+    }
 
-//     const token = (await Notifications.getExpoPushTokenAsync()).data;
-//     const existingToken = await AsyncStorage.getItem('expoPushToken');
+    const token = (await Notifications.getExpoPushTokenAsync()).data;
+    const existingToken = await AsyncStorage.getItem('expoPushToken');
 
-//     if (!existingToken) {
-//         await AsyncStorage.setItem('expoPushToken', token);
-//         console.log('Novo token:', token);
-//     } else {
-//         console.log('Token já salvo:', existingToken);
-//     }
+    if (!existingToken) {
+        await AsyncStorage.setItem('expoPushToken', token);
+        console.log('Novo token:', token);
+    } else {
+        console.log('Token já salvo:', existingToken);
+    }
 
-//     return token;
-// };
+    return token;
+};
 
 export default function App() {
-    // useEffect(() => {
-    //     console.log('App montado');
-    //     getPushToken();
-    // }, []);
+    useEffect(() => {
+        console.log('App montado');
+        getPushToken();
+    }, []);
 
     return (
         <ColorProvider>
