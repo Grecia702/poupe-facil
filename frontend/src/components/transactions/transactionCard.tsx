@@ -110,15 +110,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
-    dropdown: {
-        position: 'absolute',
-        top: 0,
-        width: 100,
-        right: 25,
-        elevation: 10,
-        borderRadius: 5,
-        zIndex: 4,
-    },
     iconCard: {
         borderRadius: 30,
         height: 48,
