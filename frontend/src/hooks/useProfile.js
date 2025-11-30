@@ -2,8 +2,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@context/axiosInstance'
 
 export const getProfile = async () => {
-    const { data } = await api.get('/users/')
-    return data
+    console.log("Teste")
+    const res = await api.get('/users/')
+    return res.data
 }
 
 const changeProfilePic = async (data) => {

@@ -7,7 +7,7 @@ const fetchGoals = async ({ queryKey }) => {
         status_meta = 'ativa',
     } = filters
     try {
-        const response = await api.get('/goals/list', {
+        const response = await api.get('/goals/', {
             params: {
                 status_meta,
             },

@@ -27,7 +27,6 @@ const LoginScreen = () => {
         try {
             await GoogleSignin.hasPlayServices()
             const response = await GoogleSignin.signIn()
-
             if (isSuccessResponse(response)) {
                 const { idToken } = response.data
                 googleMutation.mutate({ idToken }, {

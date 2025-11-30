@@ -2,7 +2,7 @@ import { StyleSheet, FlatList, TouchableOpacity, Image, Text, View, Pressable, A
 import { useState, useContext, useMemo, useLayoutEffect, useCallback } from 'react'
 import { MaterialIcons } from '@expo/vector-icons'
 import { colorContext } from '@context/colorScheme'
-import TransactionCard from '@components/transactions';
+import TransactionCard from '@components/transactions/transactionCard';
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import { useTransactionAuth } from '@context/transactionsContext';
 import CustomLoader from '@components/contentLoader'

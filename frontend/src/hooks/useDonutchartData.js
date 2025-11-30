@@ -6,14 +6,14 @@ import { subDays, startOfMonth, startOfDay } from 'date-fns/'
 const getCategoriesTransactions = async ({ queryKey }) => {
     const [, filters = {}] = queryKey
     const {
-        first_date = startOfMonth(new Date().toISOString()),
-        last_date = startOfDay(new Date().toISOString()),
+        first_day = startOfMonth(new Date().toISOString()),
+        last_day = startOfDay(new Date().toISOString()),
     } = filters
     try {
         const response = await api.get('/profile/transaction/categories', {
             params: {
-                first_date,
-                last_date
+                first_day,
+                last_day
             },
         });
         return response.data;
