@@ -3,7 +3,17 @@ import { MaterialIcons } from '@expo/vector-icons'
 import { colorContext } from '@context/colorScheme';
 import { useContext } from 'react'
 
-const DangerModal = ({ open, setOpen, onPress, icon, title, text, confirmButton }) => {
+interface DangerModalProps {
+    open: boolean;
+    setOpen: (open: boolean) => void;
+    onPress: () => void;
+    icon?: string;
+    title?: string;
+    text?: string;
+    confirmButton?: string;
+}
+
+const DangerModal = ({ open, setOpen, onPress, icon, title, text, confirmButton }: DangerModalProps) => {
     const { isDarkMode } = useContext(colorContext);
 
     return (
