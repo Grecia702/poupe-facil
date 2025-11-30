@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "types": [],
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "strict": true,
+    "jsx": "react-jsx",
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "skipLibCheck": true,
+    "baseUrl": "./",
+    "paths": {
+      "@context/*": [
+        "src/context/*"
+      ],
+      "@components/*": [
+        "src/components/*"
+      ],
+      "@hooks/*": [
+        "src/hooks/*"
+      ],
+      "@utils/*": [
+        "src/utils/*"
+      ],
+      "@assets/*": [
+        "assets/*"
+      ],
+      "@shared/*": [
+        "../backend/shared/*"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "../backend/shared/"
+  ],
+  "extends": "expo/tsconfig.base"
+}
